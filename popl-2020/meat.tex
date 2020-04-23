@@ -1,1 +1,25 @@
-\section{Formalization}
+\section{Correct Art}
+
+It's true that you can squint and view non-semantics-preserving changes as equivalence-preserving changes,
+but you need to pick the right equivalence, then instantiate the algorithm to that equivalence.
+You want this equivalence and the transformation you choose for eliminators and consructors to be both correct and useful.
+Making it useful is an art, but we can at least make sure your art is correct.
+
+We define correctness criteria for the transformation: needs to preserve equality up to univalent transport, and also needs to
+preserve definitional equalities.
+We then define a set of transformation rules that are generic across equivalences so long as the correctness criteria hold.
+We prove this.
+
+Next, for the four classes of equivalences we support (maybe more if we have time), we define the constructor, eliminator, and identity rules.
+We prove that each of these satisfies the correctness criteria.
+Our implementation also (or alternatively, depending on how much time we have) generates these proofs on an ad-hoc basis because
+the general proof isn't possible within Coq.
+
+Note about decidability of matching: when all of this is correct, what this means is that you \textit{can} always
+run one of the transformation rules. But that doesn't mean you \textit{should}. Depends what the user wants,
+and in some cases, would not terminate (refinement types, unpacking indexed types). Implementation section will
+discuss how we actually decide which ones to run so user doesn't need to apply transport by hand over and over again,
+and discussion section describes some cool ideas for doing this nicely with type-based search in the future.
+
+
+

@@ -1,2 +1,30 @@
 \section{Introduction}
 
+\begin{enumerate}
+  \item Proofs are great until you need to change them
+  \item Transport super promising for this, but some problems:
+  \begin{enumerate}
+    \item For transport to be a function in your TT, need univalence
+    \item Refers to old types and terms, so can't use for refactoring & repair
+    \item Terms get super slow over time
+  \end{enumerate}
+  \item We present a framework for transport across equivalences in non-univalent type theories using a proof term transformation
+  \item For set of equivalences, you just define constructor transformations, eliminator transformations, and identity rules (to preserve definitional equalities)
+  \item We have correctness criteria for those, so you can prove the actually satisfy them
+  \item Then instantiates generic algorithm
+  \item Define and prove with four classes of equivalences:
+  \begin{enumerate}
+    \item Algebraic ornaments from DEVOID
+    \item Extension to algebraic ornaments that lets you get back nice proof terms
+    \item Swap and rename constructors
+    \item Go between records and tuples
+  \end{emumerate}
+  \item We extend the tool DEVOID with the last three, plus tactic decompiler for repair
+  \item On a set of case studies we show how we can use this for a bunch of things:
+  \begin{enumerate}
+    \item Reuse (vector lib)
+    \item Refactoring (Galois)
+    \item Repair (REPLICA benchmark)
+  \end{enumerate}
+  \item Contributions
+\end{enumerate}
