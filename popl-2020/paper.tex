@@ -53,6 +53,33 @@
 \usepackage{subcaption} %% For complex figures with subfigures/subcaptions
                         %% http://ctan.org/pkg/subcaption
 
+\usepackage{enumerate} % for lists
+\usepackage{listings} % for code
+\usepackage{xspace} % so we don't need to figure out spacing after \toolname every time
+\usepackage{mathpartir} % for inference rules
+\usepackage{scalerel} % to render definitional equality
+\usepackage{bbm} % to render N for the natural numbers
+\usepackage{syntax} % for code highlighting
+\usepackage{xcolor} % for code highlighting
+\usepackage{multirow} % for tables
+
+% Nice rendering of Coq code
+\lstdefinelanguage{coq}{
+    keywords={Theorem, Proof, Record, Lemma, Definition, Abort, Qed, forall, Inductive, Type, Prop, Set, fun, fix, forall, Require, Import, Fixpoint, match, end, with, in, as, return, struct, Qed, Defined, let},
+    basicstyle=\linespread{0.95}\small\ttfamily,
+    keywordstyle=\color{blue},
+    commentstyle=\itshape\rmfamily,
+    showstringspaces=false,
+    columns=flexible,
+    breaklines=true,
+    texcl=true,
+    mathescape=true,
+    tabsize=4,
+    stringstyle=\color{brown},
+    escapeinside={(@}{@)},
+}
+
+\lstset{language=coq} % default
 
 \begin{document}
 

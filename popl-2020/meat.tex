@@ -21,5 +21,45 @@ and in some cases, would not terminate (refinement types, unpacking indexed type
 discuss how we actually decide which ones to run so user doesn't need to apply transport by hand over and over again,
 and discussion section describes some cool ideas for doing this nicely with type-based search in the future.
 
+\subsection{Correctness Criteria}
+
+I suspect the eliminator transformations are correct when:
+
+\begin{enumerate}
+\item they preserve the univalent relation
+\item they preserve definitional equalities
+\end{enumerate}
+
+Nicolas proved the first of these a while ago
+for the equivalence in the DEVOID ITP paper.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
+The statement is that the old and new eliminator variants are related along the univalent parametric relation.
+Here are some examples.
+We (hopefully) extend DEVOID to generate this proof automatically for each pair of types.
+We (maybe) prove the more general versions below. 
+We (hopefully) show that the transformation rules actually are correct when these two criteria hold.
+
+For the second one we need not just an eliminator rule but also an identity rule.
+DEVOID assumed primitive eliminators which let them get away without thinking of this,
+but then had this weirdly ad-hoc ``repacking'' thing in their implementation.
+It turns out this is just a more general identity rule, which basically says what
+the identity function should lift to so that the transformation preserves definitional equalities.
+Actually deciding when to run this rule is one of the biggest challenges in practice,
+so we'll talk about that more in the implementation section.
+
+\subsection{Four Transformations}
+
+Here are the eliminator and identity rules for our four implemented transformations.
+
+\subsection{Transformation Rules}
+
+Here are the general rules.
+
+\subsection{Correctness}
+
+Here's the proof that as long as the correctness criteria hold, it's OK to take any of those steps.
+Same definition as DEVOID paper for correctness but note we just consider one step at a time since
+it's very undecidable to decide which ones to run. The implementation section talks about how we
+decide this in practice.
+
 
 
