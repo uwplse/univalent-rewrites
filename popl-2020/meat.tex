@@ -63,15 +63,18 @@ depend on this since they are different by type.
 
 Given what it means to be correct, I'm not sure if small-step will make more sense here.
 Also some of the rules are preliminary and will need tweaking.
+The definition of the constructor rules will just apply and normalize the equivalence in one direction.
 Especially coherence and its relation to identity and how to capture things like \lstinline{eq_refl n}.
 Right now I omit coherence because in theory it should be handled by the eliminator rule.
-I'm also removing internalize because I think we should handle that inside of the constructor lifting, or it should be handled
-by the eliminator rule, the identity rule, and the application rule.
 But really need to consider cases like \lstinline{eq_refl n}.
 May have something to do with parameterized inductive types.
+I'm also removing internalize and retraction because I think they should be handled
+by the eliminator rule, the identity rule, and the application rule.
+For eliminators, I think the definition of the lifted dependent eliminator itself should handle the initial transformation
+of the motive and the cases, but we might need to weak when we reverse the direction.
 In equivalence rule, we lift $A$ to $B$, but implicitly this is lifting the functions that take parameters and return $A$ or $B$,
 and the arguments are lifted by the application rule.
-Also this is only one direction but just flip for the other direction and make retraction into section.
+Also this is only one direction but just flip for the other direction.
 
 \begin{figure}
 \begin{mathpar}
@@ -80,21 +83,16 @@ Also this is only one direction but just flip for the other direction and make r
 \hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Uparrow$ $t'$}\\
 
 \inferrule[Lift-Elim]
-  { \Gamma \vdash p_{a} \Uparrow_E p' \\ \Gamma \vdash \vec{f_{a}}\phantom{l} \Uparrow_E \vec{f}'  \\\\
-    \Gamma \vdash p' \Uparrow p_b \\ \Gamma \vdash \vec{f}' \Uparrow \vec{f_b} \\ \Gamma \vdash a \Uparrow b }
+  { \Gamma \vdash p_{a} \Uparrow p_b \\ \Gamma \vdash \vec{f_{a}}\phantom{l} \Uparrow \vec{f_{b}} }
   { \Gamma \vdash \mathrm{DepElim}(a,\ p_{a}) \vec{f_{a}} \Uparrow \mathrm{DepElim}(b,\ p_b) \vec{f_{b}} }
+
+\inferrule[Lift-Constr]
+{ A \Uparrow B \\ \vec{t}_{a} \Uparrow \vec{t}_{b} } %\\
+{ \Gamma \vdash \mathrm{DepConstr}(j,\ A)\ \vec{t}_{a} \Uparrow \mathrm{DepConstr}(j,\ B)\ \vec{t}_{b}  }
 
 \inferrule[Lift-Identity]
   { \Gamma \vdash a \Uparrow b }
   { \Gamma \vdash \mathrm{IdEta}(a) \Uparrow \mathrm{IdEta}(b) }
-
-\inferrule[Lift-Constr]
-{ (\uparrow (\mathrm{DepConstr}(j,\ A)\ \vec{t}_{a}))_{\beta\delta\iota} \Uparrow t' \\\\ \Gamma \vdash t' \Uparrow t'' } %\\
-{ \Gamma \vdash \mathrm{DepConstr}(j,\ A)\ \vec{t}_{a} \Uparrow t'' }
-
-\inferrule[Retraction]
-{ \\ }
-{ \Gamma \vdash\ \downarrow\ \Uparrow \lambda (b : B) . \mathrm{IdEta}(b) }
 
 \inferrule[Equivalence]
   { \\ }
