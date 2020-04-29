@@ -39,7 +39,7 @@ We (maybe) prove the more general versions below.
 We (hopefully) show that the transformation rules actually are correct when these two criteria hold.
 
 For the second one we need not just an eliminator rule but also an identity rule.
-DEVOID assumed primitive eliminators which let them get away without thinking of this,
+DEVOID assumed primitive projections which let them get away without thinking of this,
 but then had this weirdly ad-hoc ``repacking'' thing in their implementation.
 It turns out this is just a more general identity rule, which basically says what
 the identity function should lift to so that the transformation preserves definitional equalities.
@@ -52,7 +52,85 @@ Here are the eliminator and identity rules for our four implemented transformati
 
 \subsection{Transformation Rules}
 
-Here are the general rules.
+Here are the general rules, adapted from DEVOID.
+I'll explain later and add back the common definition and define the custom eliminators ``DepElim'' and so on.
+
+Note that now we define the types $A$ and $B$ to take all of the same arguments, so for example for the algebraic
+example with \lstinline{list} and \lstinline{vector}, $A$ is \lstinline{fun (T : Type) => list T} while $B$
+is \lstinline{fun (T : Type) => sigT (fun (n : nat) => vector T n)}. When we lift terms $a$ and $b$ of that type
+we implicitly lift their types $A$ and $B$ and so their parameters. The eliminator, identity, and constructor rules
+depend on this since they are different by type.
+
+Given what it means to be correct, I'm not sure if small-step will make more sense here.
+Also some of the rules are preliminary and will need tweaking.
+Especially coherence and its relation to identity and how to capture things like \lstinline{eq_refl n}.
+Right now I omit coherence because in theory it should be handled by the eliminator rule.
+I'm also removing internalize because I think we should handle that inside of the constructor lifting, or it should be handled
+by the eliminator rule, the identity rule, and the application rule.
+But really need to consider cases like \lstinline{eq_refl n}.
+May have something to do with parameterized inductive types.
+In equivalence rule, we lift $A$ to $B$, but implicitly this is lifting the functions that take parameters and return $A$ or $B$,
+and the arguments are lifted by the application rule.
+Also this is only one direction but just flip for the other direction and make retraction into section.
+
+\begin{figure}
+\begin{mathpar}
+\mprset{flushleft}
+\small
+\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Uparrow$ $t'$}\\
+
+\inferrule[Lift-Elim]
+  { \Gamma \vdash p_{a} \Uparrow_E p' \\ \Gamma \vdash \vec{f_{a}}\phantom{l} \Uparrow_E \vec{f}'  \\\\
+    \Gamma \vdash p' \Uparrow p_b \\ \Gamma \vdash \vec{f}' \Uparrow \vec{f_b} \\ \Gamma \vdash a \Uparrow b }
+  { \Gamma \vdash \mathrm{DepElim}(a,\ p_{a}) \vec{f_{a}} \Uparrow \mathrm{DepElim}(b,\ p_b) \vec{f_{b}} }
+
+\inferrule[Lift-Identity]
+  { \Gamma \vdash a \Uparrow b }
+  { \Gamma \vdash \mathrm{IdEta}(a) \Uparrow \mathrm{IdEta}(b) }
+
+\inferrule[Lift-Constr]
+{ (\uparrow (\mathrm{DepConstr}(j,\ A)\ \vec{t}_{a}))_{\beta\delta\iota} \Uparrow t' \\\\ \Gamma \vdash t' \Uparrow t'' } %\\
+{ \Gamma \vdash \mathrm{DepConstr}(j,\ A)\ \vec{t}_{a} \Uparrow t'' }
+
+\inferrule[Retraction]
+{ \\ }
+{ \Gamma \vdash\ \downarrow\ \Uparrow \lambda (b : B) . \mathrm{IdEta}(b) }
+
+\inferrule[Equivalence]
+  { \\ }
+  { \Gamma \vdash A\ \Uparrow B }
+
+\inferrule[Constr]
+{ \Gamma \vdash T \Uparrow T' \\ \Gamma \vdash \vec{t} \Uparrow \vec{t'} }
+{ \Gamma \vdash \mathrm{Constr}(j,\ T)\ \vec{t} \Uparrow \mathrm{Constr}(j,\ T')\ \vec{t'} }
+
+\inferrule[Ind]
+  { \Gamma \vdash T \Uparrow T' \\ \Gamma \vdash \vec{C} \Uparrow \vec{C'}  }
+  { \Gamma \vdash \mathrm{Ind} (\mathit{Ty} : T) \vec{C} \Uparrow \mathrm{Ind} (\mathit{Ty} : T') \vec{C'} }
+
+\inferrule[Elim]
+  { \Gamma \vdash c \Uparrow c' \\ \Gamma \vdash Q \Uparrow Q' \\ \Gamma \vdash \vec{f} \Uparrow \vec{f'}}
+  { \Gamma \vdash \mathrm{Elim}(c, Q) \vec{f} \Uparrow \mathrm{Elim}(c', Q') \vec{f'}  }
+
+%% Application
+\inferrule[App]
+ { \Gamma \vdash f \Uparrow f' \\ \Gamma \vdash t \Uparrow t'}
+ { \Gamma \vdash f t \Uparrow f' t' }
+
+% Lamda
+\inferrule[Lam]
+  { \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
+  {\Gamma \vdash \lambda (t : T).b \Uparrow \lambda (t : T').b'}
+
+% Product
+\inferrule[Prod]
+  { \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
+  {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t : T').b'}
+\end{mathpar}
+\caption{Generic lifting algorithm.}
+\label{fig:final}
+\end{figure}
+
 
 \subsection{Correctness}
 
