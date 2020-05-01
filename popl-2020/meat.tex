@@ -49,6 +49,7 @@ so we'll talk about that more in the implementation section.
 \subsection{Four Transformations}
 
 Here are the constructor, eliminator, and identity rules for our four implemented transformations.
+I think we can just define the equivalence in terms of these.
 
 \subsubsection{Swap}
 
@@ -61,15 +62,57 @@ DepConstr(j, B) $\vec{t}_{b}$ := Constr(m(j), B) $\vec{t}_{b}$
 DepElim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$} := Elim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$}
 DepElim(b, p$_b$){f$_{b_{1}}$, $\ldots$, f$_{b_{n}}$} := Elim(b, p$_b$){f$_{b_{m(1)}}$, $\ldots$, f$_{b_{m(n)}}$}
 
-IdEta(a) := $\lambda$(a : A).a
-IdEta(b) := $\lambda$(b : B).b
+IdEta(A) := $\lambda$(a : A).a
+IdEta(B) := $\lambda$(b : B).b
 \end{lstlisting}
 
 \subsubsection{Algebraic}
 
+This is the algorithm from the original DEVOID paper stuffed into this framework.
+Note that what $B$ means here is different though (sigma packed already).
+%We need to determine $I$ (from the type of $B$, for now just pretend this is the inductive type inside
+%the sigma type defined by $B$).
+Assume in $A$ and $B$ the new index comes last (so part of search is determining
+$A$ and $B$ from the inductive types supplied).
+
+% TODO investigate below projection thing, and write in when you finish
+%For now assume we have some \lstinline{pack} function to pack into an existential;
+%this is just for convenience.
+%The indexer is just the first projection of this lifted across the eliminator rule, AFAIK---note this isn't exactly $\Pi_{l}$ like we use
+%in the tool, but is really an eliminated $\Pi_{l}$? I will need to check on this, it's the only weird part.
+%Also assume some \lstinline{index_args} function to add the new index to the appropriate arguments---I'll
+%elaborate on this later but it's also something search needs to find and it's determined in terms of the \lstinline{indexer} that search finds.
+%Also now, we no longer assume primitive projections.
+
+\begin{lstlisting}
+DepConstr(j, A) $\vec{t}_{a}$ := Constr(j, A) $\vec{t}_{a}$
+DepConstr(j, B) $\vec{t}_{b}$ := (* TODO pack into existential, add indices to arguments *)
+
+DepElim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$} := Elim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$}
+DepElim(b, p$_b$){f$_{b_{1}}$, $\ldots$, f$_{b_{n}}$} := (* TODO eliminate projections, add indices to arguments *)
+
+IdEta(A) := $\lambda$(a : A).a
+IdEta(B) := $\lambda$(b : B).$\exists$ ($\pi_l$ b) ($\pi_r$ b)
+\end{lstlisting}
+
 \subsubsection{Unpack sigma}
 
+This one is kind of weird but it gets us user-friendly types. I'll explain later.
+
+\begin{lstlisting}
+DepConstr(j, A) $\vec{t}_{a}$ := (* TODO pack into existential, deal with equality *)
+DepConstr(j, B) $\vec{t}_{b}$ := Constr(j, B) $\vec{t}_{b}$
+
+DepElim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$} := (* TODO *)
+DepElim(b, p$_b$){f$_{b_{1}}$, $\ldots$, f$_{b_{n}}$} := Elim(b, p$_b$){f$_{b_{1}}$, $\ldots$, f$_{b_{n}}$}
+
+IdEta(A) := $\lambda$(a : A).$\exists$ ($\exists$ ($\pi_l$ ($\pi_l$ a)) ($\pi_r$ ($\pi_l$ a))) ($\pi_r$ a)
+IdEta(B) := $\lambda$(b : B).b
+\end{lstlisting}
+
 \subsubsection{Records and tuples}
+
+This one should be easier. (TODO)
 
 \subsection{Transformation Rules}
 
@@ -108,12 +151,12 @@ Also this is only one direction but just flip for the other direction.
   { \Gamma \vdash \mathrm{DepElim}(a,\ p_{a}) \vec{f_{a}} \Uparrow \mathrm{DepElim}(b,\ p_b) \vec{f_{b}} }
 
 \inferrule[Lift-Constr]
-{ A \Uparrow B \\ \vec{t}_{a} \Uparrow \vec{t}_{b} } %\\
+{ \vec{t}_{a} \Uparrow \vec{t}_{b} } %\\ TODO must we explicitly lift A to B if we want to handle parameters/indices?
 { \Gamma \vdash \mathrm{DepConstr}(j,\ A)\ \vec{t}_{a} \Uparrow \mathrm{DepConstr}(j,\ B)\ \vec{t}_{b}  }
 
 \inferrule[Lift-Identity]
-  { \Gamma \vdash a \Uparrow b }
-  { \Gamma \vdash \mathrm{IdEta}(a) \Uparrow \mathrm{IdEta}(b) }
+  { \\ }
+  { \Gamma \vdash \mathrm{IdEta}(A) \Uparrow \mathrm{IdEta}(B) }
 
 \inferrule[Equivalence]
   { \\ }
