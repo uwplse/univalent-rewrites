@@ -48,7 +48,28 @@ so we'll talk about that more in the implementation section.
 
 \subsection{Four Transformations}
 
-Here are the eliminator and identity rules for our four implemented transformations.
+Here are the constructor, eliminator, and identity rules for our four implemented transformations.
+
+\subsubsection{Swap}
+
+This is perhaps the easiest one. All we need is some swap map $m$. Once we have that, we have everything we need:
+
+\begin{lstlisting}
+DepConstr(j, A) $\vec{t}_{a}$ := Constr(j, A) $\vec{t}_{a}$
+DepConstr(j, B) $\vec{t}_{b}$ := Constr(m(j), B) $\vec{t}_{b}$
+
+DepElim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$} := Elim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$}
+DepElim(b, p$_b$){f$_{b_{1}}$, $\ldots$, f$_{b_{n}}$} := Elim(b, p$_b$){f$_{b_{m(1)}}$, $\ldots$, f$_{b_{m(n)}}$}
+
+IdEta(a) := $\lambda$(a : A).a
+IdEta(b) := $\lambda$(b : B).b
+\end{lstlisting}
+
+\subsubsection{Algebraic}
+
+\subsubsection{Unpack sigma}
+
+\subsubsection{Records and tuples}
 
 \subsection{Transformation Rules}
 
