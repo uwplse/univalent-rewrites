@@ -23,12 +23,14 @@ and discussion section describes some cool ideas for doing this nicely with type
 
 \subsection{Correctness Criteria}
 
-I suspect the eliminator transformations are correct when:
+First we need that \lstinline{DepElim} over $A$ into \lstinline{DepConstr} over $B$ and \lstinline{DepElim} over $B$ into
+\lstinline{DepConstr} over $A$ form an equivalence between $A$ and $B$. When that's true, I think it should hold that \lstinline{DepElim} over $A$
+and \lstinline{DepElim} over $B$ are in univalent relation with one another. If not, then that's an extra condition.
+Finally, we need the eliminator transformation to preserve definitional equalities (need more details here).
 
-\begin{enumerate}
-\item they preserve the univalent relation
-\item they preserve definitional equalities
-\end{enumerate}
+% TODO so we can probably just frame search in terms of DepConstr and DepElim and then generate proofs about this on an ad-hoc basis
+% and get away with not including the specific details of our instantiations. We can give examples instead, give intuition, and say we generate
+% the proofs in Coq
 
 Nicolas proved the first of these a while ago
 for the equivalence in the DEVOID ITP paper.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
@@ -48,7 +50,9 @@ so we'll talk about that more in the implementation section.
 
 \subsection{Four Transformations}
 
-Here are the constructor, eliminator, and identity rules for our four implemented transformations.
+% TODO oracles, naming, consider just doing code and generating proofs in Coq
+
+Here are the constructor, eliminator, and identity rules for our four implemented transformations (very informal WIP).
 The equivalence between $A$ and $B$ can be constructed in terms of these.
 This shows just one direction---the opposite is similar.
 
@@ -77,7 +81,8 @@ IdEta(B) := $\lambda$ ($\vec{t}$ : $\vec{T}$) (b : B $\vec{t}$).b
 
 \subsubsection{Algebraic}
 
-It is straightforward to fit the search algorithm from DEVOID into this framework.
+It is straightforward to fit the search algorithm from DEVOID into this framework, and in fact
+we can loosen the restriction that the language has primitive projections.
 Let $A$ be $A$ from DEVOID, let $B_{ind}$ be $B$ from DEVOID, let $I_B$ be $I_B$ from DEVOID,
 and let \lstinline{index} be \lstinline{index} from DEVOID.
 Let $B$ wrap $B_{ind}$ packed into a sigma type:
@@ -85,19 +90,49 @@ Let $B$ wrap $B_{ind}$ packed into a sigma type:
 \begin{lstlisting}
 B := $\lambda$ ($\vec{t}$ : $\vec{T}$) . ($\Sigma$ (i : I$_B$ $\vec{t}$) . B$_{ind}$ (index i $\vec{t}$))
 \end{lstlisting}
-%Using the functions \lstinline{promote} (denoted $\uparrow$) and \lstinline{forget} (denoted $\downarrow$) determined by the search
-%algorithm from DEVOID, 
-%and defining $\vec{\downarrow}$ to forget all arguments of type $B$ to an argument of type $A$ (fuzzy for now), and
-%defining $\vec{\mathrm{retract}}$ to retract all subterms $\uparrow (\downarrow s))$ to $s$ (fuzzy for now), we have:
-% $\lambda$ ($\vec{t}$ : $\vec{T_{A_j}}$[B / A]) . $\vec{\mathrm{retract}}$ (($\uparrow$ (Constr(j, A) ($\vec{\downarrow}$ $\vec{t}$))$_{\beta\delta\iota}$)
-Letting $\vec{T_{A_j}}$ be the types of the arguments to C$_{A_{j}}$, we have:
+Let $\vec{T_{B_j}}$ be the arguments of constructor type $C_{B_j}$ (type of constructor of $B_{\mathrm{ind}}$).
+Define \lstinline{DepConstr(j, B)} recursively using the following derivation (based on and same fall-through convention as the DEVOID paper for now,
+and I'd prefer to move this away from a derivation but not sure how to do so and maintain formality): % TODO check
+
+\begin{mathpar}
+\mprset{flushleft}
+\small
+\hfill\fbox{$\Gamma$ $\vdash$ $(T_A, T_B)$ $\Downarrow_{C}$ $t$}\\
+
+\inferrule[Dep-Constr-Conclusion]
+  { \Gamma \vdash \vec{t_{B_j}} : \vec{T_{B_j}} \\ \Gamma \vdash Constr(j, B)\ \vec{t_{B_j}} : B_{\mathrm{ind}} \vec{i_B}  }
+  { \Gamma \vdash (A\ \vec{i_A},\ B_{\mathrm{ind}}\ \vec{i_B}) \Downarrow_{p_{c}} \exists\ (\vec{i_B}[\mathrm{off}\ A\ B]) (Constr(j, B)\ \vec{t_{B_j}}) }
+
+\inferrule[Dep-Constr-Index] % new hypothesis for index
+  { \mathrm{new}\ n_B\ b_B \\ \Gamma,\ n_B : t_B \vdash (\Pi (n_A : t_A) . b_A,\ b_B) \Downarrow_{i_{c}} t }
+  {  \Gamma \vdash (\Pi (n_A : t_A) . b_A,\ \Pi (n_B : t_B) . b_B) \Downarrow_{C} t}
+
+\inferrule[Dep-Constr-IH] % inductive hypothesis
+  { \Gamma,\ n_B : B\ \vec{i_B} \vdash (b_A [n_B / n_A], b_B [\pi_l\ n_B / \vec{i_B}[\mathrm{off}\ A\ B]]) \Downarrow_{C} t }
+  { \Gamma \vdash (\Pi (n_A : A\ \vec{i_A}) . b_A, \Pi (n_B : B\ \vec{i_B}) \Downarrow_{C} \lambda (n_B : B\ \vec{i_B}) . t }
+
+\inferrule[Dep-Constr-Prod] % otherwise, unchanged (when we get rid of the gross fall-through thing, needs not new, and needs to check t_A and t_B not IHs)
+  { \Gamma,\ n_B : t_B \vdash (b_A [n_B / n_A], b_B) \Downarrow_{C} t }
+  { \Gamma \vdash (\Pi (n_A : t_A) . b_A, \Pi (n_B, t_B) . b_B) \Downarrow_{C} \lambda (n_B : t_B) . t }\\
+
+\inferrule[Dep-Constr]
+{ \Gamma \vdash Constr(j, A) : C_{A_j} \\ \Gamma \vdash (C_{A_j}, C_{B_j}) \Downarrow_{C} t }
+{ \Gamma \vdash (Constr(j, A), Constr(j, B_{\mathrm{ind}}) \Downarrow_{C} t }
+\end{mathpar}
+and \lstinline{DepElim(b, p)} similarly:
+
+\begin{mathpar}
+TODO
+\end{mathpar}
+
+Then:
 
 \begin{lstlisting}
 DepConstr(j, A) : C$_{A_{j}}$ := Constr(j, A)
-DepConstr(j, B) : C$_{A_{j}}$[B / A] := $\lambda$ ($\vec{t}$ : $\vec{T_{A_j}}$[B / A]) . $\exists$ ... ...
+DepConstr(j, B) : C$_{A_{j}}$[B / A] := DepConstr(j, B)
 
 DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := Elim(a, p){f$_{1}$, $\ldots$, f$_{n}$}
-DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := Elim($\pi_r$ b, ($\lambda$ p ...){...}
+DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := DepElim(b, p)
 
 IdEta(A) := $\lambda$(a : A).a
 IdEta(B) := $\lambda$(b : B).$\exists$ ($\pi_l$ b) ($\pi_r$ b)
@@ -117,11 +152,11 @@ IdEta(B) := $\lambda$(b : B).$\exists$ ($\pi_l$ b) ($\pi_r$ b)
 This one is kind of weird but it gets us user-friendly types. I'll explain later.
 
 \begin{lstlisting}
-DepConstr(j, A) $\vec{t}_{a}$ := (* TODO pack into existential, deal with equality *)
-DepConstr(j, B) $\vec{t}_{b}$ := Constr(j, B) $\vec{t}_{b}$
+DepConstr(j, A) := (* TODO pack into existential, deal with equality *)
+DepConstr(j, B) : C$_{B_{j}}$ := Constr(j, B)
 
-DepElim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$} := (* TODO *)
-DepElim(b, p$_b$){f$_{b_{1}}$, $\ldots$, f$_{b_{n}}$} := Elim(b, p$_b$){f$_{b_{1}}$, $\ldots$, f$_{b_{n}}$}
+DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := (* TODO *)
+DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := Elim(b, p){f$_{1}$, $\ldots$, f$_{n}$}
 
 IdEta(A) := $\lambda$(a : A).$\exists$ ($\exists$ ($\pi_l$ ($\pi_l$ a)) ($\pi_r$ ($\pi_l$ a))) ($\pi_r$ a)
 IdEta(B) := $\lambda$(b : B).b
@@ -129,7 +164,20 @@ IdEta(B) := $\lambda$(b : B).b
 
 \subsubsection{Records and tuples}
 
-This one should be easier. (TODO)
+This one should be easier. We'll play a similar trick with $B$ and $B_{ind}$ like we do for algebraic,
+and give things similar names.
+Then:
+
+\begin{lstlisting}
+DepConstr(j, A) : C$_{A_{j}}$ := Constr(j, A)
+DepConstr(j, B) : C$_{A_{j}}$[B / A] := $\lambda$ ($\vec{t_{A_j}}$ : $\vec{T_{A_j}}$) . (* TODO recursively pack into pair *)
+
+DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := Elim(a, p){f$_{1}$, $\ldots$, f$_{n}$}
+DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := (* TODO recursively eliminate product *)
+
+IdEta(A) := $\lambda$(a : A).a
+IdEta(B) := (* TODO recursive eta *)
+\end{lstlisting}
 
 \subsection{Transformation Rules}
 
