@@ -49,31 +49,59 @@ so we'll talk about that more in the implementation section.
 \subsection{Four Transformations}
 
 Here are the constructor, eliminator, and identity rules for our four implemented transformations.
-I think we can just define the equivalence in terms of these.
+The equivalence between $A$ and $B$ can be constructed in terms of these.
+This shows just one direction---the opposite is similar.
 
 \subsubsection{Swap}
 
-This is perhaps the easiest one. All we need is some swap map $m$. Once we have that, we have everything we need:
+Let $A$ and $B$ be inductive types:
 
 \begin{lstlisting}
-DepConstr(j, A) $\vec{t}_{a}$ := Constr(j, A) $\vec{t}_{a}$
-DepConstr(j, B) $\vec{t}_{b}$ := Constr(m(j), B) $\vec{t}_{b}$
+$A$ := $\mathrm{Ind} (\mathit{Ty}_A : \Pi (\vec{i_A} : \vec{\mathrm{X}_A}) . \mathrm{s}_A)\{\mathrm{C}_{A_1}, \ldots, \mathrm{C}_{A_n}\}$
+$B$ := $\mathrm{Ind} (\mathit{Ty}_B : \Pi (\vec{i_B} : \vec{\mathrm{X}_B}) . \mathrm{s}_B)\{\mathrm{C}_{B_1}, \ldots, \mathrm{C}_{B_n}\}$
+\end{lstlisting}
+Assume there is some invertible swap map $m$ such that for any index $j$,
+\lstinline{C}$_{B_{m(j)}}$ is exactly \lstinline{C}$_{A_j}[B / A]$.
+Then:
 
-DepElim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$} := Elim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$}
-DepElim(b, p$_b$){f$_{b_{1}}$, $\ldots$, f$_{b_{n}}$} := Elim(b, p$_b$){f$_{b_{m(1)}}$, $\ldots$, f$_{b_{m(n)}}$}
+\begin{lstlisting}
+DepConstr(j, A) : C$_{A_{j}}$ := Constr(j, A) 
+DepConstr(j, B) : C$_{A_{j}}$[B / A] := Constr(m(j), B)
 
-IdEta(A) := $\lambda$(a : A).a
-IdEta(B) := $\lambda$(b : B).b
+DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := Elim(a, p){f$_{1}$, $\ldots$, f$_{n}$}
+DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := Elim(b, p){f$_{m(1)}$, $\ldots$, f$_{m(n)}$}
+
+IdEta(A) := $\lambda$ ($\vec{t}$ : $\vec{T}$) (a : A $\vec{t}$).a
+IdEta(B) := $\lambda$ ($\vec{t}$ : $\vec{T}$) (b : B $\vec{t}$).b
 \end{lstlisting}
 
 \subsubsection{Algebraic}
 
-This is the algorithm from the original DEVOID paper stuffed into this framework.
-Note that what $B$ means here is different though (sigma packed already).
-%We need to determine $I$ (from the type of $B$, for now just pretend this is the inductive type inside
-%the sigma type defined by $B$).
-Assume in $A$ and $B$ the new index comes last (so part of search is determining
-$A$ and $B$ from the inductive types supplied).
+It is straightforward to fit the search algorithm from DEVOID into this framework.
+Let $A$ be $A$ from DEVOID, let $B_{ind}$ be $B$ from DEVOID, let $I_B$ be $I_B$ from DEVOID,
+and let \lstinline{index} be \lstinline{index} from DEVOID.
+Let $B$ wrap $B_{ind}$ packed into a sigma type:
+
+\begin{lstlisting}
+B := $\lambda$ ($\vec{t}$ : $\vec{T}$) . ($\Sigma$ (i : I$_B$ $\vec{t}$) . B$_{ind}$ (index i $\vec{t}$))
+\end{lstlisting}
+%Using the functions \lstinline{promote} (denoted $\uparrow$) and \lstinline{forget} (denoted $\downarrow$) determined by the search
+%algorithm from DEVOID, 
+%and defining $\vec{\downarrow}$ to forget all arguments of type $B$ to an argument of type $A$ (fuzzy for now), and
+%defining $\vec{\mathrm{retract}}$ to retract all subterms $\uparrow (\downarrow s))$ to $s$ (fuzzy for now), we have:
+% $\lambda$ ($\vec{t}$ : $\vec{T_{A_j}}$[B / A]) . $\vec{\mathrm{retract}}$ (($\uparrow$ (Constr(j, A) ($\vec{\downarrow}$ $\vec{t}$))$_{\beta\delta\iota}$)
+Letting $\vec{T_{A_j}}$ be the types of the arguments to C$_{A_{j}}$, we have:
+
+\begin{lstlisting}
+DepConstr(j, A) : C$_{A_{j}}$ := Constr(j, A)
+DepConstr(j, B) : C$_{A_{j}}$[B / A] := $\lambda$ ($\vec{t}$ : $\vec{T_{A_j}}$[B / A]) . $\exists$ ... ...
+
+DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := Elim(a, p){f$_{1}$, $\ldots$, f$_{n}$}
+DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := Elim($\pi_r$ b, ($\lambda$ p ...){...}
+
+IdEta(A) := $\lambda$(a : A).a
+IdEta(B) := $\lambda$(b : B).$\exists$ ($\pi_l$ b) ($\pi_r$ b)
+\end{lstlisting}
 
 % TODO investigate below projection thing, and write in when you finish
 %For now assume we have some \lstinline{pack} function to pack into an existential;
@@ -83,17 +111,6 @@ $A$ and $B$ from the inductive types supplied).
 %Also assume some \lstinline{index_args} function to add the new index to the appropriate arguments---I'll
 %elaborate on this later but it's also something search needs to find and it's determined in terms of the \lstinline{indexer} that search finds.
 %Also now, we no longer assume primitive projections.
-
-\begin{lstlisting}
-DepConstr(j, A) $\vec{t}_{a}$ := Constr(j, A) $\vec{t}_{a}$
-DepConstr(j, B) $\vec{t}_{b}$ := (* TODO pack into existential, add indices to arguments *)
-
-DepElim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$} := Elim(a, p$_a$){f$_{a_{1}}$, $\ldots$, f$_{a_{n}}$}
-DepElim(b, p$_b$){f$_{b_{1}}$, $\ldots$, f$_{b_{n}}$} := (* TODO eliminate projections, add indices to arguments *)
-
-IdEta(A) := $\lambda$(a : A).a
-IdEta(B) := $\lambda$(b : B).$\exists$ ($\pi_l$ b) ($\pi_r$ b)
-\end{lstlisting}
 
 \subsubsection{Unpack sigma}
 
