@@ -5,6 +5,11 @@ but you need to pick the right equivalence, then instantiate the algorithm to th
 You want this equivalence and the transformation you choose for eliminators and consructors to be both correct and useful.
 Making it useful is an art, but we can at least make sure your art is correct.
 
+This is basically the ``common interface'' the journal paper of Univalent Parametricity mentions, except they say it
+doesn't scale to automation. In fact it can if you automate entire classes of relations between types rather than
+force the user to do it on an ad-hoc basis or try to write a tool that solves the general case. So that is what
+we are doing here.
+
 We define correctness criteria for the transformation: needs to preserve equality up to univalent transport, and also needs to
 preserve definitional equalities.
 We then define a set of transformation rules that are generic across equivalences so long as the correctness criteria hold.
@@ -26,7 +31,41 @@ and discussion section describes some cool ideas for doing this nicely with type
 First we need that \lstinline{DepElim} over $A$ into \lstinline{DepConstr} over $B$ and \lstinline{DepElim} over $B$ into
 \lstinline{DepConstr} over $A$ form an equivalence between $A$ and $B$. When that's true, I think it should hold that \lstinline{DepElim} over $A$
 and \lstinline{DepElim} over $B$ are in univalent relation with one another. If not, then that's an extra condition.
-Finally, we need the eliminator transformation to preserve definitional equalities (need more details here).
+Finally, we need the transformation to preserve definitional equalities. Not sure about the general case, but for vectors and lists,
+we need:
+
+\begin{lstlisting}
+  $\forall$ A l (f : $\forall$ (l : sigT (Vector.t A)), l = l),
+    vect_dep_elim A (fun l => l = l) (f nil) (fun t s _ => f (cons t s)) l = f (id_eta l).
+\end{lstlisting}
+and:
+
+\begin{lstlisting}
+Definition elim_id (A : Type) (s : {H : nat & t A H}) :=
+  vect_dep_elim
+    A
+    (fun _ => {H : nat & t A H})
+    nil
+    (fun (h : A) _ IH =>
+      cons h IH)
+    s.
+
+ $\forall$ A h s,
+    exists (H : cons h (elim_id A s) = elim_id A (cons h s)),
+      H = eq_refl.
+\end{lstlisting}
+More generally (TODO):
+
+\begin{enumerate}
+\item Something relating the eliminator and the eta-expanded identity function
+\item Something relating the eliminator and the constructors to reflexivity
+\end{enumerate}
+
+Really the point of these conditions is that from them, with some restrictions on input terms, we can get
+that lifting terms gives us the same type that we'd get from lifting the type. But there are still
+some restrictions (see the few that fail).
+
+% TODO how does this get us something like primitive projections? Just makes IdEta definitionally equal to regular Id?
 
 % TODO so we can probably just frame search in terms of DepConstr and DepElim and then generate proofs about this on an ad-hoc basis
 % and get away with not including the specific details of our instantiations. We can give examples instead, give intuition, and say we generate
@@ -63,7 +102,7 @@ Let $A$ and $B$ be inductive types:
 \begin{lstlisting}
 $A$ := $\mathrm{Ind} (\mathit{Ty}_A : \Pi (\vec{i_A} : \vec{\mathrm{X}_A}) . \mathrm{s}_A)\{\mathrm{C}_{A_1}, \ldots, \mathrm{C}_{A_n}\}$
 $B$ := $\mathrm{Ind} (\mathit{Ty}_B : \Pi (\vec{i_B} : \vec{\mathrm{X}_B}) . \mathrm{s}_B)\{\mathrm{C}_{B_1}, \ldots, \mathrm{C}_{B_n}\}$
-\end{lstlisting}
+\end{lstlisting}		
 Assume there is some invertible swap map $m$ such that for any index $j$,
 \lstinline{C}$_{B_{m(j)}}$ is exactly \lstinline{C}$_{A_j}[B / A]$.
 Then:
