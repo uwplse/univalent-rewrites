@@ -54,16 +54,29 @@ Definition elim_id (A : Type) (s : {H : nat & t A H}) :=
     exists (H : cons h (elim_id A s) = elim_id A (cons h s)),
       H = eq_refl.
 \end{lstlisting}
-More generally (TODO):
+More generally, for each constructor index $j$, define:
+
+\begin{lstlisting}
+  eqc (j, B) (f : $\forall$ b : B, b = b) :=
+    fun ... (* TODO get the hypos from the type of the eliminator *) =>
+      f (DepConstr (j, B)) (* TODO args *)
+
+  elim_id := (* TODO *)
+\end{lstlisting}
+Then we need:
 
 \begin{enumerate}
-\item Something relating the eliminator and the eta-expanded identity function
-\item Something relating the eliminator and the constructors to reflexivity
+\item $\forall b f, \mathrm{DepElim}(b,\ p_{b}) \{\mathrm{eqc} (1, B) f, \ldots, \mathrm{eqc} (n, B) f\} = f (\mathrm{IdEta}(A) a) $
+\item Something relating the constructors and \lstinline{elim_id} to reflexivity
 \end{enumerate}
+and similarly for $A$.
 
 Really the point of these conditions is that from them, with some restrictions on input terms, we can get
 that lifting terms gives us the same type that we'd get from lifting the type. But there are still
 some restrictions (see the few that fail).
+
+It's probably not always possible to define these three things for every equivalence.
+Could generalize by rewriting. But this lets us avoid the rewriting problem from Nicolas' paper.
 
 % TODO how does this get us something like primitive projections? Just makes IdEta definitionally equal to regular Id?
 
