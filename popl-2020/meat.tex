@@ -268,12 +268,16 @@ Also this is only one direction but just flip for the other direction.
   { \Gamma \vdash \mathrm{DepElim}(a,\ p_{a}) \vec{f_{a}} \Uparrow \mathrm{DepElim}(b,\ p_b) \vec{f_{b}} }
 
 \inferrule[Lift-Constr]
-{ \vec{t}_{a} \Uparrow \vec{t}_{b} } %\\ TODO must we explicitly lift A to B if we want to handle parameters/indices?
+{ \Gamma \vdash \vec{t}_{a} \Uparrow \vec{t}_{b} } %\\ TODO must we explicitly lift A to B if we want to handle parameters/indices?
 { \Gamma \vdash \mathrm{DepConstr}(j,\ A)\ \vec{t}_{a} \Uparrow \mathrm{DepConstr}(j,\ B)\ \vec{t}_{b}  }
 
 \inferrule[Lift-Identity]
   { \\ }
   { \Gamma \vdash \mathrm{IdEta}(A) \Uparrow \mathrm{IdEta}(B) }
+
+\inferrule[Lift-Eq]
+  { \Gamma \vdash c_A \Uparrow c_B \\ \Gamma \vdash q_A \Uparrow q_B \\ \Gamma \vdash e_A \Uparrow e_B }
+  { \Gamma \vdash \mathrm{RewEta}(j, A, q_A, t_A) \Uparrow \mathrm{RewEta}(j, B, q_B, t_B) }
 
 \inferrule[Equivalence]
   { \\ }
@@ -287,7 +291,7 @@ Also this is only one direction but just flip for the other direction.
   { \Gamma \vdash T \Uparrow T' \\ \Gamma \vdash \vec{C} \Uparrow \vec{C'}  }
   { \Gamma \vdash \mathrm{Ind} (\mathit{Ty} : T) \vec{C} \Uparrow \mathrm{Ind} (\mathit{Ty} : T') \vec{C'} }
 
-\inferrule[Elim]
+\inferrule[Elim] % TODO wait why do we have c here when it clearly refers to the term we eliminate over? um
   { \Gamma \vdash c \Uparrow c' \\ \Gamma \vdash Q \Uparrow Q' \\ \Gamma \vdash \vec{f} \Uparrow \vec{f'}}
   { \Gamma \vdash \mathrm{Elim}(c, Q) \vec{f} \Uparrow \mathrm{Elim}(c', Q') \vec{f'}  }
 
