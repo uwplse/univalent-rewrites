@@ -1,17 +1,46 @@
 \section{Reuse, Refactoring, \& Repair}
 
-I'll be cute here. Refactoring and repair are just reuse over time.
-Transport is super promising for reuse.
-Even though it considers only equivalences, you can squint and view a non-semantics-preserving
-change as an equivalence.
-But there's a big problem:
-Referring to the old thing means you always have to keep it around,
-so you can't use it for repair.
+Proof refactoring and proof repair are really just proof reuse over time.
+That is, proof reuse asks how to repurpose a proof about some specification
+to derive a proof about some similar specification.
+Proof refactoring and repair ask the same thing, except over time,
+between an old specification and a new specification.
+There is just one key difference between this and reuse:
+in refactoring and repair, after a change,
+the old specification no longer exists, so the proof about the new specification
+cannot refer to the proof about the old specification.
 
-Instead we can get the same guarantees transport gives us, but use a
-program transformation. 
-Honestly, let's just throw the three case studies here, they're very easy
-to understand and pretty convincing.
+Consider this example:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+There is an equivalence between the two specifications:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+This means that we can use the old proofs to derive the new proofs:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+We can even avoid doing this by hand using \textit{transport} if our type theory is univalent,
+or we can use something like the univalent parametricity framework.
+But all of these have one thing in common, which is that the new proof refers to the old specification.
+With repair, our old specification no longer exists, so the new proof does not type check.
+
+With our tool we can transform this proof to a new proof that doesn't refer to the old specification at all:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+This works by a configurable program transformation over the proof term (generalizing the work from DEVOID),
+followed by a decompilation step from the proof term back to tactics.
+The tool is also sometimes able to infer the configuration for the program transformation automatically (also generalizing the work from DEVOID).
+
+From these things, we get a tool that lets us do not just proof reuse, but also proof refactoring and proof repair
+with the same approach. We walk through one example of each below.
 
 \subsection{Reuse}
 

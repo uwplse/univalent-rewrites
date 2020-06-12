@@ -6,9 +6,9 @@ Unfortunately, maintaining proofs of programs as those programs change over
 time is still a major challenge,
 so much that even experts sometimes still just start from scratch.
 
-The problem of repairing proofs automatically has been explored in the past,
+The problem of refactoring or repairing proofs automatically has been explored in the past,
 but mostly in an ad-hoc fashion, and without actually applying discovered patches.
-We show a more principled approach to proof repair.
+We show a more principled approach to proof refactoring and repair.
 The key insight is to view each change in specification as an equivalence, possibly with additional information.
 We then use a program transformation in the style of DEVOID to transport the proof across the equivalence in a way that no longer refers to the
 old specification. Finally, we run decompiler from the proof term language back to tactics
