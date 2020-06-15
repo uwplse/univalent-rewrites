@@ -9,10 +9,9 @@ so much that even experts sometimes still just start from scratch.
 The problem of refactoring or repairing proofs automatically has been explored in the past,
 but mostly in an ad-hoc fashion, and without actually applying discovered patches.
 We show a more principled approach to proof refactoring and repair.
-The key insight is to view each change in specification as an equivalence, possibly with additional information.
-We then use a program transformation in the style of DEVOID to transport the proof across the equivalence in a way that no longer refers to the
-old specification. Finally, we run decompiler from the proof term language back to tactics
-to produce a proof script the user can continue to maintain.
+This approach combines a program transformation over proof terms (Section~\ref{sec:meat})
+with search procedures to instantiate the program transformation to a particular change (Section~\ref{sec:search})
+and a decompiler from proof terms back to tactics (Section~\ref{sec:decompiler}).
 
 In effect, the program transformation implements univalent transport, which is a thing that does stuff.
 Univalent transport is promising for repair, but alone it has a couple of problems:
