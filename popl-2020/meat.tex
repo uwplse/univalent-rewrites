@@ -59,7 +59,7 @@ to be easily describable, but there are many challenges to implemention which we
   { \Gamma \vdash p_{a} \Uparrow p_b \\ \Gamma \vdash \vec{f_{a}}\phantom{l} \Uparrow \vec{f_{b}} }
   { \Gamma \vdash \mathrm{DepElim}(a,\ p_{a}) \vec{f_{a}} \Uparrow \mathrm{DepElim}(b,\ p_b) \vec{f_{b}} }
 
-\inferrule{Dep-Constr]
+\inferrule[Dep-Constr]
 { \Gamma \vdash \vec{t}_{a} \Uparrow \vec{t}_{b} } %\\ TODO must we explicitly lift A to B if we want to handle parameters/indices?
 { \Gamma \vdash \mathrm{DepConstr}(j,\ A)\ \vec{t}_{a} \Uparrow \mathrm{DepConstr}(j,\ B)\ \vec{t}_{b}  }
 
