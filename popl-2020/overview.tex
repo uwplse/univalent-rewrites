@@ -1,56 +1,99 @@
-\section{Reuse, Refactoring, \& Repair}
+\section{Proof Repair}
+\label{sec:overview}
 
-Proof refactoring and proof repair are really just proof reuse over time.
-That is, proof reuse asks how to repurpose a proof about some specification
-to derive a proof about some similar specification.
-Proof refactoring and repair ask the same thing, except over time,
-between an old specification and a new specification.
-There is just one key difference between this and reuse:
-in refactoring and repair, after a change,
-the old specification no longer exists, so the proof about the new specification
-cannot refer to the proof about the old specification.
+\begin{figure}
+\caption{Exampl}
+\label{fig:system}
+\end{figure}
 
-Consider this example:
+\toolname is a tool for proof repair that is available on Github.\footnote{Link withheld for double-blind review.}
+It is made of three parts:
 
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-There is an equivalence between the two specifications:
+\begin{enumerate}
+\item A configurable program transformation over proof terms
+\item Search procedures to configure the program transformation % TODO optionally skip, let user provide
+\item A decompiler from proof terms back to tactics
+\end{enumerate}
+Figure~\ref{fig:system} shows how these three parts fit together.
+When the user makes a change to a specification,
+the user can either configure the program transformation herself, or she can
+query a search procedure to try to configure it automatically.
+Then, \toolname transforms the proof term appropriately, and finally
+decompiles it back to tactics the user can actually maintain.
 
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-This means that we can use the old proofs to derive the new proofs:
-
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-We can even avoid doing this by hand using \textit{transport} if our type theory is univalent,
-or we can use something like the univalent parametricity framework.
-But all of these have one thing in common, which is that the new proof refers to the old specification.
-With repair, our old specification no longer exists, so the new proof does not type check.
-
-With our tool we can transform this proof to a new proof that doesn't refer to the old specification at all:
+Consider a simple example: swapping the two constructors of a list.
+In Coq, the list type is defined as follows:
 
 \begin{lstlisting}
-TODO
+Inductive list (T : Type) : Type :=
+| nil : list T
+| cons : T -> list T -> list T.
 \end{lstlisting}
-This works by a configurable program transformation over the proof term (generalizing the work from DEVOID),
-followed by a decompilation step from the proof term back to tactics.
-The tool is also sometimes able to infer the configuration for the program transformation automatically (also generalizing the work from DEVOID).
+We can swap the two constructors to define a new list: % TODO highlight and show side-by-side
 
-From these things, we get a tool that lets us do not just proof reuse, but also proof refactoring and proof repair
-with the same approach. We walk through one example of each below.
+\begin{lstlisting}
+Inductive list (T : Type) : Type :=
+| cons : T -> list T -> list T
+| nil : list T.
+\end{lstlisting}
+Obviously, these are equivalent types, so this is in theory a simple refactoring.
+In practice, this is not quite true, since we must change not only functions, but also proofs,
+and those proofs are written in the tactic langeuge Ltac.
 
-\subsection{Reuse}
+Consider, for example, this proof from the standard library (using induction instead of pattern matching): % TODO explain
 
-Taking all of the DEVOID stuff further---where they left off, didn't see it as the same problem,
-but it is and we'll show you why and how.
+\begin{lstlisting}
+Lemma rev_app_distr {A : Type} :
+  forall (x y : list A), rev (x ++ y) = rev y ++ rev x.
+Proof.
+  induction x as [| a l IHl].
+  induction y as [| a l IHl].
+  simpl. auto.
+  simpl. rewrite app_nil_r; auto.
+  intro y. simpl.
+  rewrite (IHl y). rewrite app_assoc; trivial.
+Qed.
+\end{lstlisting}
+This proof no longer works after switching the constructors of \lstinline{list},
+and it is not immediately clear how to adapt the proof based on tactics alone.
+With \toolname, however, all we need to do is run this command: % TODO adapted for now
 
-\subsection{Refactoring}
+\begin{lstlisting}
+Repair Coq.Init.Datatypes.list list in Coq.Init.Datatypes.rev_app_distr.
+\end{lstlisting}
+This gives us the following tactic proof:
 
-Galois code.
+\begin{lstlisting}
+Proof.
+  intros x y. revert y. induction x as [a l IHl|].
+  - intro y0. simpl.
+    rewrite (IHl y0). simpl. rewrite (app_assoc (rev y0) (rev l) (a :: [])). reflexivity.
+  - intro y0. induction y0 as [a l IHl|].
+    + simpl. rewrite (app_nil_r (rev l) (a :: [])). reflexivity.
+    + reflexivity.
+Qed.
+\end{lstlisting}
+It is then straightforward to tweak the output to something
+that more closely matches the original:
 
-\subsection{Repair}
+\begin{lstlisting}
+Proof.
+  induction x as [a l IHl|].
+  - intro y. simpl.
+    rewrite (IHl y). rewrite app_assoc; trivial.
+  - induction y as [a l IHl|].
+    + simpl. rewrite app_nil_r; auto.
+    + auto.
+Qed.
+\end{lstlisting}
 
-REPLICA benchmark(s).
+We can do this for the entire list module all at once by running the \lstinline{Repair module}
+command; the results of this are in \lstinline{Overview.v}.\footnote{Link withheld for double-blind review.}
+
+This is of course a very simple example. Section~\label{sec:case} shows how the same command
+helps us support industrial integration with Coq, write dependently-typed functions and proofs for free,
+switch between unary and binary natural numbers, and support repair examples from benchmarks
+from real Coq proof engineers in the wild.
+
+
+

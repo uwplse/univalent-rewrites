@@ -8,47 +8,26 @@ so much that even experts sometimes still just start from scratch.
 
 The problem of refactoring or repairing proofs automatically has been explored in the past,
 but mostly in an ad-hoc fashion, and without actually applying discovered patches.
-We show a more principled approach to proof refactoring and repair.
+We show a more principled approach to proof refactoring and repair. % functions are not enough!s
 This approach combines a program transformation over proof terms (Section~\ref{sec:meat})
 with search procedures to instantiate the program transformation to a particular change (Section~\ref{sec:search})
 and a decompiler from proof terms back to tactics (Section~\ref{sec:decompiler}).
 
-In effect, the program transformation implements univalent transport, which is a thing that does stuff.
-Univalent transport is promising for repair, but alone it has a couple of problems:
+The key is to view every change from an old specification to new specification as corresponding to one or more equivalences,
+possibly with additional information (equivalences between sigma types).
+The program transformation then transports the proof term across the equivalence,
+producing a term that no longer refers to the old specification.
+Finally, the tactic decompiler takes those proof terms back to tactics that a proof engineer
+can actually maintain.
+
+We impelement this in \toolname, a plugin for Coq 8.8. We use \toolname to do a lot of things:
 
 \begin{enumerate}
-  \item For transport to be a function in your TT, need univalence
-  \item Refers to old types and terms, so can't use for refactoring \& repair
-  \item Terms get super slow over time
+  \item things
 \end{enumerate}
-(1) is addressed in univalent parametricity, and (3) is something they're starting to look at. (2) and (3) are addressed in DEVOID,
-but only for a super narrow case (algebraic ornaments).
 
-We present a framework for proof repair by transport across equivalences in non-univalent type theories using a proof term transformation,
-or something that is less of a mouthful. (Also, matching is still hard.)
-For any given equivalence, you just need to define four things: (1) constructor and (2) eliminator transformations that preserve the equivalence, and (3) identity and (4) rewrite rules that preserve definitional equalities.
-Ornaments as in DEVOID are the special case when (4) is instantiated to map reflexivity to reflexivity.
-These four transformations must be in relation to one another with a particular correctness criteria, so you can
-prove you actually satisfy them. Then this instantiates a generic program transformation.
-
-We show how DEVOID fits into this, then extend with search procedures for equivalences and for those three things
-for several other kinds of ornaments:
+We also contribute things:
 
 \begin{enumerate}
-  \item Algebraic ornaments from DEVOID
-  \item Extension to algebraic ornaments that lets you get back nice proof terms
-  \item Swap and rename constructors
-  \item Go between records and tuples
+\item things
 \end{enumerate}
-We also add a way to instantiate these transformations for other equivalences,
-and show it on a non-ornament case.
- 
-Together with a tactic decompiler, on a set of case studies we show how we can use this for a bunch of things:
-
-\begin{enumerate}
-  \item Reuse (vector lib, bin to nat)
-  \item Refactoring (Galois)
-  \item Repair (REPLICA benchmark)
-\end{enumerate}
-
-Our contributions will go here.
