@@ -1,20 +1,22 @@
 \section{Implementation}
 \label{sec:implementation}
 
-\begin{enumerate}
-\item LOC for each equiv/structure
-\item Implementation concerns, including termination
-\item Choosing the swap equivalence
-\item Whole-module commands
-\item Opaque
-\item Preprocess from DEVOID
-\item Does the transport automatically, but matching is in general undecidable
-\item Tactic decompiler
-\item Identity and coherence
-\item Search? Or does that go in ``correct art''? And can the equivalence be defined in terms of DepElim, DepConsr, and IdEta? If so, can those be defined by your
-      choice of equivalence?
-\item Fun eliminators
-\item Optimizations
-\item Unification and evars
-\item Delta, eta
-\end{enumerate}
+%\begin{enumerate}
+%\item Preprocess from DEVOID
+%\end{enumerate}
+
+\subsection{Matching}
+
+undecidability in general, unification and evars, optimizations for 
+
+\subsection{Reduction}
+
+delta, eta, opaque
+
+\subsection{Termination}
+
+if lifted type refers to unlifted type like DEVOID does not allow
+
+\subsection{Efficiency}
+
+optimizations for faster transport, optimizations for faster or smaller terms
