@@ -11,7 +11,7 @@ This section explains four different use cases and the configurations used to su
 \item Refactoring automatically generated proofs for an industrial user (Section~\ref{sec:industry})
 \item Generating dependently typed vector functions and proofs from functions and proofs about lists and their lengths (Section~\ref{sec:dep})
 \item Repairing functions and proofs from a benchmark in a user study of Coq users (Section~\ref{sec:replica})
-\item Porting functions and proofs about unary numbers to functions and proofs about binary numbers (Section~\ref{sec:bin}
+\item Porting functions and proofs about unary numbers to functions and proofs about binary numbers (Section~\ref{sec:bin})
 \end{enumerate}
 
 %\begin{enumerate}
@@ -22,6 +22,53 @@ This section explains four different use cases and the configurations used to su
 
 \subsection{Industrial Use}
 \label{sec:industry}
+
+We worked with an industrial user at a company\footnote{Name withheld for double-blind review.} in proving
+correct an implementation of the TLS handshake protocol.
+The company mostly performs verification using constraint solvers, but at times those constraint solvers
+get stuck.
+To cope with this, they have built a compiler that translates their solver-aided language into Gallina
+so that they can finish stuck proofs interactively using Coq.
+However, the generated Gallina specifications are sometimes too difficult to work with.
+The industrial user used \toolname to port those specifications to more human-friendly specifications,
+wrote proofs about those human-friendly specifications by hand, and then used \toolname again
+to port those proofs back to refer explicitly to the human-generated specifications.
+
+The user used a few different configurations from DEVOID, but most commonly the user wanted a way to translate
+anonymous nested tuples like this:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+into named records like this:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+We implemented a search procedure for the user to automatically configure the proof term transformation to an equivalence
+between nested tuples and named records.
+For example, using this proof term transformation, the user ported this specification:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+to this specification:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+write this proof over the new specification:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+and then automatically port that proof back to a proof of the original specification:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+
+Explanation of this configuration and example.
 
 \subsection{Vectors from Lists and their Lengths}
 \label{sec:dep}
