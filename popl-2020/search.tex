@@ -72,14 +72,92 @@ Explanation of this configuration and example.
 \subsection{Vectors from Lists and their Lengths}
 \label{sec:dep}
 
-Context.
+We were able to integrate the program transformation from DEVOID into our framework, plus extend
+the main example from DEVOID with new automation missing in the original paper.
+The DEVOID paper introduced a program transformation for transporting proofs across a particular class
+of equivalences corresponding to \textit{algebraic ornaments}. Algebraic ornaments describe relations
+between two inductive types, where one inductive type is exactly the old inductive type indexed by a fold
+over the original type.
+A simple of example of this is the relation between a list:
 
-Explanation of this configuration and example.
+\begin{lstlisting}
+Inductive list (T : Type) : Type :=
+| nil : list T
+| cons : T -> list T -> list T.
+\end{lstlisting}
+and a length-indexed vector:
+
+\begin{lstlisting}
+Inductive vector (T : Type) : nat -> Type :=
+| nil : vector T O
+| cons : T -> forall (n : nat), vector T n -> vector T (S n).
+\end{lstlisting}
+
+The running example in the DEVOID paper ported a list \lstinline{zip} function,
+a \lstinline{zip_with} function, and a proof \lstinline{zip_with_is_zip} relating the two
+functions from \lstinline{list T} to $\Sigma$\lstinline{(n : nat).vector T n} (vectors of
+\textit{some} length).
+However, while they noted that for any \textit{particular} length \lstinline{n}, \lstinline{vector T n} is equivalent to
+\lstinline{l : list T & length l = n}, they relied on manual steps from the user to derive proofs about \lstinline{vector T n}
+from proofs about lists and their lengths.
+
+Using \toolname with two composed configurations, we were able to fit the original example into our framework,
+and then extend it to automatically derive proofs about \lstinline{vector T n} from proofs about lists and their lengths.
+The key was to combine proofs about lists and their lengths using a special eliminator \toolname generated.
+Using this, we could prove this lemma:
+
+\begin{lstlisting}
+Lemma zip_with_is_zip :
+  forall A B n (v1 : { l1 : list A & length l1 = n }) (v2 : { l2 : list B & length l2 = n }),
+    zip_with pair v1 v2 = zip v1 v2.
+\end{lstlisting}
+by just applying the proof over \lstinline{list} from DEVOID, plus a very simple length invariant:
+
+\begin{lstlisting}
+Proof.
+  intros A B n v1. 
+  apply packed_list_rect with (P := fun (v1 : {l1 : list A & length l1 = n}) => forall v2 : {l2 : list B & length l2 = n}, zip_with pair v1 v2 = zip v1 v2).
+  intros l H v2.
+  unfold zip_with, zip, packed_list_rect, hs_to_coqV_p.list_to_t_rect, packed_rect. simpl.
+  apply eq_existT_uncurried.
+  (* list proof: *)
+  exists (hs_to_coq.zip_with_is_zip l (projT1 v2)).
+  (* length invariant: *)
+  apply (Eqdep_dec.UIP_dec Nat.eq_dec).
+Defined.
+\end{lstlisting}
+We then ran \lstinline{Repair Module} to transport those functions and proofs from \lstinline{list T}
+to $\Sigma$\lstinline{(n : nat).vector T n}, which for our lemma gave us a term of this type:
+
+\begin{lstlisting}
+Lemma zip_with_is_zip :
+  forall A B n (v1 : { l1 : sigT (vector T) & projT1 l1 = n }) (v2 : { l2 : sigT (vector T) & projT1 l2 = n }),
+    zip_with pair v1 v2 = zip v1 v2.
+\end{lstlisting}
+We then composed this with \lstinline{Repair Module} on another configuration that ports proofs of
+packed types with particular first projections to unpacked types indexed at the first projection.
+This gave us a proof of this theorem:
+
+\begin{lstlisting}
+Lemma zip_with_is_zip :
+  forall A B n (v1 : vector A n) (v2 : vector B n),
+    zip_with pair v1 v2 = zip v1 v2.
+\end{lstlisting}
+
+Explanation of these configurations and example.
+
+While this produced proof terms with the correct type, the decompiler struggled
+to generate useful tactic scripts for dependently typed functions.
+We discuss ideas for handling this in Section~\ref{sec:decompiler}.
+% TODO actually do this
 
 \subsection{REPLICA Benchmarks}
 \label{sec:replica}
 
-Context.
+Section~\ref{sec:overview} showed an example of swapping constructors.
+The configuration this used handles arbitrary swapping and renaming of constructors of inductive types.
+In addition to using this for list proofs, we also used it to replay part of a change found in
+a REPLICA benchmark.
 
 Explanation of this configuration and example.
 
