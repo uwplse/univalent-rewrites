@@ -204,9 +204,59 @@ in inductive types, and the transported terms \toolname generated did this autom
 \subsection{Unary and Binary Numbers}
 \label{sec:bin}
 
-Context.
+All of the configurations we have seen so far have not included \lstinline{Rew-Eta}.
+This is because they are all ornaments---all changes preserve the same inductive structure.
+We can also repair proofs to use a type with a different inductive structure.
+We do not yet have any search procedures for this, but since \toolname lets you supply
+custom configurations, you can use a custom configuration for this.
+
+As an example, we ported functions and proofs between Coq's natural numbers:
+
+\begin{lstlisting}
+Inductive nat :=
+| O : nat
+| S : nat -> nat.
+\end{lstlisting}
+and a simple version of binary numbers, which comes from another source:
+
+\begin{lstlisting}
+Inductive binnat :=
+| zero : binnat
+| consOdd : binnat -> binnat
+| consEven : binnat -> binnat.
+\end{lstlisting}
+This is one of the oldest known transport problems.
+We are able to supply the equivalence and configuration manually,
+then port functions and proofs.
+For example, we port the addition function automatically,
+then we can automatically port a proof of the lemma \lstinline{plus_n_Sm}:
+
+\begin{lstlisting}
+Lemma plus_n_Sm:
+  forall (n m : nat), Nat.S (Nat.add n m) = Nat.add n (Nat.S m).
+\end{lstlisting}
+to a proof over binary numbers:
+
+\begin{lstlisting}
+Lemma plus_n_Sm:
+  forall (n m : binnat), Bin.S (Bin.add n m) = Bin.add n (Bin.S m).
+\end{lstlisting}
+where the new proof and new addition function do not at any point convert
+the binary number back to natural numbers.
 
 Explanation of this configuration and example.
+
+Notably, to port \lstinline{plus_n_Sm}, we had to deal with the equality problem.
+\lstinline{RewEta} is what let us do this.
+There is still one caveat, though: we had to explicitly write out applications of \lstinline{RewEta}
+in our proof over unary natural numbers, since we do not yet have a way to configure \toolname with custom
+matching procedures, and unification was not sufficient for matching with \lstinline{RewEta}.
+We hope to make it possible for the user to also add custom matching rules,
+and we think some ideas from Section~\ref{sec:discussion} could help with this.
+Another thing worth noting is that we do not automatically get the efficient version of \lstinline{add} this way,
+though it's worth determining whether there is a way to configure \toolname to do so.
+
+% TODO what does the tactic decompiler do for this?
 
 %Let $A$ and $B$ be inductive types:
 

@@ -1,4 +1,5 @@
 \section{Discussion: Univalent Constraint Solvers}
+\label{sec:discussion}
 
 The program transformation from Section~\ref{sec:meat} implements transport between equivalent types \A and \B.
 However, it alone does not help the user in any way decide when to \textit{apply} transport.
@@ -127,3 +128,5 @@ Recent work extended these data structures to handle dependent types. The result
 What if we were to implement this data structure for equality up to transport rather than heterogenous equality as in Lean? In univalent type theories like homotopy type theory, I bet we could implement automatic transport this way, using what would essentially be an extremely powerful congruence tactic coupled with the transport function. In the univalent parametricity framework, I imagine we could get much more predictable and efficient type-directed transport when managing a lot of equivalences. And in \toolname, I bet we could also get efficient type-directed search.
 
 I think this also hides the key to better proof repair. Proof repair is really nothing but proof reuse over time. And I bet that, in a dependently-typed language, you can think of any change as an equivalence between sigma types. The problem just becomes exposing a good interface around searching for and transporting along this equivalence (maybe using example-based search like the original PUMPKIN PATCH, maybe doing something different), getting rid of all references to the old type (which \toolname can do), and then hopefully at some point converting everything back to a reasonable, maintainable set of tactics (which our decompiler does). This is the future, guys.
+
+% TODO e-matching
