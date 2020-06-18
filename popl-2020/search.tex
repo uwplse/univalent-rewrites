@@ -159,7 +159,47 @@ The configuration this used handles arbitrary swapping and renaming of construct
 In addition to using this for list proofs, we also used it to replay part of a change found in
 a REPLICA benchmark.
 
+In that change, the proof engineer had a simple language:
+
+\begin{lstlisting}
+Inductive Term : Set :=
+  | Var : Identifier -> Term
+  | Int : Z -> Term
+  | Eq : Term -> Term -> Term
+  | Plus : Term -> Term -> Term
+  | Times : Term -> Term -> Term
+  | Minus : Term -> Term -> Term
+  | Choose : Identifier -> Term -> Term.
+\end{lstlisting}
+as well as some definitions and proofs about the language.
+As part of the change, the user moved the \lstinline{Int} constructor down:
+
+\begin{lstlisting}
+Inductive Term : Set :=
+  | Var : Identifier -> Term
+  | Eq : Term -> Term -> Term
+  | Int : Z -> Term
+  | Plus : Term -> Term -> Term
+  | Times : Term -> Term -> Term
+  | Minus : Term -> Term -> Term
+  | Choose : Identifier -> Term -> Term.
+\end{lstlisting}
+
+Using the search procedure for the swap configuration, we were able to use \toolname
+to automatically configure the program transformation to move this constructor,
+then transform all of the functions and proofs about the language.
+We also went beyond the proof engineer's change and tried swapping two constructors with the same type,
+or renaming all of the constructors.
+In all cases, with a bit of human guidance, \toolname was able to repair the functions and proofs.
+
 Explanation of this configuration and example.
+
+Note that, in the original benchmark, for just the first swap change,
+the original tactics would have also worked for the proof. 
+As we saw in Section~\ref{sec:overview}, this is not always true.
+REPLICA also saw that users move cases in match statements to match moved constructors
+in inductive types, and the transported terms \toolname generated did this automatically
+(with induction principles though).
 
 \subsection{Unary and Binary Numbers}
 \label{sec:bin}
