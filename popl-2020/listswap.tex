@@ -1,0 +1,9 @@
+Inductive list (T : Type) : Type :=
+| nil : list T
+| cons :  T $\rightarrow$ list T $\rightarrow$ list T.
+
+Inductive list (T : Type) : Type :=
+| (@\codediff{cons}@) : T $\rightarrow$ list T $\rightarrow$ list T
+| (@\codediff{nil}@) : list T.
+
+

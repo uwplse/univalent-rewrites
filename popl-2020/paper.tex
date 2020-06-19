@@ -84,6 +84,19 @@
 \newcommand\toolname{\textsc{Toolname}\xspace} % tool name
 \newcommand\A{$A$\xspace} % recurring type A
 \newcommand\B{$B$\xspace} % recurring type B
+\newcommand{\reducedstrut}{\vrule width 0pt height .9\ht\strutbox depth .9\dp\strutbox\relax} % for \codediff and \codeauto
+\newcommand{\codediff}[1]{%
+  \begingroup
+  \setlength{\fboxsep}{0pt}%
+  \colorbox{orange!25}{\reducedstrut#1\/}%
+  \endgroup
+} % to highlight the difference between two code blocks
+\newcommand{\codeauto}[1]{%
+  \begingroup
+  \setlength{\fboxsep}{0pt}%
+  \colorbox{cyan!30}{\reducedstrut#1\/}%
+  \endgroup
+} % to highlight automatically-generated terms
 
 \begin{document}
 

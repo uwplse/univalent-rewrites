@@ -2,7 +2,7 @@
 \label{sec:overview}
 
 \begin{figure}
-\caption{Exampl}
+\caption{System overview}
 \label{fig:system}
 \end{figure}
 
@@ -21,24 +21,22 @@ query a search procedure to try to configure it automatically.
 Then, \toolname transforms the proof term appropriately, and finally
 decompiles it back to tactics the user can actually maintain.
 
-Consider a simple example: swapping the two constructors of a list.
-In Coq, the list type is defined as follows:
+\begin{figure}
+\begin{minipage}{0.46\textwidth}
+   \lstinputlisting[firstline=1, lastline=3]{listswap.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.46\textwidth}
+   \lstinputlisting[firstline=5, lastline=7]{listswap.tex}
+\end{minipage}
+\caption{The updated \lstinline{list} (right) is the old \lstinline{list} (left) with its two constructors swapped (\codediff{orange}).}
+\label{fig:listswap}
+\end{figure}
 
-\begin{lstlisting}
-Inductive list (T : Type) : Type :=
-| nil : list T
-| cons : T -> list T -> list T.
-\end{lstlisting}
-We can swap the two constructors to define a new list: % TODO highlight and show side-by-side
-
-\begin{lstlisting}
-Inductive list (T : Type) : Type :=
-| cons : T -> list T -> list T
-| nil : list T.
-\end{lstlisting}
+Consider a simple example: swapping the two constructors of a list (Figure~\ref{fig:listswap}).
 Obviously, these are equivalent types, so this is in theory a simple refactoring.
 In practice, this is not quite true, since we must change not only functions, but also proofs,
-and those proofs are written in the tactic langeuge Ltac.
+and those proofs are written in the tactic language Ltac.
 
 Consider, for example, this proof from the standard library (using induction instead of pattern matching): % TODO explain
 
