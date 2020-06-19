@@ -129,4 +129,6 @@ What if we were to implement this data structure for equality up to transport ra
 
 I think this also hides the key to better proof repair. Proof repair is really nothing but proof reuse over time. And I bet that, in a dependently-typed language, you can think of any change as an equivalence between sigma types. The problem just becomes exposing a good interface around searching for and transporting along this equivalence (maybe using example-based search like the original PUMPKIN PATCH, maybe doing something different), getting rid of all references to the old type (which \toolname can do), and then hopefully at some point converting everything back to a reasonable, maintainable set of tactics (which our decompiler does). This is the future, guys.
 
-% TODO e-matching
+% TODO e-matching---matching RewEta is just letting the user add additional rewrite rules (or call out to custom code).
+% see chandra conversation.
+% cite szalinski to note how to not be just syntactic/how to call out to something else
