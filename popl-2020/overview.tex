@@ -1,32 +1,5 @@
-\section{Proof Repair}
+\section{Proof Refactoring and Repair}
 \label{sec:overview}
-
-\begin{figure}
-\begin{minipage}{0.49\textwidth}
-\includegraphics[width=\linewidth]{workflowa.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.49\textwidth}
-\includegraphics[width=\linewidth]{workflowb.png}
-\end{minipage}
-\caption{The two possible workflows for \toolname, using either automatic (left) or manual (right) configuration.}
-\label{fig:system}
-\end{figure}
-
-\toolname is a tool for proof repair that is available on Github.\footnote{Link withheld for double-blind review.}
-It is made of three parts:
-
-\begin{enumerate}
-\item A configurable program transformation over proof terms
-\item Search procedures to configure the program transformation % TODO optionally skip, let user provide
-\item A decompiler from proof terms back to tactics
-\end{enumerate}
-Figure~\ref{fig:system} shows how these three parts fit together.
-When the user makes a change to a specification,
-the user can either configure the program transformation herself, or she can
-query a search procedure to try to configure it automatically.
-Then, \toolname transforms the proof term appropriately, and finally
-decompiles it back to tactics the user can actually maintain.
 
 \begin{figure}
 \begin{minipage}{0.46\textwidth}
@@ -40,12 +13,10 @@ decompiles it back to tactics the user can actually maintain.
 \label{fig:listswap}
 \end{figure}
 
-Consider a simple example: swapping the two constructors of a list (Figure~\ref{fig:listswap}).
-Obviously, these are equivalent types, so this is in theory a simple refactoring.
-In practice, this is not quite true, since we must change not only functions, but also proofs,
-and those proofs are written in the tactic language Ltac.
-
-Consider, for example, this proof from the standard library (using induction instead of pattern matching): % TODO explain
+\toolname is a tool for proof refactoring and repair that is available on Github.\footnote{Link withheld for double-blind review.}
+To understand \toolname, it helps to start with a simple example: refactoring list proofs.
+Consider the refactoring in Figure~\ref{fig:listswap}, which swaps the two constructors of a list.
+Even such a simple change can quickly cause trouble in existing proofs, like this proof from the Coq standard library:\footnote{Here and throughout, we use induction instead of pattern matching.}
 
 \begin{lstlisting}
 Lemma rev_app_distr {A : Type} :
@@ -66,7 +37,7 @@ With \toolname, however, all we need to do is run this command: % TODO adapted f
 \begin{lstlisting}
 Repair Coq.Init.Datatypes.list list in Coq.Init.Datatypes.rev_app_distr.
 \end{lstlisting}
-This gives us the following tactic proof:
+and we get back a new tactic script:
 
 \begin{lstlisting}
 Proof.
@@ -78,8 +49,7 @@ Proof.
     + reflexivity.
 Qed.
 \end{lstlisting}
-It is then straightforward to tweak the output to something
-that more closely matches the original:
+which we can tweak to something that more closely matches the original:
 
 \begin{lstlisting}
 Proof.
@@ -91,14 +61,59 @@ Proof.
     + auto.
 Qed.
 \end{lstlisting}
+We can even repair the entire list module all at once by running the \lstinline{Repair module}
+command; the results of this are in \lstinline{Overview.v}.\footnote{Link withheld for double-blind review.} % TODO
 
-We can do this for the entire list module all at once by running the \lstinline{Repair module}
-command; the results of this are in \lstinline{Overview.v}.\footnote{Link withheld for double-blind review.}
+\paragraph{Configure, Transform, Decompile}
+The key to success here is that \toolname does not even attempt to refactor the poorly structured proof script directly.
+Coq compiles the proof script to a proof term---\toolname repairs that term.
+\toolname then decompiles the repaired proof term back to a proof script that the user can maintain.
 
-This is of course a very simple example. Section~\ref{sec:search} shows how the same command
-helps us support industrial integration with Coq, write dependently-typed functions and proofs for free,
-switch between unary and binary natural numbers, and support repair examples from benchmarks
-from real Coq proof engineers in the wild.
+\begin{figure}
+\begin{minipage}{0.49\textwidth}
+\includegraphics[width=\linewidth]{workflowa.png}
+\end{minipage}
+\hfill
+\begin{minipage}{0.49\textwidth}
+\includegraphics[width=\linewidth]{workflowb.png}
+\end{minipage}
+\caption{The two possible workflows for \toolname, using either automatic (left) or manual (right) configuration.}
+\label{fig:system}
+\end{figure}
 
+The repair step works using a configurable program transformation.
+This program transformation transforms the old proof term into a new proof term that refers to the new specification
+in place of the old specification,
+and otherwise preserves the behavior of the old proof term.
+Figure~\ref{fig:system} shows how this comes together when the user invokes \toolname:
+
+\begin{enumerate}
+\item \toolname configures itself, either:
+\begin{enumerate}
+\item automatically (left), using \textbf{Configure} to discover the configuration, or
+\item manually (right), by taking the configuration as an argument.
+\end{enumerate}
+\item The configured \textbf{Transform} transforms the old proof term into the new proof term.
+\item \textbf{Decompile} produces a new proof script from the new proof term.
+\end{enumerate}
+
+Our example uses automatic configuration. When we run the \lstinline{Repair} command:
+
+\begin{lstlisting}
+Repair Coq.Init.Datatypes.list list in Coq.Init.Datatypes.rev_app_distr.
+\end{lstlisting}
+\textbf{Configure} invokes a special search procedure that automatically discovers that our new \lstinline{list}
+is just our old \lstinline{list} with a single moved constructor.
+The search procedure proves an equivalence between our old and new versions of lists,
+then configures \textbf{Transform} using that equivalence and some additional information.
+\textbf{Transform} then ports the proof term that inducted over our old \lstinline{list}
+to instead induct over our new \lstinline{list}, and finally
+\textbf{Decompile} produces the tactic script that we see.
+
+While this is a simple refactoring, this same workflow can get us much more.
+Section~\ref{sec:search} shows how we have used \toolname to support industrial integration with Coq,
+write dependently-typed functions and proofs with little user effort,
+port proofs between unary and binary natural numbers,
+and support repair examples from benchmarks from real Coq proof engineers in the wild.
 
 
