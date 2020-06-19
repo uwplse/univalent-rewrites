@@ -1,1 +1,1 @@
-latex paper && bibtex paper && latex paper && pdflatex paper
+pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper
