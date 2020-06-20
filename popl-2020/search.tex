@@ -192,14 +192,45 @@ We also went beyond the proof engineer's change and tried swapping two construct
 or renaming all of the constructors.
 In all cases, with a bit of human guidance, \toolname was able to repair the functions and proofs.
 
-Explanation of this configuration and example.
-
 Note that, in the original benchmark, for just the first swap change,
 the original tactics would have also worked for the proof. 
 As we saw in Section~\ref{sec:overview}, this is not always true.
 REPLICA also saw that users move cases in match statements to match moved constructors
 in inductive types, and the transported terms \toolname generated did this automatically
 (with induction principles though).
+
+\paragraph{Configuration}
+The configuration this used handles swapping and renaming constructors of inductive types.
+When a user swaps or renames constructors, the new type is equivalent to the old type exactly.
+The configuration just maps the old constructors to the swapped new constructors, and maps appropriate
+cases of the old eliminator to appropriate cases of the new eliminator.
+Equality does not change.
+
+More formally, let $A$ and $B$ be inductive types:
+
+\begin{lstlisting}
+$A$ := $\mathrm{Ind} (\mathit{Ty}_A : \Pi (\vec{i_A} : \vec{\mathrm{X}_A}) . \mathrm{s}_A)\{\mathrm{C}_{A_1}, \ldots, \mathrm{C}_{A_n}\}$
+$B$ := $\mathrm{Ind} (\mathit{Ty}_B : \Pi (\vec{i_B} : \vec{\mathrm{X}_B}) . \mathrm{s}_B)\{\mathrm{C}_{B_1}, \ldots, \mathrm{C}_{B_n}\}$
+\end{lstlisting}		
+Assume there is some invertible swap map $m$ such that for any index $j$,
+\lstinline{C}$_{B_{m(j)}}$ is exactly \lstinline{C}$_{A_j}[B / A]$.
+Then:
+
+\begin{lstlisting}
+DepConstr(j, A) : C$_{A_{j}}$ := Constr(j, A) 
+DepConstr(j, B) : C$_{A_{j}}$[B / A] := Constr(m(j), B)
+
+DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := Elim(a, p){f$_{1}$, $\ldots$, f$_{n}$}
+DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := Elim(b, p){f$_{m(1)}$, $\ldots$, f$_{m(n)}$}
+
+IdEta(A) := $\lambda$ ($\vec{t}$ : $\vec{T}$) (a : A $\vec{t}$).a
+IdEta(B) := $\lambda$ ($\vec{t}$ : $\vec{T}$) (b : B $\vec{t}$).b
+
+RewEta(A) := eq_refl A
+RewEta(B) := eq_refl B
+\end{lstlisting}
+
+Example (honestly let's just show with particular type and explain more generally, and leave out formalities until later if we need them).
 
 \subsection{Unary and Binary Numbers}
 \label{sec:bin}
@@ -244,8 +275,6 @@ Lemma plus_n_Sm:
 where the new proof and new addition function do not at any point convert
 the binary number back to natural numbers.
 
-Explanation of this configuration and example.
-
 Notably, to port \lstinline{plus_n_Sm}, we had to deal with the equality problem.
 \lstinline{RewEta} is what let us do this.
 There is still one caveat, though: we had to explicitly write out applications of \lstinline{RewEta}
@@ -256,28 +285,45 @@ and we think some ideas from Section~\ref{sec:discussion} could help with this.
 Another thing worth noting is that we do not automatically get the efficient version of \lstinline{add} this way,
 though it's worth determining whether there is a way to configure \toolname to do so.
 
+\paragraph{Configuration}
+We supplied this configuration manually.
+Our definitions were as follows (eventually should just show the interesting parts):
+
+\begin{lstlisting}
+DepConstr(1, nat) := O 
+DepConstr(2, nat) := S
+DepConstr(1, binnat) := zero
+DepConstr(2, binnat) :=
+  binnat_rec
+    (fun _ : binnat => binnat)
+    (consOdd zero)
+    (fun b0 _ : binnat => consEven b0)
+    (fun _ IHb : binnat => consOdd IHb)
+
+DepElim(n, p){f$_{1}$, f$_{2}$} : p n := nat_rect p f$_{1}$ f$_{2}$ n
+DepElim(b, p){f$_{1}$, f$_{2}$} : p b := natty_rect p f$_{1}$ f$_{2}$ b (bin_natty n)
+
+IdEta(nat) := fun (n : nat) => n
+IdEta(binnat) := fun (b : binnat) => b
+
+RewEta(2, nat) := fun (P : nat -> Type) (PO : P O) (PS : forall n : nat, P n -> P (nat_S n))
+  (n : nat) (Q : P (nat_S n) -> Type) (H : Q (PS n (nat_rect P PO PS n))) =>
+eq_rect (PS n (nat_rect P PO PS n)) (fun H0 : P (nat_S n) => Q H0) H
+  (nat_rect P PO PS (nat_S n)) eq_refl
+RewEta(2, binnat) := fun (P : binnat -> Type) (PO : P z) (PS : forall b : binnat, P b -> P (S b))
+  (n : binnat) (Q : P (e.suc_binnat n) -> Type)
+  (H : Q (PS n (binnat_nat_rect P PO PS n))) =>
+eq_rect (PS n (binnat_nat_rect P PO PS n)) (fun H0 : P (e.suc_binnat n) => Q H0)
+  H (binnat_nat_rect P PO PS (e.suc_binnat n)) (eq_sym (refold_elim_S P PO PS n)).
+\end{lstlisting}
+We need to introduce \lstinline{natty} and credit it to the Conor McBride paper,
+and note why we go through it.
+Interestingly, we used transport across algebraic ornaments in order to determine
+\lstinline{DepElim}.
+We need to note how \lstinline{bin_natty} is generated that way.
+Also we need multiple \lstinline{RewEta} one for each constructor ugh.
+
 % TODO what does the tactic decompiler do for this? It's broken. Why?
-
-%Let $A$ and $B$ be inductive types:
-
-%\begin{lstlisting}
-%$A$ := $\mathrm{Ind} (\mathit{Ty}_A : \Pi (\vec{i_A} : \vec{\mathrm{X}_A}) . \mathrm{s}_A)\{\mathrm{C}_{A_1}, \ldots, \mathrm{C}_{A_n}\}$
-%$B$ := $\mathrm{Ind} (\mathit{Ty}_B : \Pi (\vec{i_B} : \vec{\mathrm{X}_B}) . \mathrm{s}_B)\{\mathrm{C}_{B_1}, \ldots, \mathrm{C}_{B_n}\}$
-%\end{lstlisting}		
-%Assume there is some invertible swap map $m$ such that for any index $j$,
-%\lstinline{C}$_{B_{m(j)}}$ is exactly \lstinline{C}$_{A_j}[B / A]$.
-%Then:
-
-%\begin{lstlisting}
-%DepConstr(j, A) : C$_{A_{j}}$ := Constr(j, A) 
-%epConstr(j, B) : C$_{A_{j}}$[B / A] := Constr(m(j), B)
-
-%DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := Elim(a, p){f$_{1}$, $\ldots$, f$_{n}$}
-%DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := Elim(b, p){f$_{m(1)}$, $\ldots$, f$_{m(n)}$}
-
-%IdEta(A) := $\lambda$ ($\vec{t}$ : $\vec{T}$) (a : A $\vec{t}$).a
-%IdEta(B) := $\lambda$ ($\vec{t}$ : $\vec{T}$) (b : B $\vec{t}$).b
-%\end{lstlisting}
 
 %\subsubsection{Algebraic}
 
