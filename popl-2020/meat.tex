@@ -3,9 +3,19 @@
 
 \toolname is a flexible tool that supports both proof refactoring and proof repair and integrates
 with a typical proof engineering workflow in Coq.
-There were three key insights that helped us achieve this.
+There were three key insights that helped us achieve this:
 
-\subsection{Insight 1: Reducing the Problem}
+\begin{enumerate}
+\item Proof refactoring and repair are both just 
+proof reuse %~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}
+\textit{over time}. The key to supporting both is to build a generic proof reuse
+tool that can handle the additional challenges imposed by the reuse occuring over time. 
+\item The proof term transformation from the \textsc{DEVOID}~\cite{Ringer2019} proof reuse tool can be generalized
+to build such a generic proof reuse tool, and the result is configurable both by the developer and by the user.
+\item The transformed proof terms can then be translated back to tactics.
+\end{enumerate}
+
+\paragraph{Refactoring \& repair as reuse over time}
 
 Proof refactoring and proof repair are similar problems: both refer to adapting proofs in response to changes
 in specifications. In Section~\ref{sec:overview}, for example, our specification was the theorem statement
@@ -28,10 +38,10 @@ This restriction manifests as a proof obligation for the user.
 In both of these cases, we can think of any tool that refactors or repairs our proofs as
 \textit{reusing} the proofs about our old specification to derive proofs about our new specification,
 either with no new information (in the case of refactoring) or with some additional proof obligations (in the case of repair).
-This brings us to our first key insight:
+Restating our first key insight:
 
 \begin{quote}
-\textbf{Key Insight 1}:
+\textbf{Insight 1}:
 Proof refactoring and repair are both just 
 proof reuse %~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}
 \textit{over time}. The key to supporting both is to build a generic proof reuse
@@ -56,7 +66,7 @@ while in the repair example, we use this equivalence:
 { n : nat & n <> O } $\simeq$ positive
 \end{lstlisting}
 
-\subsection{Insight 2: The Configurable Transformation}
+\paragraph{A configurable proof term transformation for transport across equivalences}
 
 That proof refactoring and repair are reuse \textit{over time} dictates that proofs
 must no longer refer in any way to the old specification, since the old specification no longer exists.
@@ -64,87 +74,33 @@ This means that most transport methods % TODO cite
 are not immediately useful for refactoring and repair.
 There is one exception that we are aware of: \textsc{DEVOID}~\cite{Ringer2019} defines a proof term transformation
 that transports programs and proofs across equivalences for a particular class of changes.
-This brings us to our second key insight:
+Restating our second key insight:
 
 \begin{quote}
-\textbf{Key Insight 2}:
+\textbf{Insight 2}:
 The proof term transformation from the \textsc{DEVOID} proof reuse tool can be generalized
 to build such a generic proof reuse tool, and the result is configurable both by the developer and by the user.
 \end{quote}
 This generalized proof term transformation forms the core of \toolname.
 
-\subsection{Insight 3: The Decompiler}
+\paragraph{Decompiling proof terms to tactics}
 
 Of course, as in \textsc{DEVOID}, such a proof term transformation produces a proof term,
 while the proof engineer typically writes proof scripts made up of tactics.
 Feeding the user proof terms does not make for a very good user experience.
-This brings us to our final insight:
+Restating our final insight:
 
 \begin{quote}
-\textbf{Key Insight 3}: The transformed proof terms can then be translated back to tactics.
+\textbf{Insight 3}: The transformed proof terms can then be translated back to tactics.
 \end{quote} 
 
 These insights led us to design \toolname as a configurable proof term transformation
 combined with a Gallina to Ltac decompiler.
-This gives us the \textbf{Configure}, \textbf{Transform}, \textbf{Decompile} we saw in Section~\ref{sec:overview}.
+This gives us the \textbf{Configure}, \textbf{Transform}, \textbf{Decompile} workflow we saw in Section~\ref{sec:overview}.
 
-\section{Something}
+\section{Transform}
 \label{sec:meat}
 
-Figure~\ref{fig:final} shows the configurable proof term transformation at the heart of all of this.
-The transformation is parameterized over two equivalent types \A and \B (rule \lstinline{Equivalence}).
-Most of it is standard with the exception of the four rules that correspond to the configuration:
-
-\begin{enumerate}
-\item Rules \lstinline{Dep-Constr} and \lstinline{Dep-Elim} for transforming constructors and eliminators 
-\item Rules \lstinline{Id-Eta} and \lstinline{Rew-Eta} for transforming identity and equalities
-\end{enumerate}
-These transformations rules, taken together, both induce a particular equivalence and ensure that the transformation
-preserves it and produces well-typed terms.
-
-\subsection{Configure}
-\label{sec:art}
-
-
-The transformation is configurable by equivalence, but choosing the configuration (either by providing direct input or writing a 
-search procedure for an entire class of equivalences) is a bit of an art: There can be infinitely many equivalences that correpond to a 
-given change in specification, only some of which are useful. Furthermore, different configurations based on those equivalences
-can be more or less useful than others. Finally, certain proof obligations for configuring the transformation can be tricky.
-Thankfully, once that art is done, we know what it means for it to be correct.
-
-The correctness criteria for the configuration relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{IdEta}, and \lstinline{RewEta}
-in a particular way.
-This goes back to the equivalence and equality thing from the previous section.
-Formal thing here, intuition for what it means for the whole thing, explanation, and example.
-Section~\ref{sec:search} shows some particular instantions of this and their applicability to real programs and proofs.
-
-%Nicolas proved the first of these a while ago
-%for the equivalence in the DEVOID ITP paper.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
-
-Note about decidability of matching: when all of this is correct, what this means is that you \textit{can} always
-run one of the transformation rules. But that doesn't mean you \textit{should}. Depends what the user wants,
-and in some cases, would not terminate (refinement types, unpacking indexed types). Implementation section will
-discuss how we actually decide which ones to run so user doesn't need to apply transport by hand over and over again,
-and discussion section describes some cool ideas for doing this nicely with type-based search in the future.
-
-\paragraph{Preserving Equivalence} Explanation and example.
-
-\paragraph{Preserving Equality} Explanation and example.
-
-\subsection{Transform}
-\label{sec:transform}
-
-In short, (1) ensures the transformation preserves the \textit{equivalence} between our old and new specifications,
-while (2) ensures that the transformation respects \textit{equalities} in the original proof.
-The former of these just means that it implements transport, while the latter deals specifically
-with the fact that we do not have univalence (which would state that equivalence is equivalent to equality),
-so for the transformation to produce terms that type-check, we must transform equalities too.
-This is a problem the marriage of univalence and parametricity notes as intractable in general---it turns out
-to be easily describable, but there are many challenges to implemention which we will note in Section~\ref{sec:implementation}.
-
-\paragraph{Constructors and Eliminators} Explanation, intuition, simple example.
-
-\paragraph{Identity and Rewrites} Explanation, intuition, simple example.
 
 \begin{figure}
 \begin{mathpar}
@@ -203,6 +159,74 @@ to be easily describable, but there are many challenges to implemention which we
 \label{fig:final}
 \end{figure}
 
+While \textbf{Configure} (Section~\ref{sec:search}) is the first step for the user, \textbf{Transform} is at the heart of \toolname.
+Figure~\ref{fig:final} shows the configurable proof term transformation that \textbf{Transform} implements.
+The transformation operates over terms in CIC$_{\omega}$.
+It assumes the same grammar and semantics for CIC$_{\omega}$
+as the transformation from \textsc{Devoid} that it is based off of
+with one exception: it removes the restriction that projections must be primitive.
+
+Like the transformation from \textsc{Devoid}, this transformation is parameterized over
+two equivalent types \A and \B (rule \lstinline{Equivalence}).
+At a high level, the configuration ensures that the transformation accomplishes two goals:
+
+\begin{enumerate}
+\item preserves the equivalence between \A and \B, and
+\item produces well-typed terms.
+\end{enumerate}
+These two goals each correspond to a pair of rules, respectively:
+
+\begin{enumerate}
+\item \lstinline{Dep-Constr} and \lstinline{Dep-Elim} transform constructors and eliminators, thereby preserving the equivalence (Section~\ref{sec:equivalence}), and 
+\item \lstinline{Id-Eta} and \lstinline{Rew-Eta} transform identity and equalities, thereby producing well-typed terms (Section~\ref{sec:equality}).
+\end{enumerate}
+These rely on a configuration (\lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{IdEta}, \lstinline{RewEta}) % TODO lists
+provided either by a search procedure or by the user.
+The four parts of this configuration must be in relation to one another in a certain way in order for the proof
+term transformation to work correctly (Section~\ref{sec:art}).
+From there, the rest of the transformation is straightforward.
+
+\subsection{Equivalence}
+\label{sec:equivalence}
+
+This just means that it implements transport.
+Explanation, intuition, and example.
+The two rules.
+
+\subsection{Equality}
+\label{sec:equality}
+
+This deals specifically
+with the fact that we do not have univalence (which would state that equivalence is equivalent to equality),
+so for the transformation to produce terms that type-check, we must transform equalities too.
+This is a problem the marriage of univalence and parametricity notes as intractable in general---it turns out
+to be easily describable, but there are many challenges to implemention which we will note in Section~\ref{sec:implementation}.
+Explanation, intuition, and example.
+The two rules.
+
+\subsection{Equivalence \& Equality}
+\label{sec:art}
+
+The transformation is configurable by equivalence, but choosing the configuration (either by providing direct input or writing a 
+search procedure for an entire class of equivalences) is a bit of an art: There can be infinitely many equivalences that correpond to a 
+given change in specification, only some of which are useful. Furthermore, different configurations based on those equivalences
+can be more or less useful than others. Finally, certain proof obligations for configuring the transformation can be tricky.
+Thankfully, once that art is done, we know what it means for it to be correct.
+
+The correctness criteria for the configuration relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{IdEta}, and \lstinline{RewEta}
+in a particular way.
+This goes back to the equivalence and equality thing from the previous section.
+Formal thing here, intuition for what it means for the whole thing, explanation, and example.
+Section~\ref{sec:search} shows some particular instantions of this and their applicability to real programs and proofs.
+
+%Nicolas proved the first of these a while ago
+%for the equivalence in the DEVOID ITP paper.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
+
+Note about decidability of matching: when all of this is correct, what this means is that you \textit{can} always
+run one of the transformation rules. But that doesn't mean you \textit{should}. Depends what the user wants,
+and in some cases, would not terminate (refinement types, unpacking indexed types). Implementation section will
+discuss how we actually decide which ones to run so user doesn't need to apply transport by hand over and over again,
+and discussion section describes some cool ideas for doing this nicely with type-based search in the future.
 
 %First we need that \lstinline{DepElim} over $A$ into \lstinline{DepConstr} over $B$ and \lstinline{DepElim} over $B$ into
 %\lstinline{DepConstr} over $A$ form an equivalence between $A$ and $B$. When that's true, I think it should hold that \lstinline{DepElim} over $A$
@@ -267,9 +291,4 @@ to be easily describable, but there are many challenges to implemention which we
 %the identity function should lift to so that the transformation preserves definitional equalities.
 %Actually deciding when to run this rule is one of the biggest challenges in practice,
 %so we'll talk about that more in the implementation section.
-
-\subsection{Decompile}
-\label{sec:meatdecompile}
-
-high-level decompiler stuff, maybe merge with other one
 
