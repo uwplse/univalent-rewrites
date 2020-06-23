@@ -194,7 +194,8 @@ functions behave same, proofs talk about the same things
 so equivalent inputs to equivalent outputs, and proofs about functions talk about equivalent things
 like DEVOID, means we lift to something equal up to transport
 
-two rules give us this: \lstinline{DepConstr} and \lstinline{DepElim}.
+two rules give us this: \lstinline{Dep-Constr} and \lstinline{Dep-Elim},
+which lift configuration parts \lstinline{DepConstr} and \lstinline{DepElim}.
 idea is that the only way you can make an \A or a \B is by constructors, and the only way you can match over one
 (because we assume primitive eliminators) is by the eliminators.
 so first transports constructors, second eliminators.
@@ -237,13 +238,60 @@ more on that in Section~\ref{sec:art}.
 \subsection{Equality}
 \label{sec:equality}
 
-This deals specifically
-with the fact that we do not have univalence (which would state that equivalence is equivalent to equality),
-so for the transformation to produce terms that type-check, we must transform equalities too.
-This is a problem the marriage of univalence and parametricity notes as intractable in general---it turns out
-to be easily describable, but there are many challenges to implemention which we will note in Section~\ref{sec:implementation}.
-Explanation, intuition, and example.
-The two rules.
+(draft text) it's not enough to just have things be equivalent.
+we don't have univalence (which would state that equivalence is equivalent to equality).
+the result as noted in the marriage of univalence and parametricity framework is that unless we handle equalities,
+lifting terms might have different types than the lifted types.
+this is because definitional equalities might need to lift to propositional equalities.
+a simple example might be this one from \lstinline{nat} and \lstinline{binnat}:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+over \lstinline{nat} this is reflexivity, but over \lstinline{binnat} this is not.
+so we must somehow lift the thing on the left to the thing on the right.
+
+two rules for this: \lstinline{Id-Eta} and \lstinline{Rew-Eta}, which lift
+configuration parts \lstinline{IdEta} and \lstinline{RewEta}.
+\lstinline{IdEta} lifts the expanded identity function, and \lstinline{RewEta} lifts equalities.
+There is just one \lstinline{IdEta}. there are as many \lstinline{RewEta} as there are inductive hypotheses
+of \lstinline{DepElim}.
+for example, for our refactor, we have the simplest case:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+for our repair, identity is expanded for compatibility with eliminators in correctness criteria, but nothing else changes:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+and for \lstinline{nat} and \lstinline{binnat}, \lstinline{IdEta} is straightforward, but actually one of our \lstinline{RewEta}
+is interesting because the successor case of our eliminator doesn't definitionally preserve equality:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+thus we can lift the example up top to this:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+
+note that the marriage of univalence and parametricity paper said this approach would be intractable in general.
+They are partly right!
+It is easily \textit{describable}, but there are many challenges to implementation which we will note in Section~\ref{sec:implementation}.
+notably, \lstinline{IdEta} and \lstinline{RewEta} are typically implied implicitly in code, so the implementation needs to match
+against them.
+for example, the example up top didn't apply \lstinline{RewEta} explicitly, so if we want to fully automate this then
+we need a step that understands that casts are implicit rewrites, and expands them in the right place.
+this problem shows up a bit for constructors and eliminators but is much more pronounced here.
+
+for now for these all of the configuration rules our search procedure include custom matching definitions,
+but there unfortunately isn't a way for users to supply custom matching things,
+and unification isn't good enough for \lstinline{RewEta}.
+so when configuration is manual, input terms must be expanded to apply \lstinline{RewEta} over \A.
+custom matching WIP; will talk more about this in future work.
 
 \subsection{Equivalence \& Equality}
 \label{sec:art}
