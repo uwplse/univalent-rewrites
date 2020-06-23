@@ -296,21 +296,42 @@ custom matching WIP; will talk more about this in future work.
 \subsection{Equivalence \& Equality}
 \label{sec:art}
 
-The transformation is configurable by equivalence, but choosing the configuration (either by providing direct input or writing a 
+(draft text) The transformation is configurable by equivalence, but choosing the configuration (either by providing direct input or writing a 
 search procedure for an entire class of equivalences) is a bit of an art: There can be infinitely many equivalences that correpond to a 
-given change in specification, only some of which are useful. Furthermore, different configurations based on those equivalences
-can be more or less useful than others. Finally, certain proof obligations for configuring the transformation can be tricky.
-Thankfully, once that art is done, we know what it means for it to be correct.
+given change in specification, only some of which are useful.
+For example, for our \lstinline{positive} example, we could also use this equivalence:
 
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+that is a simple refactoring, but it gives us functions and proofs with weird behavior, clearly not what we want.
+we could also trivially just require as many proofs of \lstinline{True} as we want or whatever.
+and that's just the equivalence.
+different configurations based on those equivalences
+can be more or less useful than others, % Finally, certain proof obligations for configuring the transformation can be tricky.
+like we could just as well add a bunch of extra junk to our eliminators.
+
+Thankfully, once that art is done, we know what it means for it to be correct.
 The correctness criteria for the configuration relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{IdEta}, and \lstinline{RewEta}
 in a particular way.
 This goes back to the equivalence and equality thing from the previous section.
-Formal thing here, intuition for what it means for the whole thing, explanation, and example.
-Section~\ref{sec:search} shows some particular instantions of this and their applicability to real programs and proofs.
+For equivalence, we need this to hold:
 
-%Nicolas proved the first of these a while ago
-%for the equivalence in the DEVOID ITP paper.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+And for equality, we need this to hold:
 
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+Intuition for the first is based on insights from \textsc{Devoid}.
+See this proof for the example from the ITP paper.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
+Intuition for the second is that we need proofs about equality to lift to proofs about equality,
+and again we can only ever construct or eliminate at some point, so it's enough
+to use these facts just in the dependent constructors and eliminators.
+
+Section~\ref{sec:search} shows some particular instantions of this configuration and their applicability to real programs and proofs.
 Note about decidability of matching: when all of this is correct, what this means is that you \textit{can} always
 run one of the transformation rules. But that doesn't mean you \textit{should}. Depends what the user wants,
 and in some cases, would not terminate (refinement types, unpacking indexed types). Implementation section will
