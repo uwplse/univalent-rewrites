@@ -23,7 +23,7 @@ which as the authors note can sometimes be slow or unpredictable without user-su
 
 The key to implementing efficient type-directed automatic transport both for \toolname
 and for other systems may be to adapt special data structures from the constraint solver world to use a
-notion of equivalence that corresponds to equality up to transport (Section~\ref{sec:key}).
+notion of equivalence that corresponds to equality up to transport (Section~\ref{sec:egraph}).
 This may help not only build better proof refactoring and repair tools, but also build better proof reuse tools,
 implement better congruence tactics in univalent type theories, and better automate transport in HoTT.
 
@@ -116,7 +116,7 @@ hints, it can be slow or diverge.
 This is a step in the right direction, but it is not enough.
 
 \subsection{Enter Univalent E-Graphs}
-\label{sec:key}
+\label{sec:egraph}
 
 Automatic transport is really nothing but a rewrite system.
 Equality up to transport is just an equivalence relation, and automatic transport just searches for proofs of that relation and rewrites along those proofs, either by directly applying transport (in homotopy type theory and univalent parametricity) or by transforming the term in a metalanguage (in \toolname).

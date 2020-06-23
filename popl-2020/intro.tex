@@ -15,9 +15,7 @@ piece of software if he could be
 assured that the software would remain stable.
 \end{quote}
 we can conlude that, since 1977, either verification has become much easier,
-or our researchers have become much more fanatical.
-
-Unfortunately, not all has changed since \citep{DeMillo1977} (emphasis still ours):
+or our researchers have become much more fanatical. Unfortunately, not all has changed (emphasis still ours):
 
 \begin{quote}
 But real-life programs need to 
@@ -34,7 +32,7 @@ or when change occurs outside of proof engineers' control~\cite{PGL-045}.
 Still, the challenges of maintaining verified programs remain so difficult that
 sometimes, even experts give up in the face of change~\cite{replica}.
 
-We address three open challenges in building better proof refactoring and repair tools:
+We make progress toward three open challenges in proof refactoring and repair:
 
 \begin{enumerate}
 \item Few tools~\cite{robert2018, wibergh2019} support both proof refactoring (semantics-preserving changes) and repair (non-semantics-preserving changes) at the same time~\cite{PGL-045}.
@@ -42,7 +40,7 @@ We address three open challenges in building better proof refactoring and repair
 of non-semantics-preserving changes~\cite{robert2018, wibergh2019}, and these are not informed by real user needs~\cite{replica}.
 \item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018}.
 \end{enumerate}
-We realize each challenge thanks to a corresponding key insight (Section~\ref{sec:key}): % TODO dan comment
+Our progress towards each of these challenges leverages a corresponding key insight (Section~\ref{sec:key}): % TODO dan comment
 
 \begin{enumerate}
 \item Proof refactoring and repair are both just 
@@ -54,8 +52,8 @@ to build such a generic proof reuse tool, and the result is configurable both by
 \item The transformed proof terms can then be translated back to tactics.
 \end{enumerate}
 
-We have realized these insights in \toolname (Section~\ref{sec:overview}), a plugin for Coq 8.8. \toolname combines a
-configurable program transformation over proof terms (Section~\ref{sec:meat}) % TODO doesn't quite match current organization
+These insights informed our design of \toolname (Section~\ref{sec:overview}), a plugin for Coq 8.8.
+\toolname combines a configurable program transformation over proof terms (Section~\ref{sec:meat}) % TODO doesn't quite match current organization
 with search procedures to instantiate the program transformation to a particular change (Section~\ref{sec:search})
 and a decompiler from proof terms back to tactics (Section~\ref{sec:decompiler}).
 The result is a tool that:
@@ -70,26 +68,8 @@ support industrial integration with Coq,
 simplify dependently-typed programming and proving,
 port proofs between unary and binary natural numbers,
 and support refactoring and repair examples from benchmarks from real Coq proof engineers.
-Our implementation (Section~\ref{sec:implementation}) is available on Github,\footnote{Link withheld for double-blind review.}
-and our experiences supporting users inform ideas (Section~\ref{sec:discussion}) that may help with building better
+Our experiences implementating \toolname (Section~\ref{sec:implementation})
+and supporting users (Section~\ref{sec:discussion})  inform ideas that may help with building better
 proof refactoring and repair tools and other kinds of automation.
 
-%\paragraph{Proof Refactoring and Repair}
-%Refactoring and repair are reuse over time.
-%The key is to view every change from an old specification to new specification as corresponding to one or more equivalences,
-%possibly with additional information (equivalences between sigma types).
-%Refactoring is when this is exactly an equivalence, and repair is when there is more information.
-
-%\paragraph{Extensibility}
-
-%\paragraph{Tactic Integration}
-%One challenge in expanding the reach and utility of proof refactoring and repair tools is in
-%integrating these tools with proof development workflows~\cite{PGL-045}.
-%For example, in Coq~\cite{coq}, proof engineers typically write proofs by guiding proof search with
-%special strategies called \textit{tactics}. A set of these tactics make up a \textit{proof script},
-%which Coq uses to search for a proof of the theorem---a \textit{proof term} with the desired type.
-%\textsc{PUMPKIN PATCH}~\cite{pumpkinpatch} is the only proof repair tool that we are aware of,
-%and it leaves tactic integration to the user.
-%Finally, the tactic decompiler takes those proof terms back to tactics that a proof engineer
-%can actually maintain.
 
