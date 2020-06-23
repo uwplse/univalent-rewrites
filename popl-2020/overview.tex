@@ -87,8 +87,11 @@ Coq compiles the proof script to a proof term---\toolname repairs that term.
 
 The repair step works using a configurable program transformation.
 This program transformation transforms the old proof term into a new proof term that refers to the new specification
-in place of the old specification,
+(here, the theorem that refers to \lstinline{Coq.Init.Datatypes.list})
+in place of the old specification (here, the theorem that refers to our updated \lstinline{list}),
 and otherwise preserves the behavior of the old proof term.
+The configuration instantiates the program transformation to a particular change in specification---it corresponds
+to a particular relation between the old and new specificationss.
 Figure~\ref{fig:system} shows how this comes together when the user invokes \toolname:
 
 \begin{enumerate}
