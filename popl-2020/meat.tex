@@ -1,30 +1,116 @@
-\section{Transform}
+\section{Proof Reuse Over Time}
 \label{sec:meat}
 
-At the core of \toolname is a configurable program transformation for transporting proof terms across equivalences.
-There are two key insights beneath \toolname that inform this design:
+We aimed to build a tool that can support both proof refactoring and proof repair.
+Proof refactoring and proof repair are similar problems: both refer to adapting proofs in response to changes
+in specifications. In Section~\ref{sec:overview}, for example, our specification was the theorem statement
+for \lstinline{rev_app_distr}, which changed when our \lstinline{list} type changed.
+In response, we had to refactor the proof.
+This was a refactoring because the change was \textit{semantics-preserving}:
+for any function or proof over the old version of \lstinline{list}, we could define a function or proof over the
+new version of \lstinline{list} that behaved the same way, and that function or proof had the behavior that we wanted.
 
-\begin{enumerate}
-\item Proof refactoring and proof repair are just proof reuse over time. That is, refactoring or repairing
-a proof that is broken due to a change in specification amounts to reusing the proof about the old specification
-in the proof about the new specification.
-\item We can view any change in specification as inducing at least one type equivalence,
-possibly with additional information (for non-semantics-preserving changes).
-Reusing a proof about the old specification then amounts to transporting the proof across the equivalence.
-\end{enumerate}
-(2) alone makes it tempting to use univalent transport like in HoTT or in the univalent parametricity framework.
-This is nice, but as DEVOID notes, means referring back to the old specification, which we can't do because of (1),
-and gets really slow over time. % TODO will need to cite current UP work, maybe when we get to equality
-DEVOID addresses this by implementing a program transformation for transport across a particular class of equivalences,
-but this is pretty narrow.
+Repair, in contrast, refers to changes that are \textit{not} semantics-preserving.
+One example might be changing a specification to use positive rather than natural numbers.
+We could define a refactoring corresponding to this change by shifting every number by one,
+but this would lead to functions with strange behavior.
+It is likely more desirable to follow the lead of the Coq standard library:
 
-We generalize the transformation from DEVOID to handle other equivalences.
-The result is a configurable (Section~\ref{sec:art}) proof term transformation (Section~\ref{sec:transform}).
-The configuration can be supplied either by search procedure to support an entire class of equivalences,
-or can be provided by the user of \toolname directly;
-we discuss some examples of both in Section~\ref{sec:search}.
+\begin{lstlisting}
+Nat2Pos.id : forall (n : nat), n <> 0 -> Pos.to_nat (Pos.of_nat n) = n.
+\end{lstlisting}
+In other words, to repair our proofs about \lstinline{nat} functions to proofs about \lstinline{positive} functions with the desired behavior,
+we need the additional restriction that those numbers are nonzero. 
+This restriction manifests as a proof obligation for the user.
 
-\subsection{Transformation}
+In both of these cases, we can think of any tool that refactors or repairs our proofs as
+\textit{reusing} the proofs about our old specification to derive proofs about our new specification,
+either with no new information (in the case of refactoring) or with some additional proof obligations (in the case of repair).
+This brings us to our first key insight:
+
+\begin{quote}
+\textbf{Key Insight 1}:
+Proof refactoring and repair are both just 
+proof reuse %~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}
+\textit{over time}. The key to supporting both is to build a generic proof reuse
+tool that can handle the additional challenges imposed by the reuse occuring over time. 
+\end{quote}
+In particular, we can reduce the problems of proof refactoring and repair to proof reuse across \textit{type equivalences}~\cite{univalent2013homotopy},
+or pairs of functions that map back and forth between two types and are mutual inverses.
+Refactoring corresponds to porting a proof across a type equivalence between the old specification and the new specification,
+while repair corresponds to porting a proof across a type equivalence between \textit{a refinement} of the old specification
+and the new specification (or similarly in the opposite direction).
+Note that there can be infinitely many equivalences corresponding to any change in specification,
+so the choice in equivalence is to some degree an art that depends on what the user wants.
+In the refactoring example, we use this equivalence:
+
+\begin{lstlisting}
+Coq.Init.Datatypes.list $\simeq$ list
+\end{lstlisting}
+while in the repair example, we use this equivalence:
+
+\begin{lstlisting}
+{ n : nat & n <> O } $\simeq$ positive
+\end{lstlisting}
+
+The problem of proof reuse across equivalences is known as \textit{transport}. % TODO cite
+However, most transport methods % TODO cite
+produce functions and proofs that still refer to the old specification.
+The main challenge imposed be reuse occurring over time is that the refactored or repaired functions and proofs
+may no longer refer in any way to the old specification, since the old specification no longer exists.
+There is one exception that we are aware of: \textsc{DEVOID}~\cite{Ringer2019} defines a proof term transformation
+that transports programs and proofs across equivalences for a particular class of changes.
+This brings us to our second key insight:
+
+\begin{quote}
+\textbf{Key Insight 2}:
+The proof term transformation from the \textsc{DEVOID} proof reuse tool can be generalized
+to build such a generic proof reuse tool, and the result is configurable both by the developer and by the user.
+\end{quote}
+This generalized proof term transformation forms the core of \toolname.
+
+Of course, as in \textsc{DEVOID}, such a proof term transformation produces a proof term,
+while the proof engineer typically writes proof scripts made up of tactics.
+Feeding the user proof terms does not make for a very good user experience.
+This brings us to our final insight:
+
+\begin{quote}
+\textbf{Key Insight 3}: The transformed proof terms can then be translated back to tactics.
+\end{quote} 
+
+These insights led us to design \toolname as a configurable (Section~\ref{sec:art}) proof term transformation (Section~\ref{sec:transform})
+combined with a Gallina to Ltac decompiler (Section~\ref{sec:meatdecompile}).
+This gives us the \textbf{Configure}, \textbf{Transform}, \textbf{Decompile} we saw in Section~\ref{sec:overview}.
+
+\subsection{Configure}
+\label{sec:art}
+
+The transformation is configurable by equivalence, but choosing the configuration (either by providing direct input or writing a 
+search procedure for an entire class of equivalences) is a bit of an art: There can be infinitely many equivalences that correpond to a 
+given change in specification, only some of which are useful. Furthermore, different configurations based on those equivalences
+can be more or less useful than others. Finally, certain proof obligations for configuring the transformation can be tricky.
+Thankfully, once that art is done, we know what it means for it to be correct.
+
+The correctness criteria for the configuration relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{IdEta}, and \lstinline{RewEta}
+in a particular way.
+This goes back to the equivalence and equality thing from the previous section.
+Formal thing here, intuition for what it means for the whole thing, explanation, and example.
+Section~\ref{sec:search} shows some particular instantions of this and their applicability to real programs and proofs.
+
+%Nicolas proved the first of these a while ago
+%for the equivalence in the DEVOID ITP paper.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
+
+Note about decidability of matching: when all of this is correct, what this means is that you \textit{can} always
+run one of the transformation rules. But that doesn't mean you \textit{should}. Depends what the user wants,
+and in some cases, would not terminate (refinement types, unpacking indexed types). Implementation section will
+discuss how we actually decide which ones to run so user doesn't need to apply transport by hand over and over again,
+and discussion section describes some cool ideas for doing this nicely with type-based search in the future.
+
+\paragraph{Preserving Equivalence} Explanation and example.
+
+\paragraph{Preserving Equality} Explanation and example.
+
+\subsection{Transform}
 \label{sec:transform}
 
 Figure~\ref{fig:final} shows the configurable proof term transformation,
@@ -106,33 +192,6 @@ to be easily describable, but there are many challenges to implemention which we
 \label{fig:final}
 \end{figure}
 
-\subsection{Configuration}
-\label{sec:art}
-
-The transformation is configurable by equivalence, but choosing the configuration (either by providing direct input or writing a 
-search procedure for an entire class of equivalences) is a bit of an art: There can be infinitely many equivalences that correpond to a 
-given change in specification, only some of which are useful. Furthermore, different configurations based on those equivalences
-can be more or less useful than others. Finally, certain proof obligations for configuring the transformation can be tricky.
-Thankfully, once that art is done, we know what it means for it to be correct.
-
-The correctness criteria for the configuration relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{IdEta}, and \lstinline{RewEta}
-in a particular way.
-This goes back to the equivalence and equality thing from the previous section.
-Formal thing here, intuition for what it means for the whole thing, explanation, and example.
-Section~\ref{sec:search} shows some particular instantions of this and their applicability to real programs and proofs.
-
-%Nicolas proved the first of these a while ago
-%for the equivalence in the DEVOID ITP paper.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
-
-Note about decidability of matching: when all of this is correct, what this means is that you \textit{can} always
-run one of the transformation rules. But that doesn't mean you \textit{should}. Depends what the user wants,
-and in some cases, would not terminate (refinement types, unpacking indexed types). Implementation section will
-discuss how we actually decide which ones to run so user doesn't need to apply transport by hand over and over again,
-and discussion section describes some cool ideas for doing this nicely with type-based search in the future.
-
-\paragraph{Preserving Equivalence} Explanation and example.
-
-\paragraph{Preserving Equality} Explanation and example.
 
 %First we need that \lstinline{DepElim} over $A$ into \lstinline{DepConstr} over $B$ and \lstinline{DepElim} over $B$ into
 %\lstinline{DepConstr} over $A$ form an equivalence between $A$ and $B$. When that's true, I think it should hold that \lstinline{DepElim} over $A$
@@ -198,4 +257,8 @@ and discussion section describes some cool ideas for doing this nicely with type
 %Actually deciding when to run this rule is one of the biggest challenges in practice,
 %so we'll talk about that more in the implementation section.
 
+\subsection{Decompile}
+\label{sec:meatdecompile}
+
+high-level decompiler stuff, maybe merge with other one
 

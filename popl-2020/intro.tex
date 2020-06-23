@@ -42,7 +42,7 @@ We address three open challenges in building better proof refactoring and repair
 of non-semantics-preserving changes~\cite{robert2018, wibergh2019}, and these are not informed by real user needs~\cite{replica}.
 \item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018}.
 \end{enumerate}
-We realize each challenge thanks to a corresponding key insight:
+We realize each challenge thanks to a corresponding key insight: % TODO dan comment
 
 \begin{enumerate}
 \item Proof refactoring and repair are both just 
@@ -55,7 +55,7 @@ to build such a generic proof reuse tool, and the result is configurable both by
 \end{enumerate}
 
 We have realized these insights in \toolname (Section~\ref{sec:overview}), a plugin for Coq 8.8. \toolname combines a
-configurable program transformation over proof terms (Section~\ref{sec:meat})
+configurable program transformation over proof terms (Section~\ref{sec:meat}) % TODO doesn't quite match current organization
 with search procedures to instantiate the program transformation to a particular change (Section~\ref{sec:search})
 and a decompiler from proof terms back to tactics (Section~\ref{sec:decompiler}).
 The result is a tool that:
