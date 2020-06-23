@@ -189,9 +189,50 @@ From there, the rest of the transformation is straightforward.
 \subsection{Equivalence}
 \label{sec:equivalence}
 
-This just means that it implements transport.
-Explanation, intuition, and example.
-The two rules.
+(draft text) want functions \& proofs that behave the same along the type equivalence between \A and \B
+functions behave same, proofs talk about the same things
+so equivalent inputs to equivalent outputs, and proofs about functions talk about equivalent things
+like DEVOID, means we lift to something equal up to transport
+
+two rules give us this: \lstinline{DepConstr} and \lstinline{DepElim}.
+idea is that the only way you can make an \A or a \B is by constructors, and the only way you can match over one
+(because we assume primitive eliminators) is by the eliminators.
+so first transports constructors, second eliminators.
+the result will no longer refer to \A because it will explicitly construct \B wherever it constructed \A,
+and it will eliminate \B wherever it eliminated \A.
+
+but note that these are not necessarily standard inductive constructors and eliminators.
+since we can have a refinement, or non-inductive types, these are dependent constructors or eliminators.
+and since our types can have different numbers of constructors, we really think about this like
+wrapping the constructors and eliminators of \B with the structure of \A.
+
+this is a bit weird and easiest to show by example.
+for our simplest example with our two lists, we have this:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+for \lstinline{nat} and \lstinline{positive}, we have this:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+and later in Section~\ref{sec:search}, we'll see an example with different numbers of constructors,
+\lstinline{nat} and \lstinline{binnat}. In that example, we have this:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+
+in all cases, together these induce a type equivalence between \A and \B:
+
+\begin{lstlisting}
+TODO
+\end{lstlisting}
+the search procedures from Section~\ref{sec:search} discover these functions and prove this automatically
+for certain \A and \B with certain properties. otherwise, like in DEVOID, this must be true
+in order for everything to work, but the user does not need to prove it.
+more on that in Section~\ref{sec:art}.
 
 \subsection{Equality}
 \label{sec:equality}
