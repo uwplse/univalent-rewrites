@@ -1,20 +1,22 @@
-\section{Proof Reuse Over Time}
-\label{sec:meat}
+\section{Key Insights}
+\label{sec:key}
 
-We aimed to build a tool that can support both proof refactoring and proof repair.
+\toolname is a flexible tool that supports both proof refactoring and proof repair and integrates
+with a typical proof engineering workflow in Coq.
+There were three key insights that helped us achieve this.
+
+\subsection{Insight 1: Reducing the Problem}
+
 Proof refactoring and proof repair are similar problems: both refer to adapting proofs in response to changes
 in specifications. In Section~\ref{sec:overview}, for example, our specification was the theorem statement
 for \lstinline{rev_app_distr}, which changed when our \lstinline{list} type changed.
-In response, we had to refactor the proof.
-This was a refactoring because the change was \textit{semantics-preserving}:
-for any function or proof over the old version of \lstinline{list}, we could define a function or proof over the
-new version of \lstinline{list} that behaved the same way, and that function or proof had the behavior that we wanted.
+Our corresponding change in the proof was a refactoring because the change was \textit{semantics-preserving}:
+the proof about the new version of \lstinline{list} behaved exactly the same way as the proof about the old
+version of \lstinline{list}.
 
 Repair, in contrast, refers to changes that are \textit{not} semantics-preserving.
-One example might be changing a specification to use positive rather than natural numbers.
-We could define a refactoring corresponding to this change by shifting every number by one,
-but this would lead to functions with strange behavior.
-It is likely more desirable to follow the lead of the Coq standard library:
+One example might be changing a specification to use positive rather than natural numbers, %.
+following the lead of the Coq standard library:
 
 \begin{lstlisting}
 Nat2Pos.id : forall (n : nat), n <> 0 -> Pos.to_nat (Pos.of_nat n) = n.
@@ -37,8 +39,9 @@ tool that can handle the additional challenges imposed by the reuse occuring ove
 \end{quote}
 In particular, we can reduce the problems of proof refactoring and repair to proof reuse across \textit{type equivalences}~\cite{univalent2013homotopy},
 or pairs of functions that map back and forth between two types and are mutual inverses.
-Refactoring corresponds to porting a proof across a type equivalence between the old specification and the new specification,
-while repair corresponds to porting a proof across a type equivalence between \textit{a refinement} of the old specification
+The problem of proof reuse across equivalences is known as \textit{transport}. % TODO cite
+Refactoring corresponds to transport across an equivalence between the old specification and the new specification,
+while repair corresponds to transport across an equivalence between \textit{a refinement} of the old specification
 and the new specification (or similarly in the opposite direction).
 Note that there can be infinitely many equivalences corresponding to any change in specification,
 so the choice in equivalence is to some degree an art that depends on what the user wants.
@@ -53,11 +56,12 @@ while in the repair example, we use this equivalence:
 { n : nat & n <> O } $\simeq$ positive
 \end{lstlisting}
 
-The problem of proof reuse across equivalences is known as \textit{transport}. % TODO cite
-However, most transport methods % TODO cite
-produce functions and proofs that still refer to the old specification.
-The main challenge imposed be reuse occurring over time is that the refactored or repaired functions and proofs
-may no longer refer in any way to the old specification, since the old specification no longer exists.
+\subsection{Insight 2: The Configurable Transformation}
+
+That proof refactoring and repair are reuse \textit{over time} dictates that proofs
+must no longer refer in any way to the old specification, since the old specification no longer exists.
+This means that most transport methods % TODO cite
+are not immediately useful for refactoring and repair.
 There is one exception that we are aware of: \textsc{DEVOID}~\cite{Ringer2019} defines a proof term transformation
 that transports programs and proofs across equivalences for a particular class of changes.
 This brings us to our second key insight:
@@ -69,6 +73,8 @@ to build such a generic proof reuse tool, and the result is configurable both by
 \end{quote}
 This generalized proof term transformation forms the core of \toolname.
 
+\subsection{Insight 3: The Decompiler}
+
 Of course, as in \textsc{DEVOID}, such a proof term transformation produces a proof term,
 while the proof engineer typically writes proof scripts made up of tactics.
 Feeding the user proof terms does not make for a very good user experience.
@@ -78,12 +84,27 @@ This brings us to our final insight:
 \textbf{Key Insight 3}: The transformed proof terms can then be translated back to tactics.
 \end{quote} 
 
-These insights led us to design \toolname as a configurable (Section~\ref{sec:art}) proof term transformation (Section~\ref{sec:transform})
-combined with a Gallina to Ltac decompiler (Section~\ref{sec:meatdecompile}).
+These insights led us to design \toolname as a configurable proof term transformation
+combined with a Gallina to Ltac decompiler.
 This gives us the \textbf{Configure}, \textbf{Transform}, \textbf{Decompile} we saw in Section~\ref{sec:overview}.
+
+\section{Something}
+\label{sec:meat}
+
+Figure~\ref{fig:final} shows the configurable proof term transformation at the heart of all of this.
+The transformation is parameterized over two equivalent types \A and \B (rule \lstinline{Equivalence}).
+Most of it is standard with the exception of the four rules that correspond to the configuration:
+
+\begin{enumerate}
+\item Rules \lstinline{Dep-Constr} and \lstinline{Dep-Elim} for transforming constructors and eliminators 
+\item Rules \lstinline{Id-Eta} and \lstinline{Rew-Eta} for transforming identity and equalities
+\end{enumerate}
+These transformations rules, taken together, both induce a particular equivalence and ensure that the transformation
+preserves it and produces well-typed terms.
 
 \subsection{Configure}
 \label{sec:art}
+
 
 The transformation is configurable by equivalence, but choosing the configuration (either by providing direct input or writing a 
 search procedure for an entire class of equivalences) is a bit of an art: There can be infinitely many equivalences that correpond to a 
@@ -113,16 +134,6 @@ and discussion section describes some cool ideas for doing this nicely with type
 \subsection{Transform}
 \label{sec:transform}
 
-Figure~\ref{fig:final} shows the configurable proof term transformation,
-which is parameterized over two equivalent types (rule \lstinline{Equivalence}).
-Most of it is standard with the exception of the four rules that correspond to the configuration:
-
-\begin{enumerate}
-\item Rules \lstinline{Dep-Constr} and \lstinline{Dep-Elim} for transforming constructors and eliminators 
-\item Rules \lstinline{Id-Eta} and \lstinline{Rew-Eta} for transforming identity and equalities
-\end{enumerate}
-These transformations rules, taken together, both induce a particular equivalence and ensure that the transformation
-preserves it and produces well-typed terms.
 In short, (1) ensures the transformation preserves the \textit{equivalence} between our old and new specifications,
 while (2) ensures that the transformation respects \textit{equalities} in the original proof.
 The former of these just means that it implements transport, while the latter deals specifically
@@ -155,7 +166,7 @@ to be easily describable, but there are many challenges to implemention which we
 
 \inferrule[Rew-Eta]
   { \Gamma \vdash c_A \Uparrow c_B \\ \Gamma \vdash q_A \Uparrow q_B \\ \Gamma \vdash e_A \Uparrow e_B }
-  { \Gamma \vdash \mathrm{RewEta}(j, A, q_A, t_A) \Uparrow \mathrm{RewEta}(j, B, q_B, t_B) }
+  { \Gamma \vdash \mathrm{RewEta}(j,\ A,\ q_A,\ t_A) \Uparrow \mathrm{RewEta}(j,\ B,\ q_B,\ t_B) }
 
 \inferrule[Equivalence]
   { \\ }
