@@ -101,7 +101,6 @@ This gives us the \textbf{Configure}, \textbf{Transform}, \textbf{Decompile} wor
 \section{Transform}
 \label{sec:meat}
 
-
 \begin{figure}
 \begin{mathpar}
 \mprset{flushleft}
@@ -189,51 +188,66 @@ From there, the rest of the transformation is straightforward.
 \subsection{Equivalence}
 \label{sec:equivalence}
 
-(draft text) want functions \& proofs that behave the same along the type equivalence between \A and \B
-functions behave same, proofs talk about the same things
-so equivalent inputs to equivalent outputs, and proofs about functions talk about equivalent things
-like DEVOID, means we lift to something equal up to transport
+Section~\ref{sec:key} decribed how both proof refactoring and proof repair are proof reuse across
+equivalences over time.
+The goal of the program transformation is to preserve that equivalence in some way, while no longer referring to the old specification.
+That is, for equivalent types \A and \B, the transformation takes as input functions and proofs
+that refer to \A and returns functions and proofs that refer to \B.
+Furthermore, the transformed functions behave the same way as the input functions,
+and the transformed proofs talk about the same things as the input proofs.
 
-two rules give us this: \lstinline{Dep-Constr} and \lstinline{Dep-Elim},
-which lift configuration parts \lstinline{DepConstr} and \lstinline{DepElim}.
-idea is that the only way you can make an \A or a \B is by constructors, and the only way you can match over one
-(because we assume primitive eliminators) is by the eliminators.
-so first transports constructors, second eliminators.
-the result will no longer refer to \A because it will explicitly construct \B wherever it constructed \A,
-and it will eliminate \B wherever it eliminated \A.
+More formally, the output of the proof term transformation ought to be equal to the input of the program transformation
+up to transport along the equivalence between \A and \B.
+This is the same as the correctness criteria for the program transformation from \textsc{Devoid} that this is based on.
+The difference is that this program transformation is configurable to different \A and \B with different relationships between them,
+while \textsc{Devoid} is specific to a particular kind of relation between \A and \B.
 
-but note that these are not necessarily standard inductive constructors and eliminators.
-since we can have a refinement, or non-inductive types, these are dependent constructors or eliminators.
-and since our types can have different numbers of constructors, we really think about this like
-wrapping the constructors and eliminators of \B with the structure of \A.
+The two rules that correspond to this in the program transformation are \lstinline{Dep-Constr} and \lstinline{Dep-Elim},
+which use configuration parts \lstinline{DepConstr} and \lstinline{DepElim}, respectively.
+At a high level, these describe how to construct and eliminate \A and \B, wrapping the two types with a common inductive structure.
+Since Coq is a constructive logic, the only way to construct an \A (respectively \B) is to use its
+constructors; since we assume primitive eliminators, the only way to match over an \A (respectively \B)
+is to apply its eliminator. 
+The \lstinline{Dep-Constr} rule thus transports constructions of \A to constructions of \B,
+while the \lstinline{Dep-Elim} rule rule transports eliminators of \A to eliminators of \B.
+The result will construct \B in place of \A, and it will eliminate \B in place of \A.
+Thanks to this, \toolname can remove all references to the old type \A,
+and produce a refactored or repaired term that refers only to the new type \B.
 
-this is a bit weird and easiest to show by example.
-for our simplest example with our two lists, we have this:
+Notably, though, \A and \B may not be inductive types, so \lstinline{DepConstr} and \lstinline{DepElim}
+correspond to \textit{dependent} construction and eliminations.
+For example, if our input type is \{\lstinline{ n : nat | n <> O }\}, our dependent constructors and eliminators are the following:
+
+\begin{lstlisting}
+TODO example and note about example
+\end{lstlisting}
+
+In addition, even when \A and \B are both inductive types,
+\lstinline{DepConstr} and \lstinline{DepElim} over \B do not necessarily correspond
+to the constructors and eliminators of \B itself.
+Instead, they describe how to construct and eliminate \B \textit{as if it is an \A},
+wrapping the constructors and eliminators of \B to contructors and eliminators with the
+structure of \A.
+This way, we do not need to change the number of arguments to constructors or eliminators when applying the program transformation.
+For example, with the \lstinline{list} refactoring, we have these dependent constructors and eliminators:
+
+\begin{lstlisting}
+TODO example and note about example
+\end{lstlisting}
+Section~\ref{sec:search} includes many more examples, including cases when \A and \B
+themselves have different numbers of constructors (but the configuration requires that
+is exactly one \lstinline{DepConstr(j, A)} for each \lstinline{DepConstr(j, B)}).
+
+In all cases, together these induce a type equivalence between \A and \B:
 
 \begin{lstlisting}
 TODO
 \end{lstlisting}
-for \lstinline{nat} and \lstinline{positive}, we have this:
-
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-and later in Section~\ref{sec:search}, we'll see an example with different numbers of constructors,
-\lstinline{nat} and \lstinline{binnat}. In that example, we have this:
-
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-
-in all cases, together these induce a type equivalence between \A and \B:
-
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-the search procedures from Section~\ref{sec:search} discover these functions and prove this automatically
-for certain \A and \B with certain properties. otherwise, like in DEVOID, this must be true
-in order for everything to work, but the user does not need to prove it.
-more on that in Section~\ref{sec:art}.
+The search procedures described in Section~\ref{sec:search} discover these functions and prove this automatically
+for \A and \B with certain properties.
+Otherwise, as in \textsc{Devoid}, this must be true in order for the proof term transformation
+to work correctly, but the user does not need to prove that it hold.
+Section~\ref{sec:art} discusses this in more detail.
 
 \subsection{Equality}
 \label{sec:equality}
@@ -315,11 +329,13 @@ Thankfully, once that art is done, we know what it means for it to be correct.
 The correctness criteria for the configuration relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{IdEta}, and \lstinline{RewEta}
 in a particular way.
 This goes back to the equivalence and equality thing from the previous section.
-For equivalence, we need this to hold:
+For equivalence, we need that each \lstinline{DepConstr(j, A)} is equal to each \lstinline{DepConstr(j, B)} up to transport,
+and similarly that \lstinline{DepElim} over \A is equal to \lstinline{DepElim} over \B up to transport:
 
 \begin{lstlisting}
 TODO
 \end{lstlisting}
+That these induce a type equivalence follows from that.
 And for equality, we need this to hold:
 
 \begin{lstlisting}
@@ -331,7 +347,10 @@ Intuition for the second is that we need proofs about equality to lift to proofs
 and again we can only ever construct or eliminate at some point, so it's enough
 to use these facts just in the dependent constructors and eliminators.
 
+% TODO note about this all coming together
+% TODO example of everything coming together
 Section~\ref{sec:search} shows some particular instantions of this configuration and their applicability to real programs and proofs.
+
 Note about decidability of matching: when all of this is correct, what this means is that you \textit{can} always
 run one of the transformation rules. But that doesn't mean you \textit{should}. Depends what the user wants,
 and in some cases, would not terminate (refinement types, unpacking indexed types). Implementation section will
