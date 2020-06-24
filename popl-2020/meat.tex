@@ -25,13 +25,21 @@ the proof about the new version of \lstinline{list} behaved exactly the same way
 version of \lstinline{list}.
 
 Repair, in contrast, refers to changes that are \textit{not} semantics-preserving.
-One example might be changing a specification to use positive rather than natural numbers, %.
-following the lead of the Coq standard library:
+One example might be changing a specification to use positive rather than natural numbers.
+Coq defines an inductive type \lstinline{positive}:
 
 \begin{lstlisting}
-Nat2Pos.id : forall (n : nat), n <> 0 -> Pos.to_nat (Pos.of_nat n) = n.
+Inductive positive : Set :=
+| xI : positive -> positive
+| xO : positive -> positive
+| xH : positive.
 \end{lstlisting}
-In other words, to repair our proofs about \lstinline{nat} functions to proofs about \lstinline{positive} functions with the desired behavior,
+This behaves the same way as the set of natural numbers that are nonzero:
+
+\begin{lstlisting}
+Definition pos_nat := { n : nat | Nat.eqb n 0 = false }.
+\end{lstlisting}
+Thus, to repair our proofs about \lstinline{nat} functions to proofs about \lstinline{positive} functions with the desired behavior,
 we need the additional restriction that those numbers are nonzero. 
 This restriction manifests as a proof obligation for the user.
 
@@ -63,7 +71,7 @@ Coq.Init.Datatypes.list $\simeq$ list
 while in the repair example, we use this equivalence:
 
 \begin{lstlisting}
-{ n : nat & n <> O } $\simeq$ positive
+pos_nat $\simeq$ positive
 \end{lstlisting}
 
 \paragraph{A configurable proof term transformation for transport across equivalences}
@@ -216,31 +224,56 @@ and produce a refactored or repaired term that refers only to the new type \B.
 
 Notably, though, \A and \B may not be inductive types, so \lstinline{DepConstr} and \lstinline{DepElim}
 correspond to \textit{dependent} construction and elimination.
-For example, if our input type is \{\lstinline{ n : nat | n <> O }\}, we could choose these dependent constructors:
-
-\begin{lstlisting}
-(* TODO may change this example---not sure if DepElim is possible to define for this *)
-DepConstr(0, { n : nat | n <> O }) : { n : nat | n <> O } :=
-  $\exists$ 1 (not_eq_sym (n_Sn O)).
-
-DepConstr(1, { n : nat | n <> O }) : { n : nat | n <> O } -> { n : nat | n <> O } :=
-  fun s => $\exists$ (S (proj1_sig s)) (not_eq_sym (O_S (proj1_sig s))).
-\end{lstlisting} % TODO test this example w/ lifting
-% TODO what is the eliminator? Is this possible? If not, mention we don't know if always possible,
-% and change example. If so, include it here.
-
 In addition, even when \A and \B are both inductive types,
 \lstinline{DepConstr} and \lstinline{DepElim} over \B do not necessarily correspond
 to the constructors and eliminators of \B itself.
 Instead, they describe how to construct and eliminate \B \textit{as if it is an \A},
 wrapping the constructors and eliminators of \B to contructors and eliminators with the
 structure of \A.
-This way, we do not need to change the number of arguments to constructors or eliminators when applying the program transformation.
-For example, with the \lstinline{list} refactoring, we have these dependent constructors and eliminators:
+This way, we do not need to change the number and order of arguments to constructors or eliminators when applying the program transformation.
+
+It is easiest to see this by example.
+If we consider our simple \lstinline{list} refactoring, our dependent
+constructors for \lstinline{Coq.Init.Datatypes.list} are just the normal constructors
+\lstinline{nil} and \lstinline{cons}. Our dependent constructors for our updated
+\lstinline{list}, however, swaps the order back to the original order of constructors:
 
 \begin{lstlisting}
-TODO example and note about example
+DepConstr(0, list T) : list T := nil.
+DepConstr(1, list T) : T -> list T -> list T := cons.
 \end{lstlisting}
+The dependent eliminator swaps the cases similarly, so that its type signature is identical
+to \lstinline{list_rect} but with the updated \lstinline{list} type and constructors.
+
+Things are a bit more complicated with our \lstinline{nat} to \lstinline{positive} repair.
+We can make many different choices here. One is to choose these dependent constructors:
+
+\begin{lstlisting}
+DepConstr(0, pos_nat) : pos_nat :=
+  $\exists$ 1 eq_refl.
+
+DepConstr(1, pos_nat) : pos_nat -> pos_nat :=
+  fun pn => $\exists$ (S ($pi_l$ pn)) eq_refl.
+\end{lstlisting} % TODO test this example w/ lifting, define equivalence, etc. revisit h-set problem! can we define depelim when we don't have an hset???
+and a dependent eliminator with this type:
+
+\begin{lstlisting}
+forall (P : pos_nat -> Type),
+  P DepConstr(0, pos_nat) ->
+  (forall (pn : pos_nat), P pn -> P (DepConstr(1, pos_nat) pn)) ->
+  forall (pn : pos_nat), P pn.
+\end{lstlisting}
+It is then straightforward to adapt functions and proofs over \lstinline{nat} to \lstinline{pos_nat}.
+The intuition is that \lstinline{DepElim} just removes the zero case 
+For example, the addition function just becomes this:
+
+\begin{lstlisting}
+(* TODO syntax *)
+fun n m : pos_nat =>
+  $\exists$ ($\pi_l$ n + $\pi_l$ m) (DepElim _ eq_refl (fun _ _ => eq_refl) n)
+\end{lstlisting} % TODO syntax
+The program tranformation can then transport that to inductive \lstinline{positive}.
+
 Section~\ref{sec:search} includes many more examples, including cases when \A and \B
 themselves have different numbers of constructors (but the configuration requires that
 is exactly one \lstinline{DepConstr(j, A)} for each \lstinline{DepConstr(j, B)}).
@@ -248,7 +281,9 @@ is exactly one \lstinline{DepConstr(j, A)} for each \lstinline{DepConstr(j, B)})
 In all cases, together these induce a type equivalence between \A and \B:
 
 \begin{lstlisting}
-TODO
+(* TODO syntax, indices etc. *)
+Definition f : A -> B := DepElim _ [DepConstr(0, B), ..., DepConstr (n, B)]
+Definition g : B -> A := DepElim _ [DepConstr(0, A), ..., DepConstr (n, A)]
 \end{lstlisting}
 The search procedures described in Section~\ref{sec:search} discover these functions and prove this automatically
 for \A and \B with certain properties.
