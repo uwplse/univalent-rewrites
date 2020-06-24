@@ -252,60 +252,97 @@ Section~\ref{sec:art} discusses this in more detail.
 \subsection{Equality}
 \label{sec:equality}
 
-(draft text) it's not enough to just have things be equivalent.
-we don't have univalence (which would state that equivalence is equivalent to equality).
-the result as noted in the marriage of univalence and parametricity framework is that unless we handle equalities,
-lifting terms might have different types than the lifted types.
-this is because definitional equalities might need to lift to propositional equalities.
-a simple example might be this one from \lstinline{nat} and \lstinline{binnat}:
+The other two rules corresponding to the configuration deal with transporting equalities.
+Since our language does not assume univalence, we do not have that equivalence is equivalent to equality.
+The result of this, as noted in \citet{tabareau2019marriage},
+is that we must do additional work to transform definitional and propositional equalities.
+Otherwise, if we tranform a term \lstinline{t : T} to some \lstinline{t' : T'}, we do not necessarily
+have that our transformation maps \lstinline{T} to \lstinline{T'}.
+For this to work, we may sometimes need to transform definitional equalities to propositional equalities.
+
+We see this with natural numbers \lstinline{nat} and binary numbers \lstinline{binnat}
+in Section~\ref{sec:search}.
+There, we at some point try to repair this theorem over \lstinline{nat} from the Coq standard library:
 
 \begin{lstlisting}
 TODO
 \end{lstlisting}
-over \lstinline{nat} this is reflexivity, but over \lstinline{binnat} this is not.
-so we must somehow lift the thing on the left to the thing on the right.
+to instead refer to binary numbers.
+Naively transforming reflexivity (definitional equality) to reflexivity results in a type error:
 
-two rules for this: \lstinline{Id-Eta} and \lstinline{Rew-Eta}, which lift
-configuration parts \lstinline{IdEta} and \lstinline{RewEta}.
-\lstinline{IdEta} lifts the expanded identity function, and \lstinline{RewEta} lifts equalities.
-There is just one \lstinline{IdEta}. there are as many \lstinline{RewEta} as there are inductive hypotheses
-of \lstinline{DepElim}.
-for example, for our refactor, we have the simplest case:
+\begin{lstlisting}
+TODO example and explanation
+\end{lstlisting}
+The trick to transforming this correctly is to view the definitional equality above as a contracted propositional equality:
+
+\begin{lstlisting}
+TODO example and explanation
+\end{lstlisting}
+We can then transform that propositional equality to a propositional equality over binary numbers:
+
+\begin{lstlisting}
+TODO example and explanation
+\end{lstlisting}
+which gives us a proof of the theorem we want.
+
+There are two rules that handle this general intuition of contracted equalitie:
+\lstinline{Id-Eta} and \lstinline{Rew-Eta}, which use configuration parts
+\lstinline{IdEta} and \lstinline{RewEta}, respectively.
+\lstinline{IdEta} corresponds to the expanded identity function, and \lstinline{RewEta}
+corresponds to expanded propositional equaltiies.
+There is just one \lstinline{IdEta}, but there are as many \lstinline{RewEta} as there are
+inductive hypotheses of \lstinline{DepElim}.
+This is because we can minimize the equality problem to preserving definitional equalities
+in the eliminator---we'll see this more in Section~\ref{sec:search}.
+
+The \lstinline{list} refactor shows the simplest case of this, when \lstinline{IdEta} is identity
+and definitional equalities do not change:
 
 \begin{lstlisting}
 TODO
 \end{lstlisting}
-for our repair, identity is expanded for compatibility with eliminators in correctness criteria, but nothing else changes:
+The \lstinline{positive} repair shows a slightly more complicated example in which \lstinline{IdEta} is expanded:
 
 \begin{lstlisting}
 TODO
 \end{lstlisting}
-and for \lstinline{nat} and \lstinline{binnat}, \lstinline{IdEta} is straightforward, but actually one of our \lstinline{RewEta}
-is interesting because the successor case of our eliminator doesn't definitionally preserve equality:
+This is needed for compatibility with the definition of \lstinline{DepElim} for refinement types,
+in order to satisfy the correctness criteria from Section~\ref{sec:art}.
+
+The binary number example in Section~\ref{sec:search} shows an example when \A and \B do not have the same inductive
+structure---they are not \textit{ornaments}. % TODO cite
+In that case, \lstinline{IdEta} does not change, but \lstinline{RewEta} does, to help transform proofs
+like the one at the beginning of this section.
+The root cause of this is that the successor case of the dependent eliminator over binary numbers does not preserve
+the definitional equality from the successor case of the dependent eliminator over natural numbers:
 
 \begin{lstlisting}
 TODO
 \end{lstlisting}
-thus we can lift the example up top to this:
+Thus, we must prove the propositional equality that proves this:
 
 \begin{lstlisting}
 TODO
 \end{lstlisting}
 
-note that the marriage of univalence and parametricity paper said this approach would be intractable in general.
-They are partly right!
-It is easily \textit{describable}, but there are many challenges to implementation which we will note in Section~\ref{sec:implementation}.
-notably, \lstinline{IdEta} and \lstinline{RewEta} are typically implied implicitly in code, so the implementation needs to match
-against them.
-for example, the example up top didn't apply \lstinline{RewEta} explicitly, so if we want to fully automate this then
-we need a step that understands that casts are implicit rewrites, and expands them in the right place.
-this problem shows up a bit for constructors and eliminators but is much more pronounced here.
+Note that \citet{tabareau2019marriage} says that transporting these equalities directly
+is intractable in general.
+This is partly correct: it is easy to \textit{describe} how to transport these equalities,
+but it is difficult to implement.
+Notably, applications of \lstinline{IdEta} and \lstinline{RewEta} show up contracted in typical code examples,
+as we saw in the theorem at the top of this section.
+Thus, the implementation must be able to identify these contracted \lstinline{IdEta} and \lstinline{RewEta}
+applications and expand them before applying transport.
+This same problem shows up for dependent constructors and eliminators to some degree,
+but it is much more pronounced for equalities,
+since \lstinline{RewEta} can be too complex for unification to match against.
 
-for now for these all of the configuration rules our search procedure include custom matching definitions,
-but there unfortunately isn't a way for users to supply custom matching things,
-and unification isn't good enough for \lstinline{RewEta}.
-so when configuration is manual, input terms must be expanded to apply \lstinline{RewEta} over \A.
-custom matching WIP; will talk more about this in future work.
+The implementation of each search procedure from Section~\ref{sec:search} includes custom rewrite rules that correspond to expanding
+contracted applications of each of these.
+There is not yet any way for the user to provide these custom rewrite rules as well,
+so when configuration is manual, the user must first expand input terms to apply \lstinline{RewEta} over \A.
+This can be painful, so we have plans for allowing users to also write custom rewrite rules,
+which we discuss in Section~\ref{sec:discussion}.
 
 \subsection{Equivalence \& Equality}
 \label{sec:art}
@@ -343,6 +380,9 @@ TODO
 \end{lstlisting}
 Intuition for the first is based on insights from \textsc{Devoid}.
 See this proof for the example from the ITP paper.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
+The user doesn't need to prove these, especially since that would require either univalent parametricity
+or univalence itself.
+But does need to be true for this to work.
 Intuition for the second is that we need proofs about equality to lift to proofs about equality,
 and again we can only ever construct or eliminate at some point, so it's enough
 to use these facts just in the dependent constructors and eliminators.
