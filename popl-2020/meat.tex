@@ -420,18 +420,16 @@ The configuration (\lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{IdEta}
 the proof term transformation to a particular equivalence between \A and \B.
 Choosing an equivalence is a bit of an art: there can be infinitely many equivalences that correpond to a 
 given change in specification, only some of which are useful.
-For example, for our \lstinline{positive} example, we could also use this equivalence:
+For example, for our \lstinline{positive} example, we could just as well
+map \lstinline{O} over natural numbers to and from \lstinline{1} over positive numbers,
+and preserve the successor behavior, producing this equivalence: % TODO could we though?
 
 \begin{lstlisting}
-TODO
+nat $\simeq$ positive
 \end{lstlisting}
-That is a simple refactoring. Unfortunately, it produces functions and proofs with strange behavior, like this function:
-
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-which is clearly not what we want.
-Even once we've chosen an equivalence, we could define many possible configurations that correspond
+Transporting functions and proofs along this equivalence is a simple refactoring,
+but it does not preserve functions and proofs with the desired behavior.
+And even once we've chosen an equivalence, we could define many possible configurations that correspond
 to the equivalence, some of which will produce functions and proofs that are more useful or efficient than others.
 
 Thankfully, once the art is done, we can at least ensure that it is \textit{correct art}.
