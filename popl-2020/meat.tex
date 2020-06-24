@@ -215,12 +215,19 @@ Thanks to this, \toolname can remove all references to the old type \A,
 and produce a refactored or repaired term that refers only to the new type \B.
 
 Notably, though, \A and \B may not be inductive types, so \lstinline{DepConstr} and \lstinline{DepElim}
-correspond to \textit{dependent} construction and eliminations.
-For example, if our input type is \{\lstinline{ n : nat | n <> O }\}, our dependent constructors and eliminators are the following:
+correspond to \textit{dependent} construction and elimination.
+For example, if our input type is \{\lstinline{ n : nat | n <> O }\}, we could choose these dependent constructors:
 
 \begin{lstlisting}
-TODO example and note about example
-\end{lstlisting}
+(* TODO may change this example---not sure if DepElim is possible to define for this *)
+DepConstr(0, { n : nat | n <> O }) : { n : nat | n <> O } :=
+  $\exists$ 1 (not_eq_sym (n_Sn O)).
+
+DepConstr(1, { n : nat | n <> O }) : { n : nat | n <> O } -> { n : nat | n <> O } :=
+  fun s => $\exists$ (S (proj1_sig s)) (not_eq_sym (O_S (proj1_sig s))).
+\end{lstlisting} % TODO test this example w/ lifting
+% TODO what is the eliminator? Is this possible? If not, mention we don't know if always possible,
+% and change example. If so, include it here.
 
 In addition, even when \A and \B are both inductive types,
 \lstinline{DepConstr} and \lstinline{DepElim} over \B do not necessarily correspond
