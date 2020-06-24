@@ -268,7 +268,6 @@ The intuition is that \lstinline{DepElim} just removes the zero case
 For example, the addition function just becomes this:
 
 \begin{lstlisting}
-(* TODO syntax *)
 fun n m : pos_nat =>
   $\exists$ ($\pi_l$ n + $\pi_l$ m) (DepElim _ eq_refl (fun _ _ => eq_refl) n)
 \end{lstlisting} % TODO syntax
@@ -281,7 +280,6 @@ is exactly one \lstinline{DepConstr(j, A)} for each \lstinline{DepConstr(j, B)})
 In all cases, together these induce a type equivalence between \A and \B:
 
 \begin{lstlisting}
-(* TODO syntax, indices etc. *)
 Definition f : A -> B := DepElim _ [DepConstr(0, B), ..., DepConstr (n, B)]
 Definition g : B -> A := DepElim _ [DepConstr(0, A), ..., DepConstr (n, A)]
 \end{lstlisting}
@@ -307,65 +305,94 @@ in Section~\ref{sec:search}.
 There, we at some point try to repair this theorem over \lstinline{nat} from the Coq standard library:
 
 \begin{lstlisting}
-TODO
+Lemma plus_Sn_m :
+  forall (n m : nat), S n + m = S (n + m).
+Proof.
+  intros n m; induction n; simpl; auto.
+Qed.
 \end{lstlisting}
 to instead refer to binary numbers.
-Naively transforming reflexivity (definitional equality) to reflexivity results in a type error:
+The term underneath this is just reflexivity:
 
 \begin{lstlisting}
-TODO example and explanation
+(fun n m : nat => eq_refl) : forall n m : nat, S n + m = S (n + m)
 \end{lstlisting}
+Naively transforming reflexivity (definitional equality) to reflexivity results in a type error,
+since the transported depenedent constructor corresponding to \lstinline{S}---
+a function that takes the successor of any binary natural number---
+does not preserve definitional equality.
+
 The trick to transforming this correctly is to view the definitional equality above as a contracted propositional equality:
 
 \begin{lstlisting}
-TODO example and explanation
+(fun n m : nat =>
+  eq_rect
+    (fun m => S n + m)
+    (fun (p : nat -> nat) => S n + m = p m)
+    eq_refl
+    (fun m => S (n + m))
+    eq_refl)
+: forall n m : nat, S n + m = S (n + m)
 \end{lstlisting}
-We can then transform that propositional equality to a propositional equality over binary numbers:
+We can then transform that propositional equality to a propositional equality over binary numbers (after transforming \lstinline{+} to operate
+over binary numbers):
 
 \begin{lstlisting}
-TODO example and explanation
+(fun n m : Bin.nat =>
+  eq_rect
+    (fun m => Bin.S n + m)
+    (fun (p : Bin.nat -> Bin.nat) => S n + m = p m)
+    eq_refl
+    (fun m => Bin.S (n + m))
+    (refold_elim_S (fun _ => Bin.nat -> Bin.nat) (fun b3 : Bin.nat => b3) (fun _ add (b3 : Bin.nat) => Bin.S (add b3)) n)
+: forall n m : Bin.nat, S n + m = S (n + m)
 \end{lstlisting}
 which gives us a proof of the theorem we want.
 
-There are two rules that handle this general intuition of contracted equalitie:
-\lstinline{Id-Eta} and \lstinline{Rew-Eta}, which use configuration parts
-\lstinline{IdEta} and \lstinline{RewEta}, respectively.
-\lstinline{IdEta} corresponds to the expanded identity function, and \lstinline{RewEta}
-corresponds to expanded propositional equaltiies.
+The key to this working is \lstinline{refold_elim_S}, which essentially states that
+we can always refold the successor case of inductive proofs about \lstinline{Bin.nat}
+that go through the dependent eliminator over \lstinline{Bin.nat}:
+
+\begin{lstlisting}
+refold_elim_S :
+  forall (P : Bin.nat -> Type) (PO : P Bin.O) (PS : forall n, P n -> P (Bin.S n)) (n : Bin.nat),
+    DepElim P PO PS (Bin.S n) = PS n (DepElim P PO PS n).
+\end{lstlisting}
+% TODO everywhere here need to be consistent about DepConstr, DepElim, syntax, etc.
+The equivalent over \lstinline{nat} would follow by reflexivity, so its application is implicit.
+We can derive a rewrite rule from this:
+
+\begin{lstlisting}
+(fun P PO PS n (Q : P (Bin.S n) -> Type) (H : Q (DepElim P PO PS (Bin.S n))) : Q (PS n (DepElim P PO PS n)) :=
+  eq_rect
+    (DepElim P PO PS (Bin.S n))
+    (fun (H : P (Bin.S n)) => Q H)
+    H
+    (PS n (DepElim P PO PS n))
+    (refold_elim_S P PO PS n)
+: forall P PO PS n (Q : P (Bin.S n) -> Type), Q (DepElim P PO PS (Bin.S n)) -> Q (PS n (DepElim P PO PS n)).
+\end{lstlisting}
+This rewrite rule turns out to be \lstinline{RewEta} for \lstinline{Bin.nat}, one of the two configuration parts that 
+handles contracted equalities:
+\lstinline{Rew-Eta} uses \lstinline{RewEta} to transform expanded propositional equalities, while
+\lstinline{Id-Eta} uses \lstinline{IdEta} to transform the expanded identity function.
+In this example, \lstinline{IdEta} is just the identity function.
+In our repair, \lstinline{IdEta} expands the existential:
+
+\begin{lstlisting}
+fun (n : pos_nat) => $\exists$ ($\pi_l$ n) ($\pi_r$ n)
+\end{lstlisting}
+so that, unlike \textsc{Devoid}, we do not need our algorithm to assume primitive projections.
+
+For any type \A or \B,
 There is just one \lstinline{IdEta}, but there are as many \lstinline{RewEta} as there are
 inductive hypotheses of \lstinline{DepElim}.
 This is because we can minimize the equality problem to preserving definitional equalities
 in the eliminator---we'll see this more in Section~\ref{sec:search}.
 
-The \lstinline{list} refactor shows the simplest case of this, when \lstinline{IdEta} is identity
-and definitional equalities do not change:
-
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-The \lstinline{positive} repair shows a slightly more complicated example in which \lstinline{IdEta} is expanded:
-
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-This is needed for compatibility with the definition of \lstinline{DepElim} for refinement types,
-in order to satisfy the correctness criteria from Section~\ref{sec:art}.
-
-The binary number example in Section~\ref{sec:search} shows an example when \A and \B do not have the same inductive
-structure---they are not \textit{ornaments}. % TODO cite
-In that case, \lstinline{IdEta} does not change, but \lstinline{RewEta} does, to help transform proofs
-like the one at the beginning of this section.
-The root cause of this is that the successor case of the dependent eliminator over binary numbers does not preserve
-the definitional equality from the successor case of the dependent eliminator over natural numbers:
-
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-Thus, we must prove the propositional equality that proves this:
-
-\begin{lstlisting}
-TODO
-\end{lstlisting}
+\lstinline{RewEta} in the above example is not reflexivity precisely becuse our two inductive types
+\lstinline{nat} and \lstinline{Bin.nat} do not have the same inductive structure---they are not \textit{ornaments}. % TODO cite
+When our types are ornaments, like with our simple refactor above, every \lstinline{RewEta} is just reflexivity.
 
 Note that \citet{tabareau2019marriage} says that transporting these equalities directly
 is intractable in general.
