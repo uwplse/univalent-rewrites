@@ -52,8 +52,9 @@ to build such a generic proof reuse tool, and the result is configurable both by
 \item The transformed proof terms can then be translated back to tactics (Section~\ref{sec:decompiler}).
 \end{enumerate}
 
-These insights informed our design of \toolname (Section~\ref{sec:overview}), a plugin for Coq 8.8.
-\toolname combines a configurable program transformation over proof terms % TODO doesn't quite match current organization
+These insights informed our design of 
+\toolname (Configurable Approach to Repairing and Refactoring Outdated Tactics), a plugin for Coq 8.8.
+\toolname (Section~\ref{sec:overview}) combines a configurable program transformation over proof terms % TODO doesn't quite match current organization
 with search procedures to instantiate the program transformation to a particular change
 and a decompiler from proof terms back to tactics.
 The result is a tool that:

@@ -1,17 +1,22 @@
 \section{Case Studies \& Configurations}
 \label{sec:search}
 
-\toolname implements search procedures for configurations for entire classes of equivalences,
-like the algebraic ornaments from DEVOID.
-It also lets the user directly configure the transformation to a particular equivalence.
-Together, this has made it possible for \toolname to support a wide variety of applications.
-This section explains four different use cases and the configurations used to support each use case:
+As we saw in Figure~\ref{fig:listswap} in Section~\ref{sec:overview},
+there are two ways to use \toolname:
 
 \begin{enumerate}
-\item Refactoring automatically generated proofs for an industrial user (Section~\ref{sec:industry})
-\item Generating dependently typed vector functions and proofs from functions and proofs about lists and their lengths (Section~\ref{sec:dep})
-\item Repairing functions and proofs from a benchmark in a user study of Coq users (Section~\ref{sec:replica})
-\item Porting functions and proofs about unary numbers to functions and proofs about binary numbers (Section~\ref{sec:bin})
+\item with automatic configuration, using search procedures to discover configurations for entire classes of equivalences, and
+\item with manual configuration, providing the configuration directly.
+\end{enumerate}
+These two modes of configuration have made it possible for \toolname to support a wide
+varity of applications.
+This section explans four different case studyes in using \toolname:
+
+\begin{enumerate}
+\item Refactoring automatically generated proofs for an industrial user (automatic, Section~\ref{sec:industry})
+\item Generating dependently typed vector functions and proofs from functions and proofs about lists and their lengths (automatic, Section~\ref{sec:dep})
+\item Repairing functions and proofs from a benchmark in a user study of Coq users (automatic, Section~\ref{sec:replica})
+\item Porting functions and proofs about unary numbers to functions and proofs about binary numbers (manual, Section~\ref{sec:bin})
 \end{enumerate}
 
 %\begin{enumerate}
