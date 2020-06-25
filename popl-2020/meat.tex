@@ -236,7 +236,7 @@ The four parts of this configuration must be in relation to one another in a cer
 term transformation to work correctly (Section~\ref{sec:art}).
 Section~\ref{sec:search} shows many example configurations.
 
-\subsection{Equivalence}
+\subsubsection{Equivalence}
 \label{sec:equivalence}
 
 The proof term transformation is correct when it maps an input to an output that is equal
@@ -321,7 +321,7 @@ Otherwise, as in \textsc{Devoid}, this must be true in order for the proof term 
 to work correctly, but the user does not need to prove that it hold.
 Section~\ref{sec:art} discusses this in more detail.
 
-\subsection{Equality}
+\subsubsection{Equality}
 \label{sec:equality}
 
 The other two rules corresponding to the configuration deal with transporting equalities.
@@ -445,7 +445,7 @@ so when configuration is manual, the user must first expand input terms to apply
 This can be painful, so we have plans for allowing users to also write custom rewrite rules,
 which we discuss in Section~\ref{sec:discussion}.
 
-\subsection{Equivalence \& Equality}
+\subsubsection{Equivalence \& Equality}
 \label{sec:art}
 
 The configuration (\lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{IdEta}, \lstinline{RewEta}) instantiates
