@@ -1,4 +1,4 @@
-\section{Configure}
+\section{Case Studies \& Configurations}
 \label{sec:search}
 
 \toolname implements search procedures for configurations for entire classes of equivalences,
@@ -271,6 +271,12 @@ to a proof over binary numbers:
 \begin{lstlisting}
 Lemma plus_n_Sm:
   forall (n m : binnat), Bin.S (Bin.add n m) = Bin.add n (Bin.S m).
+Proof.
+  intros n m.
+  induction (bin_natty n) as [|n0 n1 IHn0].
+  - reflexivity.
+  - apply (binnat_plus_n_Sm_expanded_rewrites2_inductive m n0 IHn0).
+Defined.
 \end{lstlisting}
 where the new proof and new addition function do not at any point convert
 the binary number back to natural numbers.

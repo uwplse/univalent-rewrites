@@ -14,8 +14,12 @@
 \end{figure}
 
 \toolname is a tool for proof refactoring and repair that is available on Github.\footnote{Link withheld for double-blind review.}
-To understand \toolname, it helps to start with a simple example: refactoring list proofs.
-Consider the refactoring in Figure~\ref{fig:listswap}, which swaps the two constructors of a list.
+Proof refactoring and proof repair are similar problems: both refer to adapting proofs in response to changes
+in specifications. Refactoring refers to semantics-preserving changes, and repair refers to non-semantics-preserving
+changes. In both cases, we can think of \toolname as \textit{reusing} the old proof about some old specification
+to derive a proof about some new specification.
+
+Consider a simple example: refactoring list proofs after swapping the two constructors of a list (Figure~\ref{fig:listswap}).
 Even such a simple change can quickly cause trouble in existing proofs, like this proof from the Coq standard library:\footnote{Here and throughout, we use induction instead of pattern matching.}
 
 \begin{lstlisting}
@@ -32,10 +36,13 @@ Qed.
 \end{lstlisting}
 This proof says that appending two lists and reversing the result behaves the same way as appending
 the reverse of the second list onto the reverse of the first list.
-This proof no longer works after switching the constructors of \lstinline{list},
-and it is not immediately clear how to adapt the proof based on tactics alone.
+This theorem statement \lstinline{rev_app_distr} defined over the old version of \lstinline{list} is our \textit{old specification}.
+When we change the \lstinline{list} type, we get the \textit{new specification}.
+But the \textit{old proof} or tactic script no longer works with this new specification, and it is not
+immediately clear how to adapt the proof based on tactics alone.
 Adapting tactic scripts to changes is in general difficult; \citep{robert2018} 
 discusses the challenges in detail.
+
 With \toolname, however, all we need to do is run this command: % TODO adapted for now
 
 \begin{lstlisting}
@@ -65,7 +72,7 @@ Proof.
     + auto.
 Qed.
 \end{lstlisting}
-We can even repair the entire list module all at once by running the \lstinline{Repair module}
+We can even refactor the entire list module all at once by running the \lstinline{Repair module}
 command; the results of this are in \lstinline{Overview.v}.\footnote{Link withheld for double-blind review.} % TODO
 
 \paragraph{Configure, Transform, Decompile}
