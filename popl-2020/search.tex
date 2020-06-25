@@ -10,13 +10,27 @@ there are two ways to use \toolname:
 \end{enumerate}
 These two modes of configuration have made it possible for \toolname to support a wide
 varity of applications.
-This section explans four different case studyes in using \toolname:
+This section explans four different case studies in using \toolname:
 
 \begin{enumerate}
 \item Refactoring automatically generated proofs for an industrial user (automatic, Section~\ref{sec:industry})
 \item Generating dependently typed vector functions and proofs from functions and proofs about lists and their lengths (automatic, Section~\ref{sec:dep})
-\item Repairing functions and proofs from a benchmark in a user study of Coq users (automatic, Section~\ref{sec:replica})
+\item Supporting a benchmark from a user study of Coq proof engineers (automatic, Section~\ref{sec:replica})
 \item Porting functions and proofs about unary numbers to functions and proofs about binary numbers (manual, Section~\ref{sec:bin})
+\end{enumerate}
+For each case study, we explain the configuration used, provide example proofs, and describe experiences using \toolname.
+
+In all, we found the following:
+
+\begin{enumerate}
+\item \toolname handled examples of both proof refactoring and repair. In practice, the line between these was sometimes
+blurred, as was the line with proof reuse.
+\item \toolname was configurable to different classes of changes. Each search procedure for automatic configuration
+took between two days and two weeks to write, and handled an entire class of equivalences corresponding to a real use case.
+Manual configuration was possible for an interesting use case, but remained challenging.
+\item \toolname had good enough workflow integration to support real users.
+The tactic decompiler was far from perfect, but showed promising early results with clear paths to improvements.
+Some user workflows were counterintuitive to us and informed changes in the design of \toolname.
 \end{enumerate}
 
 %\begin{enumerate}
@@ -28,16 +42,32 @@ This section explans four different case studyes in using \toolname:
 \subsection{Industrial Use}
 \label{sec:industry}
 
-We worked with an industrial user at a company\footnote{Name withheld for double-blind review.} in proving
+An industrial user at \company\footnote{Name withheld for double-blind review.} has been using \toolname in proving
 correct an implementation of the TLS handshake protocol.
-The company mostly performs verification using constraint solvers, but at times those constraint solvers
-get stuck.
-To cope with this, they have built a compiler that translates their solver-aided language into Gallina
-so that they can finish stuck proofs interactively using Coq.
-However, the generated Gallina specifications are sometimes too difficult to work with.
-The industrial user used \toolname to port those specifications to more human-friendly specifications,
-wrote proofs about those human-friendly specifications by hand, and then used \toolname again
-to port those proofs back to refer explicitly to the human-generated specifications.
+While this is ongoing work, thus far,
+\toolname has helped \company integrate Coq with their existing verification workflow.
+
+Before contact, \company had been using a custom solver-aided verification language to prove correct C programs.
+They had found that at times, those constraint solvers got stuck, and they could not
+progress on proofs about those programs.
+They had built a compiler that translates their solver-aided language into Coq's specification language Gallina,
+that way their proof engineers could finish stuck proofs interactively using Coq.
+However, they had found that the generated specifications were sometimes too difficult to work with.
+
+A proof engineer at \company has used \toolname to work with those automatically generated specifications
+with the following workflow:
+
+\begin{enumerate}
+\item First, the proof engineer uses \toolname to refactor the automatically generated specifications into more
+human-readable specifications.
+\item Next, the proof engineer writes Coq proofs about the more human-readable specifications.
+\item Finally, the proof uses \toolname again to refactor those proofs about human-readable specifications back to
+proofs about the original automatically generated specifications.
+\end{enumerate}
+This workflow has allowed for industrial integration with Coq and has helped the user write functions and proofs
+that would have otherwise been difficult.
+
+\paragraph{Configuration}
 
 Most commonly, the user used \toolname to translate anonymous nested tuples like this:
 
@@ -51,6 +81,9 @@ TODO
 \end{lstlisting}
 We implemented a search procedure for the user to automatically configure the proof term transformation to an equivalence
 between nested tuples and named records.
+
+\paragraph{Example}
+
 For example, using this proof term transformation, the user ported this specification:
 
 \begin{lstlisting}
@@ -72,10 +105,34 @@ and then automatically ported that proof back to a proof of the original specifi
 TODO
 \end{lstlisting}
 
-Explanation of this configuration and example.
+\paragraph{Experiences}
+
+notes about challenges and so on.
+In the initial days, we worked closely with the proof engineer to watch interaction with \toolname and understand
+improvements to \toolname that would help the proof engineer.
+Later, the proof engineer worked independently and reached out occasional by email.
+
+Usability was simple enough for the proof engineer to work independently from another country with some contact by email.
+However, the user did sometimes struggle with understanding errors (which informed significant changes to our error messaging)
+and with understanding the behavior of \toolname when 
+There were some challenges in scale, many of which inspired
+changes to \toolname that have already been implemented, and some of which remain.
+line blurry here, what really is this? refactoring i guess but not in a standard way
+tactic workflow was not needed here, but other workflow integration helped
+
+each criteria though:
+\begin{enumerate}
+\item supports both proof refactoring and repair,
+\item is configurable to different classes of changes, and
+\item produces tactic scripts for better workflow integration.
+\end{enumerate}
 
 \subsection{Vectors from Lists and their Lengths}
 \label{sec:dep}
+
+TODO note reddit here
+
+can view as repair bc started from list proofs
 
 We were able to integrate the program transformation from DEVOID into our framework, plus extend
 the main example from DEVOID with new automation missing in the original paper.
