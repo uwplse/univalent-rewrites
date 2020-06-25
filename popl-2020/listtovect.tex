@@ -1,0 +1,9 @@
+Inductive list (T : Type) : Type :=
+| nil : list T
+| cons :
+    T -> list T -> list T.
+
+Inductive vector (T : Type) : (@\codediff{nat}@) -> Type :=
+| nil : vector T (@\codediff{O}@)
+| cons :
+    T -> $\forall$ (@\codediff{(n : nat)}@), vector T (@\codediff{n}@) -> vector T (@\codediff{(S n)}@).

@@ -200,7 +200,17 @@ and caching of transformed subterms.
 \subsection{Vectors from Lists and their Lengths}
 \label{sec:dep}
 
-TODO note reddit here
+\begin{figure}
+\begin{minipage}{0.40\textwidth}
+   \lstinputlisting[firstline=1, lastline=4]{listtovect.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.58\textwidth}
+   \lstinputlisting[firstline=6, lastline=9]{listtovect.tex}
+\end{minipage}
+\caption{A vector (right) is a list (left) ornamented by its length.}
+\label{fig:listtovect}
+\end{figure}
 
 We were able to integrate the program transformation from DEVOID into our framework, plus extend
 the main example from DEVOID with new automation missing in the original paper.
@@ -208,20 +218,11 @@ The DEVOID paper introduced a program transformation for transporting proofs acr
 of equivalences corresponding to \textit{algebraic ornaments}. Algebraic ornaments describe relations
 between two inductive types, where one inductive type is exactly the old inductive type indexed by a fold
 over the original type.
-A simple of example of this is the relation between a list:
+A simple of example of this is the relation between a list and a length-indexed vector (Figure~\ref{fig:listtovect}).
 
-\begin{lstlisting}
-Inductive list (T : Type) : Type :=
-| nil : list T
-| cons : T -> list T -> list T.
-\end{lstlisting}
-and a length-indexed vector:
 
-\begin{lstlisting}
-Inductive vector (T : Type) : nat -> Type :=
-| nil : vector T O
-| cons : T -> forall (n : nat), vector T n -> vector T (S n).
-\end{lstlisting}
+
+TODO note reddit here
 
 The running example in the DEVOID paper ported a list \lstinline{zip} function,
 a \lstinline{zip_with} function, and a proof \lstinline{zip_with_is_zip} relating the two
@@ -288,7 +289,9 @@ can view as repair bc started from list proofs
 \paragraph{Workflow Integration}
 While this produced proof terms with the correct type, the decompiler struggled
 to generate useful tactic scripts for dependently typed functions.
-We discuss ideas for handling this in Section~\ref{sec:decompiler}.
+tbh though I don't even know how to do that well myself and I found \toolname could write
+functions and proofs I wouldn't be able to write by hand so -shrug-
+%We discuss ideas for handling this in Section~\ref{sec:decompiler}.
 % TODO actually do this
 
 \subsection{REPLICA Benchmarks}
