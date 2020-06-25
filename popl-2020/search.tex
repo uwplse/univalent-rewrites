@@ -69,7 +69,7 @@ that would have otherwise been difficult.
 
 % TODO will add better proofs here once Val sends them
 
-\paragraph{Configuration}
+\subsubsection{Configuration}
 
 \begin{figure}
 \begin{minipage}{0.25\textwidth}
@@ -120,7 +120,7 @@ Definition dep_elim_B (P : Tuple.input -> Type) (f : $\forall$ firstBool numberI
 This induced an equivalence between the nested tuple and record,
 which \toolname generated and proved automatically.
 
-\paragraph{Example}
+\subsubsection{Example}
 Using this configuration, the proof engineer automatically ported this compiler-generated function:
 
 \begin{lstlisting}
@@ -164,15 +164,15 @@ Theorem and_spec_true_true :
 The proof engineer had no need for the decompiler here because the proof engineer modified
 the proof over records directly. % TODO it is being silly; can we get it working?
 
-\paragraph{Takeaways}
+\subsubsection{Takeaways}
 
-\textbf{Refactoring \& Repair}:
+\paragraph{Refactoring \& Repair}:
 The proof engineer used \toolname for both refactoring and repair.
 Refactorings like the changes from tuples to records were the most common use cases.
 The proof engineer has also used \toolname to repair some non-dependently-typed
 functions and proofs to instead use dependent types.
 
-\textbf{Configuration \& Flexibility}:
+\paragraph{Configuration \& Flexibility}:
 The proof engineer used at least three automatic configurations and no manual configurations.
 One of these configurations was backed by a search procedured that we implemented
 specifically to support this user: the search procedure to
@@ -180,9 +180,9 @@ configure the equivalence between nested tuples and records.
 This search procedure took about two weeks for us to implement using techniques from
 the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
 Flexibility could be further improved by exposing an interface to users to allow them to
-write these search procedures themselve.
+write these search procedures themselves.
 
-\textbf{Workflow Integration}:
+\paragraph{Workflow Integration}:
 The industrial proof engineer was able to use \toolname to integrate Coq with existing proof engineering
 workflows using solver-aided tools at \company.
 The workflow for using \toolname itself, however, was a bit nonstandard,
