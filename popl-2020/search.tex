@@ -202,8 +202,6 @@ and caching of transformed subterms.
 
 TODO note reddit here
 
-can view as repair bc started from list proofs
-
 We were able to integrate the program transformation from DEVOID into our framework, plus extend
 the main example from DEVOID with new automation missing in the original paper.
 The DEVOID paper introduced a program transformation for transporting proofs across a particular class
@@ -276,8 +274,18 @@ Lemma zip_with_is_zip :
     zip_with pair v1 v2 = zip v1 v2.
 \end{lstlisting}
 
-Explanation of these configurations and example.
+\subsubsection{Configuration}
 
+\subsubsection{Example}
+
+\subsubsection{Takeaways}
+
+\paragraph{Refactoring \& Repair}
+can view as repair bc started from list proofs
+
+\paragraph{Configuration \& Flexibility}
+
+\paragraph{Workflow Integration}
 While this produced proof terms with the correct type, the decompiler struggled
 to generate useful tactic scripts for dependently typed functions.
 We discuss ideas for handling this in Section~\ref{sec:decompiler}.
@@ -331,7 +339,7 @@ REPLICA also saw that users move cases in match statements to match moved constr
 in inductive types, and the transported terms \toolname generated did this automatically
 (with induction principles though).
 
-\paragraph{Configuration}
+\subsubsection{Configuration}
 The configuration this used handles swapping and renaming constructors of inductive types.
 When a user swaps or renames constructors, the new type is equivalent to the old type exactly.
 The configuration just maps the old constructors to the swapped new constructors, and maps appropriate
@@ -362,7 +370,17 @@ RewEta(A) := eq_refl A
 RewEta(B) := eq_refl B
 \end{lstlisting}
 
+\subsubsection{Example}
+
 Example (honestly let's just show with particular type and explain more generally, and leave out formalities until later if we need them).
+
+\subsubsection{Takeaways}
+
+\paragraph{Refactoring \& Repair}
+
+\paragraph{Configuration \& Flexibility}
+
+\paragraph{Workflow Integration}
 
 \subsection{Unary and Binary Numbers}
 \label{sec:bin}
@@ -423,7 +441,7 @@ and we think some ideas from Section~\ref{sec:discussion} could help with this.
 Another thing worth noting is that we do not automatically get the efficient version of \lstinline{add} this way,
 though it's worth determining whether there is a way to configure \toolname to do so.
 
-\paragraph{Configuration}
+\subsubsection{Configuration}
 We supplied this configuration manually.
 Our definitions were as follows (eventually should just show the interesting parts):
 
@@ -460,6 +478,17 @@ Interestingly, we used transport across algebraic ornaments in order to determin
 \lstinline{DepElim}.
 We need to note how \lstinline{bin_natty} is generated that way.
 Also we need multiple \lstinline{RewEta} one for each constructor ugh.
+
+\subsubsection{Example}
+
+\subsubsection{Takeaways}
+
+\paragraph{Refactoring \& Repair}
+
+\paragraph{Configuration \& Flexibility}
+
+\paragraph{Workflow Integration}
+
 
 % TODO what does the tactic decompiler do for this? It's broken. Why?
 
