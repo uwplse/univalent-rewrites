@@ -1,0 +1,9 @@
+Definition input :=
+  bool * (nat * bool).
+Definition output :=
+  nat * bool.
+
+Record input :=
+  (@\codediff{MkInput}@) { (@\codediff{firstBool}@) : bool; (@\codediff{numberI}@) : nat; (@\codediff{secondBool}@) : bool }.
+Record output :=
+  (@\codediff{MkOutput}@) { (@\codediff{numberO}@) : nat; (@\codediff{andBools}@) : bool }.

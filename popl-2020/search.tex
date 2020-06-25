@@ -18,8 +18,7 @@ This section explans four different case studies in using \toolname:
 \item Supporting a benchmark from a user study of Coq proof engineers (automatic, Section~\ref{sec:replica})
 \item Porting functions and proofs about unary numbers to functions and proofs about binary numbers (manual, Section~\ref{sec:bin})
 \end{enumerate}
-For each case study, we explain the configuration used, provide example proofs, and describe experiences using \toolname.
-
+For each case study, we explain the configuration used, walk through an example, and describe takeaways.
 In all, we found the following:
 
 \begin{enumerate}
@@ -30,10 +29,11 @@ took between two days and two weeks to write, and handled an entire class of equ
 Manual configuration was possible for an interesting use case, but remained challenging.
 \item \toolname had good enough workflow integration to support real users.
 The tactic decompiler was far from perfect, but showed promising early results with clear paths to improvements.
-Some user workflows were counterintuitive to us and informed changes in the design of \toolname.
+Some user workflows were unanticipated and informed changes in the design of \toolname.
 \end{enumerate}
+% TODO is it a contribution in itself to have real observation of users in a 3P proof refactoring/repair tool?
 
-%\begin{enumerate}
+%\begin{enumerate} TODO
 %\item LOC for each equiv/structure
 %\item Choosing the swap equivalence
 %\item Fun eliminators
@@ -52,65 +52,130 @@ They had found that at times, those constraint solvers got stuck, and they could
 progress on proofs about those programs.
 They had built a compiler that translates their solver-aided language into Coq's specification language Gallina,
 that way their proof engineers could finish stuck proofs interactively using Coq.
-However, they had found that the generated specifications were sometimes too difficult to work with.
+However, they had found that the generated Gallina programs and specifications were sometimes too difficult to work with.
 
-A proof engineer at \company has used \toolname to work with those automatically generated specifications
+A proof engineer at \company has used \toolname to work with those automatically generated programs and specifications
 with the following workflow:
 
 \begin{enumerate}
-\item First, the proof engineer uses \toolname to refactor the automatically generated specifications into more
-human-readable specifications.
-\item Next, the proof engineer writes Coq proofs about the more human-readable specifications.
-\item Finally, the proof uses \toolname again to refactor those proofs about human-readable specifications back to
-proofs about the original automatically generated specifications.
+\item First, the proof engineer uses \toolname to refactor the automatically generated programs and specifications into more
+human-readable programs and specifications.
+\item Next, the proof engineer writes Coq proofs about the more human-readable programs and specifications.
+\item Finally, the proof engineer uses \toolname again to refactor those proofs about human-readable programs and specifications back to
+proofs about the original automatically generated programs and specifications.
 \end{enumerate}
 This workflow has allowed for industrial integration with Coq and has helped the user write functions and proofs
 that would have otherwise been difficult.
 
+% TODO will add better proofs here once Val sends them
+
 \paragraph{Configuration}
 
-Most commonly, the user used \toolname to translate anonymous nested tuples like this:
+\begin{figure}
+\begin{minipage}{0.25\textwidth}
+   \lstinputlisting[firstline=1, lastline=4]{records.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.74\textwidth}
+   \lstinputlisting[firstline=6, lastline=9]{records.tex}
+\end{minipage}
+\caption{Two unnamed tuples (left) and corresponding named records (right).}
+\label{fig:records}
+\end{figure}
 
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-into named records like this:
+Minimal examples corresponding to the proofs that the proof engineer used \toolname for
+can be found in \lstinline{minimal_records.v}.
+The proof engineer used \toolname to port anonymous tuples produced by \company's compiler
+to named records, as shown in the example in Figure~\ref{fig:records}.
 
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-We implemented a search procedure for the user to automatically configure the proof term transformation to an equivalence
+We implemented a search procedure for the proof engineer to automatically configure the proof term transformation to an equivalence
 between nested tuples and named records.
+The search procedure triggered automatically when the proof engineer called the \lstinline{Repair} or \lstinline{Repair module} command
+with the tuple and record as arguments.
+It set \A to be the record type and \B to be the tuple.
+There were no \lstinline{RewEta} since there were no inductive hypotheses.
+For the record \A, it set \lstinline{IdEta} to identity, \lstinline{DepConstr} to the single
+constructor corresponding to the record constructor, and \lstinline{DepElim} to the standard record eliminator.
+For the tuple \B, on the other hand, it expanded identity to deal with non-primitive projections,
+in our example:
+\begin{lstlisting}
+Definition id_eta_b (H : Tuple.input) : Tuple.input := (fst H, (fst (snd H), snd (snd H))).
+\end{lstlisting}
+it constructed a nested tuple by recursively applying the pair constructor:
+
+\begin{lstlisting}
+Definition dep_constr_0_B (firstBool : bool) (numberI : nat) (secondBool : bool) : Tuple.input :=
+  (firstBool, (numberI, secondBool)).
+\end{lstlisting}
+and it recursively eliminated over the pair:
+
+\begin{lstlisting}
+Definition dep_elim_B (P : Tuple.input -> Type) (f : $\forall$ firstBool numberI secondBool, P (dep_constr_0_B firstBool numberI secondBool)) (i : Tuple.input) :=
+  prod_rect
+    (fun p : bool * (nat * bool) => P (id_eta_b p))
+    (fun (a : bool) (b : nat * bool) =>
+      f a (fst b) (snd b))
+    i.
+\end{lstlisting}
+This induced an equivalence between the nested tuple and record,
+which \toolname generated and proved automatically.
 
 \paragraph{Example}
-
-For example, using this proof term transformation, the user ported this specification:
-
-\begin{lstlisting}
-TODO
-\end{lstlisting}
-to this specification:
+Using this configuration, the proof engineer automatically ported this compiler-generated function:
 
 \begin{lstlisting}
-TODO
+Definition op (r : bool * (nat * bool)) : nat * bool :=
+  (fst (snd r), andb (firstBool r) (secondBool r)).
 \end{lstlisting}
-wrote this proof over the new specification:
+to this function:
 
 \begin{lstlisting}
-TODO
+Definition op (r : Record.input) : Record.output :=
+  {|
+     numberO := numberI r;
+     andBools := andb (fistBool r) (secondBool r)
+  |}.
 \end{lstlisting}
-and then automatically ported that proof back to a proof of the original specification:
+The proof engineer then wrote this proof about the new specification: % TODO did val write this or did I?
 
 \begin{lstlisting}
-TODO
+Theorem and_spec_true_true :
+  forall (r : Record.input),
+    firstBool r = true ->
+    secondBool r = true ->
+    andBools (Record.op r) = true.
+Proof.
+  destruct r as [f n s].
+  unfold Record.op.
+  simpl in *.
+  apply andb_true_intro.
+  intuition.
+Qed.
 \end{lstlisting}
+and then used \toolname to automatically port this proof back to a proof of the original function: % TODO induction & preprocess though
 
-\paragraph{Experiences}
+\begin{lstlisting}
+Theorem and_spec_true_true :
+  forall (r : Tuple.input),
+    fst r = true ->
+    snd (snd r) = true ->
+    andb (Tuple.op r) = true.
+\end{lstlisting}
+The proof engineer had no need for the decompiler here because the proof engineer modified
+the proof over records directly. % TODO it is being silly; can we get it working?
+
+\paragraph{Takeaways}
 
 notes about challenges and so on.
 In the initial days, we worked closely with the proof engineer to watch interaction with \toolname and understand
 improvements to \toolname that would help the proof engineer.
 Later, the proof engineer worked independently and reached out occasional by email.
+
+The search procedure took less than a week for us to implement, and supported the user through porting many % how many?
+functions and proofs across similar relations between many % how many?
+different tuples and corresponding named records.
+how many LOC?
+techniques from pumpkin patch and devoid.
 
 Usability was simple enough for the proof engineer to work independently from another country with some contact by email.
 However, the user did sometimes struggle with understanding errors (which informed significant changes to our error messaging)
