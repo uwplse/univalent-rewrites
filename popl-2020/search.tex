@@ -99,7 +99,8 @@ constructor corresponding to the record constructor, and \lstinline{DepElim} to 
 For the tuple \B, on the other hand, it expanded identity to deal with non-primitive projections,
 in our example:
 \begin{lstlisting}
-Definition id_eta_b (H : Tuple.input) : Tuple.input := (fst H, (fst (snd H), snd (snd H))).
+Definition id_eta_B (H : Tuple.input) : Tuple.input :=
+  (fst H, (fst (snd H), snd (snd H))).
 \end{lstlisting}
 it constructed a nested tuple by recursively applying the pair constructor:
 
@@ -110,7 +111,7 @@ Definition dep_constr_0_B (firstBool : bool) (numberI : nat) (secondBool : bool)
 and it recursively eliminated over the pair:
 
 \begin{lstlisting}
-Definition dep_elim_B (P : Tuple.input -> Type) (f : $\forall$ firstBool numberI secondBool, P (dep_constr_0_B firstBool numberI secondBool)) (i : Tuple.input) :=
+Definition dep_elim_B (P : Tuple.input -> Type) (f : $\forall$ f n s, P (dep_constr_0_B f n s)) (i : Tuple.input) : P (id_eta_B i) :=
   prod_rect
     (fun p : bool * (nat * bool) => P (id_eta_b p))
     (fun (a : bool) (b : nat * bool) =>
@@ -212,18 +213,110 @@ and caching of transformed subterms.
 \label{fig:listtovect}
 \end{figure}
 
-We were able to integrate the program transformation from DEVOID into our framework, plus extend
-the main example from DEVOID with new automation missing in the original paper.
-The DEVOID paper introduced a program transformation for transporting proofs across a particular class
-of equivalences corresponding to \textit{algebraic ornaments}. Algebraic ornaments describe relations
+The proof term transformation in \toolname is based on the proof term transformation from
+the \textsc{Devoid} proof reuse tool.
+\textsc{Devoid} is a proof reuse tool for \textit{algebraic ornaments}~\cite{mcbride}. Algebraic ornaments describe relations
 between two inductive types, where one inductive type is exactly the old inductive type indexed by a fold
 over the original type.
-A simple of example of this is the relation between a list and a length-indexed vector (Figure~\ref{fig:listtovect}).
+The running example of this in the \textsc{Devoid} paper is the relation between a list and a
+length-indexed vector (Figure~\ref{fig:listtovect}).
 
+We configured the generalized algorithm in \toolname to support algebraic ornaments like those found in \textsc{Devoid},
+and passed all of the regression tests from \textsc{Devoid}.
+We found that this simplified the algorithm from \textsc{Devoid}.
+In addition, we added one more configuration to automate effort that had been manual in \textsc{Devoid}.
+Several proof engineers including our industrial proof engineer, a Reddit user,
+and someone on the \lstinline{coq-club} message board contacted us expressing interest in using this functionality,
+though we do not yet know if the latter two ended up using \toolname. % TODO honestly ask
 
+\subsubsection{Configuration}
 
-TODO note reddit here
+We used two configurations to easy development with dependent types using algebraic ornaments.
+The first fits the proof term transformation from \textsc{Devoid} into the \toolname framework:
+it sets \A to the unornamented type and \B to the ornamented type at \textit{some} index---\textsc{Devoid}
+calls the resulting type \textit{packed}.
+In the case of \lstinline{list} and \lstinline{vector}, that configuration
+transports proofs across this equivalence:
 
+\begin{lstlisting}
+list T $\simeq$ $\Sigma$ (n : nat) . vector T n
+\end{lstlisting}
+The second configuration goes beyond the functionality from \textsc{Devoid}, and provides
+the missing link to get proofs about \B at a \textit{particular} index:
+
+\begin{lstlisting}
+{ l : list T & length l = n } $\simeq$ vector T n
+\end{lstlisting}
+producing something \textit{unpacked},
+a step that \textsc{Devoid} had left to the user.
+
+The search procedure for the first configuration is based heavily on the search procedure from \textsc{Devoid}.
+Since \textsc{Devoid} supports ornaments which by definition represent types with the same inductive structure,
+\lstinline{RewEta} for both \A and \B was always reflexivity.
+For the inductive type \A, \lstinline{IdEta}, \lstinline{DepConstr}, and \lstinline{DepElim}
+correspond to the identity function, the constructors of \A, and the eliminator for \A, respectively.
+For \B, \lstinline{IdEta} expands the input to avoid reliance on primitive projections,
+in our example:
+
+\begin{lstlisting}
+Definition id_eta_B (T : Type) (s : $\Sigma$ (n : nat) . vector T n) : $\Sigma$ (n : nat) . vector T n  :=
+  $\exists$ ($\pi_l$ s) ($\pi_r$ s).
+\end{lstlisting}
+This implements \textit{repacking} from \textsc{Devoid}.
+Like in \textsc{Devoid},
+\lstinline{DepConstr} packs constructors of \B:
+
+\begin{lstlisting}
+Definition dep_constr_B_0 (T : Type) : $\Sigma$ (n : nat) . vector T n :=
+  $\exists$ 0 (Vector.nil A).
+
+Definition dep_constr_B_1 (T : Type) (t : T) (s : $\Sigma$ (n : nat) . vector T n) : $\Sigma$ (n : nat) . vector T n :=
+  $\exists$ (S ($\pi_l$ s)) (Vector.cons ($\pi_l$ s) t ($\pi_r$ s)).
+\end{lstlisting}
+and \lstinline{DepElim} eliminates its projections:
+
+\begin{lstlisting}
+Definition dep_elim_B_0 (T : Type) (P : $\Sigma$ (n : nat) . vector T n -> Type) (pnil : P (dep_constr_B_0 T)) (pcons : $\forall$ t s, P (id_eta_B T s) -> P (dep_constr_B_1 T t s)) (s : $\Sigma$ (n : nat) . vector T n) : P (id_eta_B T s) :=
+  vector_rect
+    T
+    (fun (n : nat) (v : vector T n) => P ($\exists$ n v))
+    pnil
+    (fun (t : T) (n : nat) (v : vector T n) => pcons t ($\exists$ n v))
+    ($\pi_l$ s)
+    ($\pi_r$ s).
+\end{lstlisting}
+Together this configuration is enough to capture all of the functionality from \textsc{Devoid} for both search and lifting,
+save for the optional proof that these induce an equivalence, which \toolname borrows from \textsc{Devoid}.
+
+To get from lists to vectors \textit{at a particular length}, \toolname implements one additional configuration.
+This configuration corresponds to the equivalence between packed types at a particular projection
+and unpacked types, in our example:
+
+\begin{lstlisting}
+{ s : $\Sigma$ (n : nat) . vector T n & $\pi_l$ s = n } $\simeq$ vector T n
+\end{lstlisting}
+By composition with the initial equivalence, this lets us transport proofs
+across the equivalence we eventually want:
+
+\begin{lstlisting}
+{ l : list T & length l = n } $\simeq$ vector T n
+\end{lstlisting}
+since the left-hand sides of these two equivalences are equal up to transport along the first equivalence.
+
+The second configuration is similar to the first configuration, except that it also carries equality proofs over the indices.
+That is, it views the type \B like \lstinline{vector T n} as implicitly representing \{\lstinline{ v : vector T n' & n' = n }\} for some \lstinline{n'}.
+This is seen, for example, in the identity rule for \B, here: 
+% TODO both should take the same number of arguments, even if id_eta_A takes fewer. also does this belong in rew_eta?
+
+\begin{lstlisting}
+Definition id_eta_B (T : Type) (n n' : nat) (v : vector T n') (H : n = n') : vector T n :=
+  eq_rect n' (vector T) v n H.
+\end{lstlisting}
+which is the identity function generalized over any equal index.
+
+\subsubsection{Example}
+
+The result is in \lstinline{Example.v}. 
 The running example in the DEVOID paper ported a list \lstinline{zip} function,
 a \lstinline{zip_with} function, and a proof \lstinline{zip_with_is_zip} relating the two
 functions from \lstinline{list T} to $\Sigma$\lstinline{(n : nat).vector T n} (vectors of
@@ -275,16 +368,17 @@ Lemma zip_with_is_zip :
     zip_with pair v1 v2 = zip v1 v2.
 \end{lstlisting}
 
-\subsubsection{Configuration}
-
-\subsubsection{Example}
-
 \subsubsection{Takeaways}
 
 \paragraph{Refactoring \& Repair}
 can view as repair bc started from list proofs
 
 \paragraph{Configuration \& Flexibility}
+fewer rules!
+removes reliance on special rules for eliminators and stuff.
+moves gunk out of lifting algorithm and into configuration, like for changing number of arguments.
+opposite direction was super hard and ran into equality problem, suggesting 
+we need \lstinline{RewEta} here.
 
 \paragraph{Workflow Integration}
 While this produced proof terms with the correct type, the decompiler struggled
@@ -293,6 +387,8 @@ tbh though I don't even know how to do that well myself and I found \toolname co
 functions and proofs I wouldn't be able to write by hand so -shrug-
 %We discuss ideas for handling this in Section~\ref{sec:decompiler}.
 % TODO actually do this
+custom eliminators.
+termination
 
 \subsection{REPLICA Benchmarks}
 \label{sec:replica}
