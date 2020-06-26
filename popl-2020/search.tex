@@ -193,10 +193,11 @@ later, the proof engineer worked independently and reached out occasional by ema
 \toolname was usable enough for this to work.
 However, we found two challenges with workflow integration:
 the proof engineer sometimes could not distinguish between user errors and bugs in our code,
-and the proof engineer typically waited only about ten seconds at most for \toolname
+and the proof engineer typically waited only about 10 seconds at most for \toolname
 to port a function or proof.
 Both of these observations informed significant changes to \toolname, like better error messages
 and caching of transformed subterms.
+% TODO how long did compiling the file take?
 
 \subsection{Vectors from Lists and their Lengths}
 \label{sec:dep}
@@ -383,6 +384,7 @@ However, the decompiler struggled significantly at generating tactic scripts for
 This is to some degree unsurprising, since these tactic proofs
 were prohibitively difficult for us to write by hand.
 Still, additional effort is needed to improve tactic integration with dependent types.
+% TODO how long did compiling the file take?
 
 \subsection{\textsc{Replica} Benchmark}
 \label{sec:replica}
@@ -415,61 +417,87 @@ or swapping and renaming at the same time.
 In all cases, with just a bit of human guidance, \toolname was able to repair the functions and proofs.
 
 \subsubsection{Configuration}
-The configuration this used handles swapping and renaming constructors of inductive types.
-When a user swaps or renames constructors, the new type is equivalent to the old type exactly.
-The configuration just maps the old constructors to the swapped new constructors, and maps appropriate
-cases of the old eliminator to appropriate cases of the new eliminator.
-Equality does not change.
 
-More formally, let $A$ and $B$ be inductive types:
-
-\begin{lstlisting}
-$A$ := $\mathrm{Ind} (\mathit{Ty}_A : \Pi (\vec{i_A} : \vec{\mathrm{X}_A}) . \mathrm{s}_A)\{\mathrm{C}_{A_1}, \ldots, \mathrm{C}_{A_n}\}$
-$B$ := $\mathrm{Ind} (\mathit{Ty}_B : \Pi (\vec{i_B} : \vec{\mathrm{X}_B}) . \mathrm{s}_B)\{\mathrm{C}_{B_1}, \ldots, \mathrm{C}_{B_n}\}$
-\end{lstlisting}		
-Assume there is some invertible swap map $m$ such that for any index $j$,
-\lstinline{C}$_{B_{m(j)}}$ is exactly \lstinline{C}$_{A_j}[B / A]$.
-Then:
+The configuration this used handles swapping and renaming constructors of inductive types,
+inducing an equivalence directly between \A and \B.
+This is one of the simplest configurations.
+The only nontrivial part is that \lstinline{DepConstr} over \B swaps constructors, in our example,
+maintaining the original order of the two swapped constructors:
 
 \begin{lstlisting}
-DepConstr(j, A) : C$_{A_{j}}$ := Constr(j, A) 
-DepConstr(j, B) : C$_{A_{j}}$[B / A] := Constr(m(j), B)
-
-DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := Elim(a, p){f$_{1}$, $\ldots$, f$_{n}$}
-DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := Elim(b, p){f$_{m(1)}$, $\ldots$, f$_{m(n)}$}
-
-IdEta(A) := $\lambda$ ($\vec{t}$ : $\vec{T}$) (a : A $\vec{t}$).a
-IdEta(B) := $\lambda$ ($\vec{t}$ : $\vec{T}$) (b : B $\vec{t}$).b
-
-RewEta(A) := eq_refl A
-RewEta(B) := eq_refl B
+dep_constr_B_1 (H : Z) : Term := Int H.
+dep_constr_B_2 (H H0 : Term) : Term := Eq H H0.
 \end{lstlisting}
+so that they align perfectly with the constructors of \A.
+The eliminator similarly swaps cases:
+
+\begin{lstlisting}
+Definition dep_elim_B P f0 f1 f2 f3 f4 f5 f6 t : P t :=
+  Old.Term_rect P f0 (@\codediff{f2}@) (@\codediff{f1}@) f3 f4 f5 f6 t.
+\end{lstlisting}
+where \lstinline{Old.Term_rect} is the eliminator over the old version of \lstinline{Term}.
+
+Despite the configuration being simple, the search procedure beneath it is flexible.
+For example, it does not make any assumptions about the name of the inductive type or constructor,
+so it can handle arbitrary swapping and renaming of constructors at the same time.
+It can also support multiple swapped constructors at the same time.
+When a swap is ambiguous and there are many possible mappings between the constructors of the old
+and new version, \toolname prompts the proof engineer to choose a configuration from a ranked list.
+It also allows the user to provide a custom mapping between constructors if the desired mapping
+does not show up high enough on the ranked list.
+It proves the equivalence from the swap map automatically, even in the case that the user provides
+the swap map directly.
+Then it transports functions and proofs along the equivalence, swapping and renaming cases of functions
+and proofs.
 
 \subsubsection{Example}
 
-Example (honestly let's just show with particular type and explain more generally, and leave out formalities until later if we need them).
+We used \toolname to automatically refactor the functions and proofs in \lstinline{Swap.v} from the \textsc{Replica} benchmark.
+This included functions about \lstinline{Term}, as well as a large record \lstinline{EpsilonLogic} that encoded the semantics of the language
+and a proof of the record:
+
+\begin{lstlisting}
+Theorem eval_eq_true_or_false :
+  $\forall$ (L : EpsilonLogic) env (t1 t2 : Term),
+    L.eval env (Eq t1 t2) = L.vTrue \/ L.eval env (Eq t1 t2) = L.vFalse.
+\end{lstlisting}
+\toolname was able to update all of these. For the inductive proof, it produced
+a new inductive proof that used the induction principle with the swapped constructors.
+It also discovered all other 23 type-correct permutations of constructors, all available for selection to 
+prove the appropriate equivalence and use to transport functions and proofs along that equivalence.
+It presented the desired transformation as the first option in the list, so that all we had to do
+was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this refactoring.
+It was also able to handle more advance changes like renaming constructors, swapping multiple constructors at once,
+and doing both at the same time.
 
 \subsubsection{Takeaways}
 
 \paragraph{Refactoring \& Repair}
-refactoring like our original in that it was semantics-preserving, but further changes
-show the need for supporting additional repairs as well (constructor extension).
+This was a simple refactoring.
+It was only a single snapshot in the \textsc{Replica} benchmark, which included
+other changes that qualify as repairs, like adding constructors to inductive types.
+We have not yet implemented search procedures for those repairs.
 
 \paragraph{Configuration \& Flexibility}
-also want to handle constructor extension. and can define equivalences for this, but not sure how 
-to choose a useful one that separates out the additional constructor. suspect different configurations
-for different functions \& proofs.
-configuration choice was interactive for swapping.
+Implementing the search procedure for constructor swapping and renaming was very simple and took about three days total.
+The biggest challenge was implementing an interactive interface to choose between mappings when there are multiple possible mappings,
+or to allow the user to write a single custom mapping function and derive the rest of the configuration from there.
+One ongoing challenge is in defining a useful configuration to support other changes from the same benchmark.
+For example, we do not yet know what configuration would be most useful for adding new constructors to inductive types,
+or even if there should be just one configuration corresponding to that change for a given proof development.
 
 \paragraph{Workflow Integration}
-tactics worked great, but for the proofs we happened to have, didn't really need them.
-however, as soon as renaming is involved, definitely need them.
-Note that, in the original benchmark, for just the first swap change,
-the original tactics would have also worked for the proof. 
-As we saw in Section~\ref{sec:overview}, this is not always true.
-REPLICA also saw that users move cases in match statements to match moved constructors
-in inductive types, and the transported terms \toolname generated did this automatically
-(with induction principles though).
+The isolated change was simple enough that \toolname would not have been necessary
+for refactoring the proofs for the initial change---keeping the tactics the same would have also worked.
+This is mostly a property of the particular proofs that we had access to;
+as we saw in Section~\ref{sec:overview}, even for simple changes, this is not always true.
+In addition, more advanced variants of this benchmark that involved also renaming constructors did necessitate \toolname,
+and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
+The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
+its dependencies, refactoring four variants of the \textsc{Replica} benchmark,
+and testing a large and ambiguous swap of a type \lstinline{Enum} with 30 constructors of identical types,
+took \toolname less than 90 seconds total. % TODO specs, reproduction
+Each variant of the \textsc{Replica} benchmark took \toolname less than 5 seconds. % TODO specs, reproduction
 
 \subsection{Unary and Binary Numbers}
 \label{sec:bin}
