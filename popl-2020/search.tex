@@ -384,53 +384,35 @@ This is to some degree unsurprising, since these tactic proofs
 were prohibitively difficult for us to write by hand.
 Still, additional effort is needed to improve tactic integration with dependent types.
 
-\subsection{REPLICA Benchmarks}
+\subsection{\textsc{Replica} Benchmark}
 \label{sec:replica}
 
+\begin{figure}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=8]{replica.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=10, lastline=17]{replica.tex}
+\end{minipage}
+\caption{A simple language (left) and the same language with two swapped constructors (right).}
+\label{fig:replica}
+\end{figure}
+
 Section~\ref{sec:overview} showed an example of swapping constructors.
-The configuration this used handles arbitrary swapping and renaming of constructors of inductive types.
-In addition to using this for list proofs, we also used it to replay part of a change found in
-a REPLICA benchmark.
-
-In that change, the proof engineer had a simple language:
-
-\begin{lstlisting}
-Inductive Term : Set :=
-  | Var : Identifier -> Term
-  | Int : Z -> Term
-  | Eq : Term -> Term -> Term
-  | Plus : Term -> Term -> Term
-  | Times : Term -> Term -> Term
-  | Minus : Term -> Term -> Term
-  | Choose : Identifier -> Term -> Term.
-\end{lstlisting}
+This example was inspired by two benchmarks from the \textsc{Replica} user study of proof engineers~\cite{replica}.
+An isolated change corresponding to part of the benchmark is shown in Figure~\ref{fig:replica}.
+In that change, the proof engineer had a simple language represented by an inductive type \lstinline{Term},
 as well as some definitions and proofs about the language.
-As part of the change, the user moved the \lstinline{Int} constructor down:
-
-\begin{lstlisting}
-Inductive Term : Set :=
-  | Var : Identifier -> Term
-  | Eq : Term -> Term -> Term
-  | Int : Z -> Term
-  | Plus : Term -> Term -> Term
-  | Times : Term -> Term -> Term
-  | Minus : Term -> Term -> Term
-  | Choose : Identifier -> Term -> Term.
-\end{lstlisting}
+As part of the change, the proof engineer swapped two constructors in the term language.
 
 Using the search procedure for the swap configuration, we were able to use \toolname
 to automatically configure the program transformation to move this constructor,
 then transform all of the functions and proofs about the language.
-We also went beyond the proof engineer's change and tried swapping two constructors with the same type,
-or renaming all of the constructors.
-In all cases, with a bit of human guidance, \toolname was able to repair the functions and proofs.
-
-Note that, in the original benchmark, for just the first swap change,
-the original tactics would have also worked for the proof. 
-As we saw in Section~\ref{sec:overview}, this is not always true.
-REPLICA also saw that users move cases in match statements to match moved constructors
-in inductive types, and the transported terms \toolname generated did this automatically
-(with induction principles though).
+We also succeeded at more difficult variants of this,
+like swapping two constructors with the same type, or renaming all of the constructors,
+or swapping and renaming at the same time.
+In all cases, with just a bit of human guidance, \toolname was able to repair the functions and proofs.
 
 \subsubsection{Configuration}
 The configuration this used handles swapping and renaming constructors of inductive types.
@@ -470,10 +452,24 @@ Example (honestly let's just show with particular type and explain more generall
 \subsubsection{Takeaways}
 
 \paragraph{Refactoring \& Repair}
+refactoring like our original in that it was semantics-preserving, but further changes
+show the need for supporting additional repairs as well (constructor extension).
 
 \paragraph{Configuration \& Flexibility}
+also want to handle constructor extension. and can define equivalences for this, but not sure how 
+to choose a useful one that separates out the additional constructor. suspect different configurations
+for different functions \& proofs.
+configuration choice was interactive for swapping.
 
 \paragraph{Workflow Integration}
+tactics worked great, but for the proofs we happened to have, didn't really need them.
+however, as soon as renaming is involved, definitely need them.
+Note that, in the original benchmark, for just the first swap change,
+the original tactics would have also worked for the proof. 
+As we saw in Section~\ref{sec:overview}, this is not always true.
+REPLICA also saw that users move cases in match statements to match moved constructors
+in inductive types, and the transported terms \toolname generated did this automatically
+(with induction principles though).
 
 \subsection{Unary and Binary Numbers}
 \label{sec:bin}

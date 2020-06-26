@@ -1,0 +1,17 @@
+Inductive Term : Set :=
+| Var : Identifier -> Term
+| Int : Z -> Term
+| Eq : Term -> Term -> Term
+| Plus : Term -> Term -> Term
+| Times : Term -> Term -> Term
+| Minus : Term -> Term -> Term
+| Choose : Identifier -> Term -> Term.
+
+Inductive Term : Set :=
+| Var : Identifier -> Term
+| (@\codediff{Eq}@) : Term -> Term -> Term
+| (@\codediff{Int}@) : Z -> Term
+| Plus : Term -> Term -> Term
+| Times : Term -> Term -> Term
+| Minus : Term -> Term -> Term
+| Choose : Identifier -> Term -> Term.
