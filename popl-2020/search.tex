@@ -357,24 +357,32 @@ with functions \lstinline{zip_with} and \lstinline{zip} operating directly over 
 \subsubsection{Takeaways}
 
 \paragraph{Refactoring \& Repair}
-can view as repair bc started from list proofs
+With the additional information corresponding to the proofs about the indices, this can be viewed
+as a form of proof repair. In the example above, this imposes on the user the additional
+obligation of showing that the length is equal to a particular index.
+\toolname implements some additional automation to generate eliminators that help separate out this additional information
+for repair. The line between repair and reuse is blurry here, since users have used this
+functionality to get functions and proofs over vectors from functions and proofs defined in the list library.
 
 \paragraph{Configuration \& Flexibility}
-fewer rules!
-removes reliance on special rules for eliminators and stuff.
-moves gunk out of lifting algorithm and into configuration, like for changing number of arguments.
-opposite direction was super hard and ran into equality problem, suggesting 
-we need \lstinline{RewEta} here.
+Implementing the configuration from \textsc{Devoid} in this framework was straightforward,
+took a couple of days, and simplified the code from \textsc{Devoid} significantly.
+For example, it removed the need for special rules for handling eliminators and constructors
+by adding and removing arguments,
+as that work is done in the configuration.
+Implementing the second configuration was less straightforward,
+especially when it came to understanding the behaviors of equalities.
+There are still some open challenges in correctly supporting \lstinline{RewEta} to port any arbitrary
+proof backward along the second configuration in the opposite direction.
 
 \paragraph{Workflow Integration}
-While this produced proof terms with the correct type, the decompiler struggled
-to generate useful tactic scripts for dependently typed functions.
-tbh though I don't even know how to do that well myself and I found \toolname could write
-functions and proofs I wouldn't be able to write by hand so -shrug-
-%We discuss ideas for handling this in Section~\ref{sec:decompiler}.
-% TODO actually do this
-custom eliminators.
-termination
+This simplified the workflow from \textsc{Devoid} and automated steps that had been manual.
+Furthermore, the tactic decompiler successfully generated tactic scripts to write dependently typed
+functions that carry proofs about length invariants.
+However, the decompiler struggled significantly at generating tactic scripts for proofs relating those invariants.
+This is to some degree unsurprising, since these tactic proofs
+were prohibitively difficult for us to write by hand.
+Still, additional effort is needed to improve tactic integration with dependent types.
 
 \subsection{REPLICA Benchmarks}
 \label{sec:replica}
