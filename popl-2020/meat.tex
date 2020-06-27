@@ -529,16 +529,25 @@ but have a different meaning.
 We helped the proof engineer do this by interacting with \toolname using a particular workflow.
 We plan to support this automatically using type-directed search in the future.
 
-\paragraph{Usability}
-much more aggressive caching than \textsc{Devoid}, including local cache.
-can turn off smart cache if you want.
-for industrial use.
-custom eliminators for lists and lengths, for example.
-optimizations.
-all search procedures generate equivalence proofs.
-tactic decompiler.
-delta, eta, opaque.
-ability to set some things as opaque, set default opaque. in whole module, can toggle whether to recurse
+\paragraph{Reaching Real Users}
+Many of our design decisions in implementing \toolname were informed by our partnership with
+an industrial user.
+For example, we found that our industrial user rarely had the patience to wait more than ten seconds
+for \toolname to port a function or proof.
+In response, we implemented very aggressive caching (with an option to disable the cache), even caching intermediate subterms that
+we encounter in the course of running our program transformation.
+We also added the option to set certain terms or even entire modules as opaque to \toolname, to prevent
+unecessary $\delta$-reduction of constants.
+We included many other optimizations, including lazy $\eta$-expansion of terms like \textsc{Devoid}.
+
+User experiences also informed features that we exposed to users.
+For example, all of our search procedures for configurations generate proofs that the discovered
+equivalence actually is an equivalence, using functionality that expands on the same functionality from \textsc{Devoid}.
+We also implemented special search procedures to generate custom eliminators to make it easier to reason about
+types that we found common for certain search procedures.
+For example, \toolname generates a custom eliminator automatically to reason about \{\lstinline{l : list T & length l = n}\}
+and other similar types by breaking it into parts and reasoning seperately about the two projections.
+These features along with our tactic decompiler helped with integration into proof engineering workflows.
 
 %First we need that \lstinline{DepElim} over $A$ into \lstinline{DepConstr} over $B$ and \lstinline{DepElim} over $B$ into
 %\lstinline{DepConstr} over $A$ form an equivalence between $A$ and $B$. When that's true, I think it should hold that \lstinline{DepElim} over $A$
