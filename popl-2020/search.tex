@@ -506,157 +506,139 @@ All of the changes that we have seen so far have used automatic search procedure
 to find equivialences between types with the same inductive structure, or \textit{ornaments}.
 Some of the oldest problems in the transport literature deal with \textit{changing} inductive
 structure.
-A classic example of this is translating unary natural numbers to binary natural numbers.
-\citet{magaud2000changing} implemented a technique for translating some proof terms defined over unary natural numbers
-to proof terms defined over binary natural numbers, and tested it on a handful of proofs.
+A classic example of this is translating unary natural numbers to binary natural numbers~\cite{magaud2000changing}.
 We have realized this functionality with \toolname using a manual configuration.
 
 \begin{figure}
 \begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=1, lastline=4]{nattobin.tex}
+   \lstinputlisting[firstline=1, lastline=8]{nattobin.tex}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=6, lastline=9]{nattobin.tex}
+   \lstinputlisting[firstline=10, lastline=17]{nattobin.tex}
 \end{minipage}
-\caption{Unary (left) and a variant of binary (right) natural numbers.}
+\caption{Unary (left) and binary (right) natural numbers.}
 \label{fig:nattobin}
 \end{figure}
 
-For simplicity, we used a slightly different definition of binary
-natural numbers from the one used by \citet{magaud2000changing}.
-Our definition (Figure~\ref{fig:nattobin}) comes from a simple definition
-of binary numbers in Agda,\footnote{\url{https://github.com/agda/cubical/blob/master/Cubical/Data/BinNat/BinNat.agda}}
-which is itself based on a definition from RedPRL.\footnote{\url{https://github.com/RedPRL/redtt/blob/master/library/cool/nats.red}}
-It sacrifices some of the efficiency in binary numbers for simplicity, which is helpful here
-for the sake of demonstration. % TODO but honestly should try the more general one
+The definition of binary numbers (Figure~\ref{fig:nattobin}) comes from the Coq standard library.
+A binary number is either zero or a positive binary number. A positive binary number
+is either 1 (\lstinline{xH}), the result of shifting left and adding 1 (\lstinline{xI}),
+or the result of shifting left and not adding anything (\lstinline{xO}).
+This allows for a fast addition function, also found in the Coq standard library.
+In the style of \citet{magaud2000changing}, we use \toolname to derive a slow binary
+addition function that does not refer to \lstinline{nat} at all.
+From that, we are able to port our theorems over unary addition to binary addition,
+removing all references to \lstinline{nat}, and show that they hold over fast binary addition too.
 
 \subsubsection{Configuration}
 We supplied this configuration manually using the \lstinline{Configure} command,
 which takes the configuration parts as arguments.
 The result is in \lstinline{nonorn.v}.
 The configuration for \lstinline{nat} was straightforward.
-For \lstinline{binnat}, we implemented constructors that behaved like the \lstinline{nat} constructors:
+For \lstinline{N}, we used functions from the Coq standard library that
+behaved like the \lstinline{nat} constructors:
 
 \begin{lstlisting}
-dep_constr_0_B : binnat := zero.
-dep_constr_1_B (b : binnat) : binnat :=
-  binnat_rec
-    (fun _ : binnat => binnat)
-    (consOdd zero)
-    (fun b0 _ : binnat => consEven b0)
-    (fun _ IHb : binnat => consOdd IHb)
-    b.
+dep_constr_0_B : N := 0%N.
+dep_constr_1_B : N -> N := N.succ.
 \end{lstlisting}
-The second function \lstinline{dep_constr_1_B} behaves like the \lstinline{S} constructor of \lstinline{nat}.
-We then defined an eliminator over \lstinline{binnat} that behaves like the eliminator over \lstinline{nat}.
-Crucially, this hinged on an intermediate type \lstinline{natty}:
+Similarly, the Coq standard library included precisely the eliminator we wanted, one that behaves
+like the eliminator over unary natural numbers:
 
 \begin{lstlisting}
-Inductive natty : binnat -> Type :=
-| nO : natty zero
-| nsuc : forall (n : binnat), natty n -> natty (e.suc_binnat n).
+Definition dep_elim_B :
+  forall (P : N -> Type),
+    P 0%N ->
+    (forall (n : N), P n -> P (N.succ n)) ->
+    forall (n : N), P n
+:=
+  N.peano_rect.
 \end{lstlisting}
-This type was introduced in \citet{song} for the sake of defining an eliminator with this behavior.
-We did not need to do the work of defining this eliminator ourselves.
-Rather, we had already written a \lstinline{binnat_to_nat : binnat -> nat} function ourselves.
-We realized that \lstinline{natty} was an algebraic ornament of \lstinline{nat}, so we were able to 
-automatically repair it to a function \lstinline{binnat_to_natty : $\forall$ (n : binnat), natty n } using the technique
-and configurations from Section~\ref{sec:dep}.
-This gave us the eliminator for free:
+\lstinline{RewEta} was almost written for us.
+The Coq standard library included a lemma that showed that the dependent eliminator preserved the successor case:
 
 \begin{lstlisting}
-Program Definition dep_elim_B :
-  forall (P : binnat -> Type),
-    P zero ->
-    (forall (n : binnat), P n -> P (dep_constr_1_B n)) ->
-    forall (n : binnat), P n.
+N.peano_rect_succ :
+  $\forall$ (P : N -> Type) (a : P 0%N) (f : $\forall$ (n : N), P n -> P (N.succ n)) (n : N),
+    N.peano_rect P a f (N.succ n) = f n (N.peano_rect P a f n).
+\end{lstlisting}
+From there, \lstinline{RewEta} over the successor case is a simple rewrite, as we saw in Section~\ref{sec:equality}:
+
+\begin{lstlisting}
+Lemma rew_eta_1_B :
+  $\forall$ (P : N -> Type) (a : P 0%N) (PS : $\forall$ (n : N), P n -> P (N.succ n)) (n : N) (Q : P (N.succ n) -> Type),
+     Q (PS n (N.peano_rect P PO PS n)) ->
+     Q (N.peano_rect P PO PS (N.succ n)).
 Proof.
-  intros P PO PS n. induction (binnat_to_natty n); auto.
+  intros. rewrite N.peano_rect_succ. auto.
 Defined.
 \end{lstlisting}
 
-The implementation of \lstinline{RewEta}, which we saw in Section~\ref{sec:equality},
-was perhaps the least intuitive part of this configuration.
-This was a rewrite along a theorem \lstinline{refold_elim_S}:
-
-\begin{lstlisting}
-Lemma refold_elim_S:
-  forall P PO PS n,
-    dep_elim_B P PO PS (dep_constr_1_B n) = 
-    PS n (dep_elim_B P PO PS n).
-\end{lstlisting}
-which also proved using a combination of a similar refolding lemma over the corresponding constructor:
-
-\begin{lstlisting}
-Lemma refold_S :
-  forall (b : binnat), binnat_to_nat (dep_constr_1_B b) = dep_constr_1_B (binnat_to_nat b).
-Proof.
-  intros b. induction b; auto. simpl.
-  rewrite IHb. simpl. rewrite <- plus_n_Sm. auto.
-Qed.
-\end{lstlisting}
-and the fact that \lstinline{binnat} is an hSet.\footnote{That is, all proofs of equality between terms of type \lstinline{binnat} are provably
-equal to each other in Coq with no additional axioms.}
-
-The complexity in \lstinline{RewEta} comes from the fact that \lstinline{binnat} has a different inductive
-structure from \lstinline{nat}. The need for the lemma \lstinline{refold_elim_S} that we use to prove
-\lstinline{RewEta} is noted as far back as \citet{magaud2000changing}.
+The need for a nontrivial \lstinline{RewEta} comes from the fact that \lstinline{N} has a different
+inductive structure from \lstinline{nat}.
+The need for it is noted as far back as \citet{magaud2000changing}.
 This corresponds to a broader pattern---it captures the essence of the change in inductive structure.
+\toolname's configurable proof term transformation captures that intuition.
 
 \subsubsection{Example}
 
-We were able to port the addition function automatically: % TODO check decompiler output
+We ported unary addition from \lstinline{nat} to \lstinline{N} fully automatically:
 
 \begin{lstlisting}
-Program Definition add (n m : binnat) : binnat.
-Proof.
-  intros n m. revert m. induction (binnat_to_natty n) as [|n0 n1 IHn0].
-  - intros m0. apply m0.
-  - intros m0. apply dep_constr_1_B. apply (IHn0 m0).
-Defined.
+Repair nat N in add as slow_add.
 \end{lstlisting}
-This is of course not the more efficient binary addition function---we are not sure
-if there is a way to define that automatically.
-But it does implement addition over binary numbers, and it forms the foundation
-with which we can port proofs about addition from \lstinline{nat} to \lstinline{binnat}.
-
-Once we lifted that, we were able to port a proof of the lemma \lstinline{plus_n_Sm}
+The result (tellingly named) has the same slow behavior as the \lstinline{add} function over \lstinline{nat}.
+However, it no longer refers to \lstinline{nat} in any way.
+Like \citet{magaud2000changing}, we found it easy to manually prove that
+this has the same behavior as fast binary addition:
 
 \begin{lstlisting}
-Lemma plus_n_Sm:
-  forall (n m : nat), S (n + m) = n + S m.
-\end{lstlisting}
-Over \lstinline{nat}, this proof held by induction, rewriting by the inductive hypothesis
-in the inductive case.
-However, because we did not have any functionality for custom matching against \lstinline{RewEta},
-we had to expand this proof ourselves, changing a cast in the inductive case to an explicit application
-of \lstinline{RewEta} over \A.
-We separated the inductive case out into a proof \lstinline{plus_n_Sm_inductive} that applied \lstinline{RewEta} explicitly.
-\toolname tranported this proof without issue,
-and then transported \lstinline{plus_n_Sm}.
-The final result was this proof:
-
-\begin{lstlisting}
-Lemma plus_n_Sm:
-  forall (n m : binnat), dep_constr_1_B (add n m) = add n (dep_constr_1_B m).
+Lemma add_fast_add:
+  forall (n m : Bin.nat),
+    slow_add n m = N.add n m.
 Proof.
-  intros n m.
-  induction (binnat_to_natty n) as [|n0 n1 IHn0].
-  - reflexivity.
-  - apply (plus_n_Sm_inductive m n0 IHn0).
+  induction n using N.peano_rect; intros m; auto. unfold slow_add.
+  rewrite N.peano_rect_succ. (* <- rew_eta_1_B *)
+  unfold slow_add in IHn. rewrite IHn.
+  rewrite N.add_succ_l.
+  reflexivity.
 Qed.
 \end{lstlisting}
-where the new proof and new addition function do not at any point convert
-the binary number back to natural numbers, and where \lstinline{dep_constr_1_B} takes the successor.
-% TODO show examples from their thing, show more
+
+We then used \toolname again to transform a proof:
+\begin{lstlisting}
+plus_n_Sm : $\forall$ (n m : nat), S (add n m) = add n (S m).
+\end{lstlisting}
+from \lstinline{add} to \lstinline{slow_add}:
+
+\begin{lstlisting}
+slow_plus_n_Sm : $\forall$ (n m : N), N.succ (slow_add n m) = slow_add n (N.succ m).
+\end{lstlisting}
+This was not quite as push-button.
+It involved a manual expansion step, turning implicit casts in the inductive case
+into explicit applications of \lstinline{RewEta} over \A.
+These applications were formulaic, but tricky to write.
+Once we had that, though, we could run the same \lstinline{Repair} command
+to get \lstinline{slow_plus_n_Sm}.
+
+Showing that the same theorem held over fast binary addition was then
+straightforward:
+
+\begin{lstlisting}
+Lemma add_n_Sm :
+  forall n m,
+    Bin.succ (N.add n m) = N.add n (Bin.succ m).
+Proof.
+  intros. repeat rewrite <- add_fast_add. apply slow_plus_n_Sm.
+Qed.
+\end{lstlisting}
 
 \subsubsection{Takeaways}
 
 \paragraph{Refactoring \& Repair}
-The change from \lstinline{nat} to \lstinline{binnat} was a refactoring.
-In the process of writing the configuration for this refactoring,
-we were able to simplify our own workflow by repairing functions we had already written.
+The change from \lstinline{nat} to \lstinline{N} using \toolname was a refactoring,
+but allowed for simple compatibility with functions with better performance.
 
 \paragraph{Configuration \& Flexibility}
 \lstinline{RewEta} was the key to supporting this case,
@@ -664,10 +646,8 @@ and it was enough to implement this transformation that had previously been its 
 just by writing a configuration with \lstinline{RewEta}. 
 
 \paragraph{Workflow Integration}
-Writing the manual configuration was initially difficult,
-but once we realized we could use \toolname to derive proofs about \lstinline{natty} for free,
-this made things much easier.
-Tactic integration worked nicely as well.
+This was another case when we did not need tactic integration, since we
+ultimately wanted compatibility with a faster version of the function.
 The most difficult part was manually expanding proofs about \lstinline{nat}
 to explicitly apply \lstinline{RewEta}.
 This is because there is not yet any way for manual configuration to supply custom matching functions,

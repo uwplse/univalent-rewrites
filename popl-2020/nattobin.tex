@@ -1,9 +1,17 @@
+
+
+
+
+
 Inductive nat :=
 | O : nat
 | S : nat -> nat.
 
+Inductive positive : Set :=
+| xI : positive -> positive
+| xO : positive -> positive 
+| xH : positive.
 
-Inductive binnat :=
-| zero : binnat
-| consOdd : binnat -> binnat
-| consEven : binnat -> binnat.
+Inductive N :=
+| N0 : N 
+| Npos : (@\codediff{positive}@) -> N.
