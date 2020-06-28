@@ -25,42 +25,46 @@ Since this was a refactoring, this required no additional information from the u
 and proofs behaved exactly the same way.
 
 \begin{figure}
-\begin{minipage}{0.46\textwidth}
-Definition f (T : Type) (l : Old.list T) : New.list T :=
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+f T (l : Old.list T) : New.list T :=
   Old.list_rect
     T
     (fun (l : Old.list T) => New.list T)
     New.nil
-    (fun (t : T) (l : Old.list T) (IHl : New.list T) =>
+    (fun (t : T) _ (IHl : New.list T) =>
       New.cons T t IHl)
     l.
 
 Lemma section:
-  forall (T : Type) (l : list T), g T (f T l) = l.
+  $\forall$ T (l : Old.list T), g T (f T l) = l.
 Proof.
-  intros T l. symmetry. induction l as [|t l0 H].
+  intros T l. symmetry. induction l.
   - reflexivity.
-  - simpl. rewrite <- H. reflexivity.
+  - simpl. rewrite <- IHl. reflexivity.
 Defined.
+\end{lstlisting}
 \end{minipage}
 \hfill
-\begin{minipage}{0.46\textwidth}
-Definition g (T : Type) (l : New.list T) : Old.list T :=
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+g T (l : New.list T) : Old.list T :=
   New.list_rect
     T
     (fun (l : New.list T) => Old.list T)
-    (fun (t : T) (l : New.list T) (IHl : Old.list T) =>
+    (fun (t : T) _ (IHl : Old.list T) =>
       Old.cons T t IHl)
     Old.nil
     l.
 
 Lemma retraction:
-  forall T l, f T (g T l) = l.
+  $\forall$ T (l : New.list T), f T (g T l) = l.
 Proof.
-  intros T l. symmetry. induction l as [t l0 H|].
-  - simpl. rewrite <- H. reflexivity.
+  intros T l. symmetry. induction l.
+  - simpl. rewrite <- IHl. reflexivity.
   - reflexivity.
 Defined.
+\end{lstlisting}
 \end{minipage}
 \caption{Two functions between \lstinline{Old.list} and \lstinline{New.list} (top) that form an equivalence (bottom).}
 \label{fig:equivalence}
@@ -81,6 +85,7 @@ Old.list $\simeq$ New.list
 Refactoring corresponds to proof reuse across these equivalences.
 
 \subsection{Repair as Reuse across Refinements}
+\label{sec:repair}
 
 Repair, in contrast, refers to changes that are \textit{not} semantics-preserving---they require additional information
 from the user.
@@ -109,22 +114,30 @@ Old.nat $\simeq$ New.nat
 \end{lstlisting}
 But this particular equivalence would not do what we want: it would refactor the functions and proofs to rename 0 to 1, rather than
 actually changing the behavior of functions and proofs appropriately.
-If we want our new functions and proofs to actually reason about the natural numbers starting at 1, we want some additional information.
-We can show an equivalence between \lstinline{New.nat} and a \textit{refinement} of \lstinline{Old.nat}:
+If we want our new functions and proofs to actually reason about the natural numbers starting at 1,
+we need the additional restriction that those numbers are nonzero. 
+This restriction manifests as a proof obligation for the proof engineer, which we can express
+with the following \textit{refinement} of \lstinline{Old.nat}:
+
+\begin{lstlisting}
+pos := { n : Old.nat | n =? 0 = false }.
+\end{lstlisting}
+
+We can show an equivalence between \lstinline{New.nat} and this refinement:
 
 \begin{figure}
-\begin{minipage}{0.46\textwidth}
-Definition f (s : { n : Old.nat | eqb n 0 = false}) : New.nat :=
+\begin{minipage}{0.60\textwidth}
+\begin{lstlisting}
+f (s : pos) : New.nat :=
   Old.nat_rect
-    (fun (n : Old.nat) => eqb n 0 = false -> New.nat)
-    (fun (H : eqb 0 0 = false) =>
-       False_rect _
-         (eq_ind (eqb 0 0) (bool_rect _ True False) I false H))
+    (fun (n : Old.nat) => n =? 0 = false -> New.nat)
+    (fun (H : false) => (* ... absurd *))
     (fun (n : nat) _ _ =>
       Old.nat_rect
         (fun (n : Old.nat) => New.nat)
         1
-        (fun (n : Old.nat) (IH : New.nat) => New.S IH)
+        (fun _ (IH : New.nat) =>
+          New.S IH)
         n)
     ($\pi_l$ s)
     ($\pi_r$ s).
@@ -139,18 +152,18 @@ Proof.
     + exists (f_equal S (proj1_sig_eq (IHn H))). 
       eapply eq_trans; eauto using UIP_refl_bool.
 Defined.
+\end{lstlisting}
 \end{minipage}
 \hfill
-\begin{minipage}{0.46\textwidth}
-Definition g (n : New.nat) : { n : Old.nat | eqb n 0 = false} :=
+\begin{minipage}{0.38\textwidth}
+\begin{lstlisting}
+g (n : New.nat) : pos :=
   New.nat_rect
-    (fun (n : New.nat) => { n : Old.nat | eqb n 0 = false})
+    (fun (n : New.nat) => pos)
     ($\exists$ (Old.S 0) eq_refl)
-    (fun (n : New.nat) (IH : { n : Old.nat | eqb n 0 = false}) =>
+    (fun _ (IH : pos) =>
       $\exists$ (Old.S ($\pi_l$ IH)) eq_refl)
     n.
-
-
 
 
 
@@ -162,21 +175,22 @@ Lemma retraction :
 Proof.
   intros n. induction n.
   - auto.
-  - rewrite <- IHn at 2. simpl. unfold f. simpl. remember (g n) as s. induction s.
-    induction x; try discriminate; auto.
+  - rewrite <- IHn at 2. simpl. 
+    unfold f. simpl.
+    remember (g n) as s.
+    induction s. induction x;
+    try discriminate; auto.
 Defined.
+\end{lstlisting}
 \end{minipage}
 \caption{Two functions between a refinement of \lstinline{Old.nat} and \lstinline{New.nat} (top) that form an equivalence (bottom).}
 \label{fig:equivalence2}
 \end{figure}
 
 \begin{lstlisting}
-{ n : Old.nat | eqb n 0 = false } $\simeq$ New.nat 
+pos $\simeq$ New.nat 
 \end{lstlisting}
 One possible proof of this equivalence is in Figure~\ref{fig:equivalence2}.
-The gist of this equivalence is that to repair proofs about \lstinline{Old.nat} functions to proofs about \lstinline{New.nat} functions with the desired behavior,
-we need the additional restriction that those numbers are nonzero. 
-This restriction manifests as a proof obligation for the proof engineer.
 \toolname cannot prove this particular equivalence automatically, but it can
 port functions and proofs across it via the manual configuration workflow. % TODO check
 
@@ -204,7 +218,7 @@ Thus, we need \lstinline{Old.list} around only until we call the \lstinline{Repa
 after that, we can remove the type and all of the functions and proofs about it, and replace them all with
 our functions and proofs about \lstinline{New.list}.
 
-\toolname accomplishes this using a configurable proof term transformation (Section~\ref{sec:meat}).
+\toolname accomplishes this using a configurable proof term transformation (Section~\ref{sec:key2}).
 The proof term transformation implements transport across equivalences, but in a way that removes
 references to the old type.
 The configuration corresponds to a particular equivalence, and tells the proof term transformation how to transform
