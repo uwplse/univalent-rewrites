@@ -43,10 +43,10 @@ immediately clear how to adapt the proof based on tactics alone.
 Adapting tactic scripts to changes is in general difficult; \citep{robert2018} 
 discusses the challenges in detail.
 
-With \toolname, however, all we need to do is run this command: % TODO adapted for now
+With \toolname, however, all we need to do is run this command (denoting our old list type as \lstinline{Old.list} and our new list type as \lstinline{New.list}): % TODO adapted for now
 
 \begin{lstlisting}
-Repair Coq.Init.Datatypes.list list in Coq.Init.Datatypes.rev_app_distr.
+Repair Old.list New.list in Coq.Init.Datatypes.rev_app_distr.
 \end{lstlisting}
 and we get back a new tactic script:
 
@@ -94,8 +94,8 @@ Coq compiles the proof script to a proof term---\toolname repairs that term.
 
 The repair step works using a configurable program transformation.
 This program transformation transforms the old proof term into a new proof term that refers to the new specification
-(here, the theorem that refers to \lstinline{Coq.Init.Datatypes.list})
-in place of the old specification (here, the theorem that refers to our updated \lstinline{list}),
+(here, the theorem that refers to \lstinline{Old.list})
+in place of the old specification (here, the theorem that refers to our updated \lstinline{New.list}),
 and otherwise preserves the behavior of the old proof term.
 The configuration instantiates the program transformation to a particular change in specification---it corresponds
 to a particular relation between the old and new specificationss.
@@ -116,12 +116,12 @@ Our example uses automatic configuration. When we run the \lstinline{Repair} com
 \begin{lstlisting}
 Repair Coq.Init.Datatypes.list list in Coq.Init.Datatypes.rev_app_distr.
 \end{lstlisting}
-\textbf{Configure} invokes a special search procedure that automatically discovers that our new \lstinline{list}
-is just our old \lstinline{list} with a single moved constructor.
+\textbf{Configure} invokes a special search procedure that automatically discovers that \lstinline{New.list}
+is just \lstinline{Old.list} with a single moved constructor.
 The search procedure proves an equivalence between our old and new versions of lists,
 then configures \textbf{Transform} using that equivalence and some additional information.
-\textbf{Transform} then ports the proof term that inducted over our old \lstinline{list}
-to instead induct over our new \lstinline{list}, and finally
+\textbf{Transform} then ports the proof term that inducted over \lstinline{Old.list}
+to instead induct over \lstinline{New.list}, and finally
 \textbf{Decompile} produces the tactic script that we see.
 
 While this is a simple refactoring, this same workflow can get us much more.
@@ -129,5 +129,4 @@ Section~\ref{sec:search} shows how we have used \toolname to support industrial 
 write dependently-typed functions and proofs with little user effort,
 port proofs between unary and binary natural numbers,
 and support repair examples from benchmarks from real Coq proof engineers in the wild.
-
 

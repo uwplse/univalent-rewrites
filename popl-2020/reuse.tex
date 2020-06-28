@@ -1,0 +1,214 @@
+\section{Proof Reuse Over Time}
+\label{sec:key1}
+
+We can view proof refactoring and repair---like the refactoring we just saw---as a form of 
+\textit{proof reuse}~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}, % TODO consider citation list
+or reusing proofs about one specification to derive proofs about another specification.
+The difference from standard proof reuse is that, for proof refactoring and repair, the specification about which
+we are reusing proofs ceases to exist. In other words:
+
+\begin{quote}
+\textbf{Insight 1}:
+Proof refactoring (Section~\ref{sec:refactoring}) and repair (Section~\ref{sec:repair}) are both just 
+proof reuse %
+over time. The key to supporting both is to build a generic proof reuse
+tool that can handle the additional challenges imposed by the reuse occuring \textit{over time} (Section~\ref{sec:time}). 
+\end{quote}
+
+\subsection{Refactoring as Reuse across Equivalences}
+\label{sec:refactoring}
+
+The example with \lstinline{list} was a simple refactoring, or a semantics-preserving change.
+Thus, \toolname used the old proof of \lstinline{rev_app_distr} defined over \lstinline{Old.list}
+to generate the new proof of \lstinline{rev_app_distr} defined over \lstinline{New.list}.
+Since this was a refactoring, this required no additional information from the user, and the resulting functions
+and proofs behaved exactly the same way.
+
+\begin{figure}
+\begin{minipage}{0.46\textwidth}
+Definition f (T : Type) (l : Old.list T) : New.list T :=
+  Old.list_rect
+    T
+    (fun (l : Old.list T) => New.list T)
+    New.nil
+    (fun (t : T) (l : Old.list T) (IHl : New.list T) =>
+      New.cons T t IHl)
+    l.
+
+Lemma section:
+  forall (T : Type) (l : list T), g T (f T l) = l.
+Proof.
+  intros T l. symmetry. induction l as [|t l0 H].
+  - reflexivity.
+  - simpl. rewrite <- H. reflexivity.
+Defined.
+\end{minipage}
+\hfill
+\begin{minipage}{0.46\textwidth}
+Definition g (T : Type) (l : New.list T) : Old.list T :=
+  New.list_rect
+    T
+    (fun (l : New.list T) => Old.list T)
+    (fun (t : T) (l : New.list T) (IHl : Old.list T) =>
+      Old.cons T t IHl)
+    Old.nil
+    l.
+
+Lemma retraction:
+  forall T l, f T (g T l) = l.
+Proof.
+  intros T l. symmetry. induction l as [t l0 H|].
+  - simpl. rewrite <- H. reflexivity.
+  - reflexivity.
+Defined.
+\end{minipage}
+\caption{Two functions between \lstinline{Old.list} and \lstinline{New.list} (top) that form an equivalence (bottom).}
+\label{fig:equivalence}
+\end{figure}
+
+More formally, \toolname was able to find a pair of two functions that map between \lstinline{Old.list}
+and \lstinline{New.list} and prove that they are mutual inverses (Figure~\ref{fig:equivalence}).
+\toolname could then use that information to configure its proof term transformation to refactor
+functions and proofs about \lstinline{Old.list} to functons and proofs about \lstinline{New.list} with
+the same exact behavior.
+
+Whenever there exist two functions between two types that are mutual inverses,
+there is a \textit{type equivalence}~\cite{univalent2013homotopy} between them, denoted $\simeq$:
+
+\begin{lstlisting}
+Old.list $\simeq$ New.list
+\end{lstlisting}
+Refactoring corresponds to proof reuse across these equivalences.
+
+\subsection{Repair as Reuse across Refinements}
+
+Repair, in contrast, refers to changes that are \textit{not} semantics-preserving---they require additional information
+from the user.
+Repair, too, corresponds to proof reuse across equivalences, but not between the old and new types.
+Rather, repair is the special case where one or both of the types is equivalent to a \textit{refinement}
+of the other type.
+
+\begin{figure}
+\begin{minipage}{0.46\textwidth}
+   \lstinputlisting[firstline=1, lastline=3]{nat.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.46\textwidth}
+   \lstinputlisting[firstline=5, lastline=7]{nat.tex}
+\end{minipage}
+\caption{The updated \lstinline{nat} (right) is the old \lstinline{nat} (left) starting at 1 instead of 0 (\codediff{orange}).}
+\label{fig:natrepair}
+\end{figure}
+
+Consider, for example, changing the interpretation of the natural numbers \lstinline{nat} to start at 1 instead of 0 (Figure~\ref{fig:natrepair}).
+The data structure does not change here either than a name, but our \textit{interpretation} of it does change.
+We could choose infinitely many equivalences here, most simply:
+
+\begin{lstlisting}
+Old.nat $\simeq$ New.nat
+\end{lstlisting}
+But this particular equivalence would not do what we want: it would refactor the functions and proofs to rename 0 to 1, rather than
+actually changing the behavior of functions and proofs appropriately.
+If we want our new functions and proofs to actually reason about the natural numbers starting at 1, we want some additional information.
+We can show an equivalence between \lstinline{New.nat} and a \textit{refinement} of \lstinline{Old.nat}:
+
+\begin{figure}
+\begin{minipage}{0.46\textwidth}
+Definition f (s : { n : Old.nat | eqb n 0 = false}) : New.nat :=
+  Old.nat_rect
+    (fun (n : Old.nat) => eqb n 0 = false -> New.nat)
+    (fun (H : eqb 0 0 = false) =>
+       False_rect _
+         (eq_ind (eqb 0 0) (bool_rect _ True False) I false H))
+    (fun (n : nat) _ _ =>
+      Old.nat_rect
+        (fun (n : Old.nat) => New.nat)
+        1
+        (fun (n : Old.nat) (IH : New.nat) => New.S IH)
+        n)
+    ($\pi_l$ s)
+    ($\pi_r$ s).
+
+Lemma section :
+  forall s, g (f s) = s.
+Proof.
+  intros s. induction s as [n H]. induction n.
+  - discriminate.
+  - induction n; simpl; apply eq_exist_uncurried. 
+    + exists eq_refl. symmetry. apply UIP_refl_bool.
+    + exists (f_equal S (proj1_sig_eq (IHn H))). 
+      eapply eq_trans; eauto using UIP_refl_bool.
+Defined.
+\end{minipage}
+\hfill
+\begin{minipage}{0.46\textwidth}
+Definition g (n : New.nat) : { n : Old.nat | eqb n 0 = false} :=
+  New.nat_rect
+    (fun (n : New.nat) => { n : Old.nat | eqb n 0 = false})
+    ($\exists$ (Old.S 0) eq_refl)
+    (fun (n : New.nat) (IH : { n : Old.nat | eqb n 0 = false}) =>
+      $\exists$ (Old.S ($\pi_l$ IH)) eq_refl)
+    n.
+
+
+
+
+
+
+
+
+Lemma retraction :
+  forall n, f (g n) = n.
+Proof.
+  intros n. induction n.
+  - auto.
+  - rewrite <- IHn at 2. simpl. unfold f. simpl. remember (g n) as s. induction s.
+    induction x; try discriminate; auto.
+Defined.
+\end{minipage}
+\caption{Two functions between a refinement of \lstinline{Old.nat} and \lstinline{New.nat} (top) that form an equivalence (bottom).}
+\label{fig:equivalence2}
+\end{figure}
+
+\begin{lstlisting}
+{ n : Old.nat | eqb n 0 = false } $\simeq$ New.nat 
+\end{lstlisting}
+One possible proof of this equivalence is in Figure~\ref{fig:equivalence2}.
+The gist of this equivalence is that to repair proofs about \lstinline{Old.nat} functions to proofs about \lstinline{New.nat} functions with the desired behavior,
+we need the additional restriction that those numbers are nonzero. 
+This restriction manifests as a proof obligation for the proof engineer.
+\toolname cannot prove this particular equivalence automatically, but it can
+port functions and proofs across it via the manual configuration workflow. % TODO check
+
+\subsection{A Tool for Proof Reuse Over Time}
+\label{sec:time}
+
+The problem of proof reuse across equivalences is known as \textit{transport}. % TODO cite
+Thus, any tool that can refactor or repair proofs implements transport across the classes
+of equivalences that it supports.
+But we cannot use just any transport method: we must transport functions and proofs \textit{over time}.
+
+That proof refactoring and repair are reuse \textit{over time} dictates that proofs
+must no longer refer in any way to the old specification, since the old specification no longer exists.
+This means that most transport methods % TODO cite
+are not immediately useful for refactoring and repair.
+
+The goal of a proof refactoring and repair tool is, in essence, to
+define a transport method over a broad set of changes that
+removes references to the old specification, rather than converting back and forth
+like standard transport methods.
+For example, the refactored proof of \lstinline{rev_app_distr} and the updated application function \lstinline{app}
+from Section~\ref{sec:overview} refers only to \lstinline{New.list} and not to \lstinline{Old.list}.
+It inducts directly over \lstinline{New.list} and never, at any point, converts to an \lstinline{Old.list}.
+Thus, we need \lstinline{Old.list} around only until we call the \lstinline{Repair} command;
+after that, we can remove the type and all of the functions and proofs about it, and replace them all with
+our functions and proofs about \lstinline{New.list}.
+
+\toolname accomplishes this using a configurable proof term transformation (Section~\ref{sec:meat}).
+The proof term transformation implements transport across equivalences, but in a way that removes
+references to the old type.
+The configuration corresponds to a particular equivalence, and tells the proof term transformation how to transform
+constructors, eliminators, identity, and equalities.
+Section~\ref{sec:search} includes many example configurations as applied to real proof refactoring and repair scenarios.
+
+
