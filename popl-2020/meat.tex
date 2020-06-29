@@ -175,26 +175,6 @@ This way, the rest of the transformation can replace constructions of \A with co
 replace inductive proofs about \A with inductive proofs about \B, and otherwise just recursively lift
 the other subterms without having to change the order or number of arguments.
 
-The intuition behind this construction is that,
-since Coq is a constructive logic, the only way to construct an \A (respectively \B) is to use its constructors.
-Similarly, since we assume primitive eliminators, the only way to match over an \A (respectively \B) is to apply its eliminator. 
-The \lstinline{Dep-Constr} rule thus rewrites constructions of \A to constructions of \B,
-while the \lstinline{Dep-Elim} rule rewrites applications of eliminators of \A to applications of eliminators of \B.
-The result will construct \B in place of \A, and it will eliminate \B in place of \A.
-Thanks to this, \toolname can remove all references to the old type \A,
-and produce a refactored or repaired term that refers only to the new type \B.
-
-Together, these dependent constructors and eliminators induce a type equivalence between \A and \B,
-formed by one function that eliminates \A and constructs \B, and another function that eliminates \B and constructs \A:
-
-\begin{lstlisting}
-f : A -> B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
-g : B -> A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
-\end{lstlisting}
-Each search procedure that \textbf{Configure} implements discovers the configuration
-along with these two functions, and (optionally for the proof engineer) produces a proof in Coq that these functions form an equivalence.
-The transformation in \textbf{Transform} then ports functions and proofs across this equivalence.
-
 \paragraph{Examples}
 For the \lstinline{list} refactoring from Figure~\ref{fig:listswap},
 the configuration that \toolname discovers uses the the dependent constructors
@@ -295,6 +275,27 @@ Section~\ref{sec:search} shows many more example configurations, including
 how to configure the repair that maps \{\lstinline{l : list T | length l = n}\} to \lstinline{vector T n},
 and including cases when \A and \B themselves have different number of constructors.
 
+\paragraph{Intuition}
+The intuition behind this construction is that,
+since Coq is a constructive logic, the only way to construct an \A (respectively \B) is to use its constructors.
+Similarly, since we assume primitive eliminators, the only way to match over an \A (respectively \B) is to apply its eliminator. 
+The \lstinline{Dep-Constr} rule thus rewrites constructions of \A to constructions of \B,
+while the \lstinline{Dep-Elim} rule rewrites applications of eliminators of \A to applications of eliminators of \B.
+The result will construct \B in place of \A, and it will eliminate \B in place of \A.
+Thanks to this, \toolname can remove all references to the old type \A,
+and produce a refactored or repaired term that refers only to the new type \B.
+
+Together, these dependent constructors and eliminators induce a type equivalence between \A and \B,
+formed by one function that eliminates \A and constructs \B, and another function that eliminates \B and constructs \A:
+
+\begin{lstlisting}
+f : A -> B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
+g : B -> A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
+\end{lstlisting}
+Each search procedure that \textbf{Configure} implements discovers the configuration
+along with these two functions, and (optionally for the proof engineer) produces a proof in Coq that these functions form an equivalence.
+The transformation in \textbf{Transform} then ports functions and proofs across this equivalence.
+
 \subsubsection{Equality}
 \label{sec:equality}
 
@@ -305,6 +306,8 @@ is that we must do additional work to transform definitional and propositional e
 Otherwise, if we tranform a term \lstinline{t : T} to some \lstinline{t' : T'}, we do not necessarily
 have that our transformation maps \lstinline{T} to \lstinline{T'}.
 For this to work, we may sometimes need to transform definitional equalities to propositional equalities.
+
+\paragraph{Examples}
 
 We see this with natural numbers \lstinline{nat} and binary numbers \lstinline{binnat}
 in Section~\ref{sec:search}.
@@ -391,6 +394,8 @@ fun (n : pos_nat) => $\exists$ ($\pi_l$ n) ($\pi_r$ n)
 \end{lstlisting}
 so that, unlike \textsc{Devoid}, we do not need our algorithm to assume primitive projections.
 
+\paragraph{Intuition}
+
 For any type \A or \B,
 There is just one \lstinline{IdEta}, but there are as many \lstinline{RewEta} as there are
 inductive hypotheses of \lstinline{DepElim}.
@@ -399,7 +404,10 @@ in the eliminator---we'll see this more in Section~\ref{sec:search}.
 
 \lstinline{RewEta} in the above example is not reflexivity precisely becuse our two inductive types
 \lstinline{nat} and \lstinline{Bin.nat} do not have the same inductive structure---they are not \textit{ornaments}. % TODO cite
-When our types are ornaments, like with our simple refactor above, every \lstinline{RewEta} is just reflexivity.
+When our types are ornaments, like with our simple refactor above, every \lstinline{RewEta} just rewrites by reflexivity.
+Correspondingly, the proofs of \lstinline{section} and \lstinline{retraction} for the equivalence
+follow by induction and rewriting, since the types have the same refolding behavior over the dependent constructors
+and eliminators.
 
 \subsubsection{Equivalence \& Equality}
 \label{sec:art}
