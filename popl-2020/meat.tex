@@ -124,6 +124,7 @@ These two goals each correspond to a pair of configuration parts, respectively:
 \item \lstinline{IdEta} and \lstinline{RewEta} define how to transform identity and equalities, thereby producing well-typed terms (Section~\ref{sec:equality}).
 \end{enumerate}
 
+Each of these parts is defined using terms in CIC$_{\omega}$.
 The four parts of this configuration must be in relation to one another in a certain way in order for the proof
 term transformation to work correctly (Section~\ref{sec:art}).
 Section~\ref{sec:search} shows many example configurations.
@@ -158,16 +159,22 @@ This way, we do not need to change the number and order of arguments to construc
 
 It is easiest to see this by example.
 If we consider our simple \lstinline{list} refactoring, our dependent
-constructors for \lstinline{Coq.Init.Datatypes.list} are just the normal constructors
-\lstinline{nil} and \lstinline{cons}. Our dependent constructors for our updated
-\lstinline{list}, however, swaps the order back to the original order of constructors:
+constructors for \lstinline{Old.list} are just the normal constructors
+\lstinline{nil} and \lstinline{cons}. Our dependent constructors for \lstinline{New.list} swap
+the order back to the original order of constructors:
 
 \begin{lstlisting}
-DepConstr(0, list T) : list T := nil.
-DepConstr(1, list T) : T -> list T -> list T := cons.
+DepConstr(0, New.list T) : New.list T := Constr(1, New.list T). (* New.nil in Coq *)
+DepConstr(1, New.list T) (t : T) (l : New.list T) : New.list T := Constr(0, New.list T) t l. (* New.cons in Coq *)
 \end{lstlisting}
-The dependent eliminator swaps the cases similarly, so that its type signature is identical
-to \lstinline{list_rect} but with the updated \lstinline{list} type and constructors.
+The dependent eliminator swaps the cases similarly:
+
+\begin{lstlisting}
+DepElim(n
+\end{lstlisting}
+
+ so that its type signature is identical
+to the type signature for the eliminator for \lstinline{Old.list}, but with the updated \lstinline{New.list} type and constructors.
 
 Things are a bit more complicated with our \lstinline{nat} to \lstinline{positive} repair.
 We can make many different choices here. One is to choose these dependent constructors:

@@ -106,20 +106,22 @@ This means that it is possible to reduce repair to refactoring, as long as the p
 \label{fig:listtovect}
 \end{figure}
 
-Consider an example from \textsc{Devoid}: changing a list to a length-indexed vector (Figure~\ref{fig:natrepair}).
-Lists and vectors are not equivalent.
-To fix our functions about lists and get equivalent functions about vectors at a particular length, we need to prove
-an invariant about the length.
-To fix our proofs about those functions, we need to show how our invariants relate to one another.
-In other words, we need to port our functions and proofs across this equivalence:
+Consider an example from \textsc{Devoid}: changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
+\textsc{Devoid} implemented a refactoring between lists and \textit{vectors of some length}, since:
+
+\begin{lstlisting}
+list T $\simeq$ $\Sigma$ (n : nat) . vector T n.
+\end{lstlisting}
+More desirable, however, is a repair that takes us from lists \textit{at a particular length} to vectors of that length:
 
 \begin{lstlisting}
 { l : list T | length l = n } $\simeq$ vector T n.
 \end{lstlisting}
-
-Section~\ref{sec:search} shows how we do this in detail with \toolname.
-Essentially, the additional proof about the length of the list manifests as a proof obligation for the user.
-The rest is straightforward.
+This is a repair because our old specification \lstinline{list} shows up as part of a refinement with an additional proof obligation
+about its length. Practically, when we change our specifications to refer to \lstinline{vector} instead of \lstinline{list},
+to fix our functions and proofs, we must additionally prove invariants about the lengths of our lists.
+\toolname makes it easy to separate out that proof obligation, and then automates the rest.
+Section~\ref{sec:search} shows this repair on some particular functions and proofs.
 
 \subsection{A Tool for Proof Reuse Over Time}
 \label{sec:time}
