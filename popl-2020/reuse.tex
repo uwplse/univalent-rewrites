@@ -88,111 +88,38 @@ Refactoring corresponds to proof reuse across these equivalences.
 \label{sec:repair}
 
 Repair, in contrast, refers to changes that are \textit{not} semantics-preserving---they require additional information
-from the user.
+from the proof engineer.
 Repair, too, corresponds to proof reuse across equivalences, but not between the old and new types.
 Rather, repair is the special case where one or both of the types is equivalent to a \textit{refinement}
 of the other type.
+This means that it is possible to reduce repair to refactoring, as long as the proof engineer supplies the additional information.
 
 \begin{figure}
-\begin{minipage}{0.46\textwidth}
-   \lstinputlisting[firstline=1, lastline=3]{nat.tex}
+\begin{minipage}{0.40\textwidth}
+   \lstinputlisting[firstline=1, lastline=4]{listtovect.tex}
 \end{minipage}
 \hfill
-\begin{minipage}{0.46\textwidth}
-   \lstinputlisting[firstline=5, lastline=7]{nat.tex}
+\begin{minipage}{0.58\textwidth}
+   \lstinputlisting[firstline=6, lastline=9]{listtovect.tex}
 \end{minipage}
-\caption{The updated \lstinline{nat} (right) is the old \lstinline{nat} (left) starting at 1 instead of 0 (\codediff{orange}).}
-\label{fig:natrepair}
+\caption{A vector (right) is a list (left) indexed by its length.}
+\label{fig:listtovect}
 \end{figure}
 
-Consider, for example, changing the interpretation of the natural numbers \lstinline{nat} to start at 1 instead of 0 (Figure~\ref{fig:natrepair}).
-The data structure does not change here either than a name, but our \textit{interpretation} of it does change.
-We could choose infinitely many equivalences here, most simply:
+Consider an example from \textsc{Devoid}: changing a list to a length-indexed vector (Figure~\ref{fig:natrepair}).
+Lists and vectors are not equivalent.
+To fix our functions about lists and get equivalent functions about vectors at a particular length, we need to prove
+an invariant about the length.
+To fix our proofs about those functions, we need to show how our invariants relate to one another.
+In other words, we need to port our functions and proofs across this equivalence:
 
 \begin{lstlisting}
-Old.nat $\simeq$ New.nat
-\end{lstlisting}
-But this particular equivalence would not do what we want: it would refactor the functions and proofs to rename 0 to 1, rather than
-actually changing the behavior of functions and proofs appropriately.
-If we want our new functions and proofs to actually reason about the natural numbers starting at 1,
-we need the additional restriction that those numbers are nonzero. 
-This restriction manifests as a proof obligation for the proof engineer, which we can express
-with the following \textit{refinement} of \lstinline{Old.nat}:
-
-\begin{lstlisting}
-pos := { n : Old.nat | n =? 0 = false }.
+{ l : list T | length l = n } $\simeq$ vector T n.
 \end{lstlisting}
 
-We can show an equivalence between \lstinline{New.nat} and this refinement:
-
-\begin{figure}
-\begin{minipage}{0.60\textwidth}
-\begin{lstlisting}
-f (s : pos) : New.nat :=
-  Old.nat_rect
-    (fun (n : Old.nat) => n =? 0 = false -> New.nat)
-    (fun (H : false) => (* ... absurd *))
-    (fun (n : nat) _ _ =>
-      Old.nat_rect
-        (fun (n : Old.nat) => New.nat)
-        1
-        (fun _ (IH : New.nat) =>
-          New.S IH)
-        n)
-    ($\pi_l$ s)
-    ($\pi_r$ s).
-
-Lemma section :
-  forall s, g (f s) = s.
-Proof.
-  intros s. induction s as [n H]. induction n.
-  - discriminate.
-  - induction n; simpl; apply eq_exist_uncurried. 
-    + exists eq_refl. symmetry. apply UIP_refl_bool.
-    + exists (f_equal S (proj1_sig_eq (IHn H))). 
-      eapply eq_trans; eauto using UIP_refl_bool.
-Defined.
-\end{lstlisting}
-\end{minipage}
-\hfill
-\begin{minipage}{0.38\textwidth}
-\begin{lstlisting}
-g (n : New.nat) : pos :=
-  New.nat_rect
-    (fun (n : New.nat) => pos)
-    ($\exists$ (Old.S 0) eq_refl)
-    (fun _ (IH : pos) =>
-      $\exists$ (Old.S ($\pi_l$ IH)) eq_refl)
-    n.
-
-
-
-
-
-
-Lemma retraction :
-  forall n, f (g n) = n.
-Proof.
-  intros n. induction n.
-  - auto.
-  - rewrite <- IHn at 2. simpl. 
-    unfold f. simpl.
-    remember (g n) as s.
-    induction s. induction x;
-    try discriminate; auto.
-Defined.
-\end{lstlisting}
-\end{minipage}
-\caption{Two functions between a refinement of \lstinline{Old.nat} and \lstinline{New.nat} (top) that form an equivalence (bottom).}
-\label{fig:equivalence2}
-\end{figure}
-
-\begin{lstlisting}
-pos $\simeq$ New.nat 
-\end{lstlisting}
-One possible proof of this equivalence is in Figure~\ref{fig:equivalence2}.
-\toolname cannot prove this particular equivalence automatically, but it can
-port functions and proofs across it via the manual configuration workflow. % TODO check
+Section~\ref{sec:search} shows how we do this in detail with \toolname.
+Essentially, the additional proof about the length of the list manifests as a proof obligation for the user.
+The rest is straightforward.
 
 \subsection{A Tool for Proof Reuse Over Time}
 \label{sec:time}

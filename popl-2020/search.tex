@@ -193,25 +193,13 @@ and caching of transformed subterms.
 \subsection{Vectors from Lists and their Lengths}
 \label{sec:dep}
 
-\begin{figure}
-\begin{minipage}{0.40\textwidth}
-   \lstinputlisting[firstline=1, lastline=4]{listtovect.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.58\textwidth}
-   \lstinputlisting[firstline=6, lastline=9]{listtovect.tex}
-\end{minipage}
-\caption{A vector (right) is a list (left) ornamented by its length.}
-\label{fig:listtovect}
-\end{figure}
-
 The proof term transformation in \toolname is based on the proof term transformation from
 the \textsc{Devoid} proof reuse tool.
 \textsc{Devoid} is a proof reuse tool for \textit{algebraic ornaments}~\cite{mcbride}. Algebraic ornaments describe relations
 between two inductive types, where one inductive type is exactly the old inductive type indexed by a fold
 over the original type.
 The running example of this in the \textsc{Devoid} paper is the relation between a list and a
-length-indexed vector (Figure~\ref{fig:listtovect}).
+length-indexed vector, like we saw in Figure~\ref{fig:listtovect} in Section~\ref{sec:key1}.
 
 We configured the generalized algorithm in \toolname to support algebraic ornaments like those found in \textsc{Devoid},
 and passed all of the regression tests from \textsc{Devoid}.
