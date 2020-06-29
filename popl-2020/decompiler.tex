@@ -8,6 +8,78 @@ Restating our final insight:
 
 \begin{quote}
 \textbf{Insight 3}: The transformed proof terms can then be translated back to tactics.
-\end{quote} 
+\end{quote}
 
-RanDair stuff goes here.
+For now, the rest of this text is copied from a draft that RanDair sent.
+I will turn this into semantics and revise it soon.
+
+The decompiler accepts a proof term and generates an equivalent Ltac script. 
+The initial goal of the Ltac proof is the type of the proof term itself. Therefore, the theorem can be trivially proved by a single “apply” tactic. This is typically unreadable, but it does provide a last resort for any subgoals which fail to generate viable tactics.
+The decompiler matches on 3 term constructors: lambda abstractions, function applications, and let expressions. All other terms are inserted in their entirety with the apply tactic. 
+
+\subsection{First Pass}
+
+\paragraph{Introduction}
+Lambda abstractions correspond to assumptions of hypotheses. Thus, each abstraction generates an “intro” tactic, adding a new hypothesis into the environment. The algorithm recurses on the body of the abstraction.
+
+\paragraph{Rewriting}
+Applications of the equality eliminators (eq_ind, eq_rec, eq_rect, eq_ind_r, eq_rec_r, eq_rect_r) generate a single “rewrite” tactic. In an Ltac proof, rewrite accepts a proof of equality between two terms and transforms the goal. The following tactics must prove the new goal. The decompiler generates a rewrite of the equality (the sixth argument of the eliminator) and recurses on the new goal (the fourth argument). If the eliminator is without the “_r”, then it is written “rewrite <-“ indicating the direction of the equality. (???)
+
+\paragraph{Induction}
+Applications of induction eliminators are deconstructed into a proof of each case, arguments to the motive, and the value we perform induction on.
+The position of the inducted value (hard time explaining this): Pos = \# of arguments … – pms + 1 (???)
+Following the inducted value are additional arguments to the motive. A “revert” tactic is inserted for each such hypothesis before induction. This forgets the hypotheses by adding them as arguments to the goal, producing a motive requiring these arguments exactly, and so they must be re-introduced in each case.
+
+\paragraph{Left}
+Application of \lstinline{or_introl}, constructing a logical or. A \lstinline{left} tactic is generated, transforming the goal to be the left side of the disjunction, and we recurse on the given proof.
+Vs. (template-y description)
+\lstinline{@or_introl A B H : A \/ B}
+Generate \lstinline{left.}
+Recurse on \lstinline{H.}
+
+\paragraph{Right}
+Application of \lstinline{or_intror}, constructing a logical or. A \lstinline{right} tactic is generated, transforming the goal to be the left side of the disjunction, and we recurse on the given proof.
+
+\paragraph{Split}
+Application of \lstinline{conj} constructing a logical and. A \lstinline{split} tactic is generated, creating a goal for each side of the conjunction, and we recurse on both proofs, generating the left side first.
+
+\paragraph{Symmetry}
+
+\paragraph{Rewrite In}
+Rewrite-in transforms an existing hypothesis by binding a new hypothesis to replace all occurrences of the original in the remainder of the proof.
+\lstinline{let _ : _ := eq_ind _ _ _ H2 _ H1 in _} where
+		H2 is a hypothesis in context,
+		H2 doesn’t occur in the body.
+		Generate \lstinline{rewrite H1 in H2}. Recurse on body.
+
+\paragraph{Apply In}
+Apply-in transforms a hypothesis by applying a function to it, rebinding its type to the result of the function.
+		In general,
+		\lstinline{let _ : _ := f H in _} where
+		H is a hypothesis in context,
+		H doesn’t occur in the body.
+		Generate  \lstinline{apply f in H}. Recurse on body.
+		Unless we have,
+		\lstinline{let H2 : _ := f H1 in H2 _} where
+function \lstinline{f} expects additional arguments after \lstinline{H1}.
+Performing \lstinline{apply f in H1}, Coq transforms the goal to be the result type of \lstinline{f}, and creates additional goals for arguments required after H1. Thus, we recurse on H2 and all following arguments it’s applied to.
+
+\paragraph{Pose}
+Pose is a catch-all for let-expressions. It explicitly binds a new name to a value.
+\lstinline{let A : B := C in D} generates \lstinline{pose C as A}, recurse on the body.
+
+\paragraph{Apply}
+
+\subsection{Second Pass}
+
+Collapse multiple \lstinline{intro}s of several assumptions into a single \lstinline{intros} tactic assuming multiple hypotheses.
+Replace all \lstinline{apply eq_refl} with the \lstinline{reflexivity} tactic.
+Cool things we could do with this: use original tactics, semicolons. Apply just the function name instead of the whole application (need to try it out, this pass is a good place to try it out). Morphisms. Decision procedures.
+
+not same tactics as original
+
+not perfect
+
+
+
+
