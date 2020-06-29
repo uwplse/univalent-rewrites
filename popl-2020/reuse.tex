@@ -90,9 +90,10 @@ Refactoring corresponds to proof reuse across these equivalences.
 Repair, in contrast, refers to changes that are \textit{not} semantics-preserving---they require additional information
 from the proof engineer.
 Repair, too, corresponds to proof reuse across equivalences, but not between the old and new types.
-Rather, repair is the special case where one or both of the types is equivalent to a \textit{refinement}
-of the other type.
-This means that it is possible to reduce repair to refactoring, as long as the proof engineer supplies the additional information.
+Rather, repair is the special case where the equivalence that we port functions and proofs along
+is an equivalence between \textit{refinements}.
+This means that it is possible to reduce repair to refactoring, as long as the proof engineer supplies the additional information in
+order to construct proofs about the refinement.
 
 \begin{figure}
 \begin{minipage}{0.40\textwidth}
