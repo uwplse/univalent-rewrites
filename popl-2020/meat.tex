@@ -26,7 +26,7 @@ and the result is configurable both by the developer and by the user (Section~\r
 
 \inferrule[Dep-Elim]
   { \Gamma \vdash p_{a} \Uparrow p_b \\ \Gamma \vdash \vec{f_{a}}\phantom{l} \Uparrow \vec{f_{b}} }
-  { \Gamma \vdash \mathrm{DepElim}(a,\ p_{a}) \vec{f_{a}} \Uparrow \mathrm{DepElim}(b,\ p_b) \vec{f_{b}} }
+  { \Gamma \vdash \mathrm{DepElim}(A,\ a,\ p_{a}) \vec{f_{a}} \Uparrow \mathrm{DepElim}(B,\ b,\ p_b) \vec{f_{b}} }
 
 \inferrule[Dep-Constr]
 { \Gamma \vdash \vec{t}_{a} \Uparrow \vec{t}_{b} } %\\ TODO must we explicitly lift A to B if we want to handle parameters/indices?
@@ -164,46 +164,53 @@ constructors for \lstinline{Old.list} are just the normal constructors
 the order back to the original order of constructors:
 
 \begin{lstlisting}
-DepConstr(0, New.list T) : New.list T := Constr(1, New.list T). (* New.nil in Coq *)
-DepConstr(1, New.list T) (t : T) (l : New.list T) : New.list T := Constr(0, New.list T) t l. (* New.cons in Coq *)
+DepConstr(0, New.list T) : New.list T := Constr(1, New.list T). (* New.nil *)
+DepConstr(1, New.list T) (t : T) (l : New.list T) : New.list T :=
+  Constr(0, New.list T) t l. (* New.cons *)
 \end{lstlisting}
 The dependent eliminator swaps the cases similarly:
 
 \begin{lstlisting}
-DepElim(n
+DepElim(New.list T, l, P)
+  (f$_0$ : P DepConstr(0, New.list T))
+  (f$_1$ : $\forall$ t l, P l -> P (DepConstr (1, New.list T) t l))
+: P l :=
+  Elim(l, P) f$_1$ f$_0$. (* swap New.nil and New.cons cases of eliminator *)
 \end{lstlisting}
-
- so that its type signature is identical
+so that its type signature is identical
 to the type signature for the eliminator for \lstinline{Old.list}, but with the updated \lstinline{New.list} type and constructors.
 
-Things are a bit more complicated with our \lstinline{nat} to \lstinline{positive} repair.
-We can make many different choices here. One is to choose these dependent constructors:
+When our types are not both inductive types, the constructors and eliminators can be \textit{dependent}.
+Consider the refactoring from the \textsc{Devoid} paper, which instantiates
+our proof term transformation to match the \textsc{Devoid} proof term transformation.
+The refactoring uses the standard constructors for \lstinline{list},
+and the following dependent constructors for $\Sigma$\lstinline{(n : nat) . vector T n}:
 
 \begin{lstlisting}
-DepConstr(0, pos_nat) : pos_nat :=
-  $\exists$ 1 eq_refl.
+DepConstr(0, $\Sigma$ (n : nat) . vector T n) : $\Sigma$ (n : nat) . vector T n :=
+  $\exists$ (Constr(0, nat)) (Constr(0, vector T). (* $\exists$ 0 (Vector.nil T) *)
 
-DepConstr(1, pos_nat) : pos_nat -> pos_nat :=
-  fun pn => $\exists$ (S ($pi_l$ pn)) eq_refl.
-\end{lstlisting} % TODO test this example w/ lifting, define equivalence, etc. revisit h-set problem! can we define depelim when we don't have an hset???
-and a dependent eliminator with this type:
-
-\begin{lstlisting}
-forall (P : pos_nat -> Type),
-  P DepConstr(0, pos_nat) ->
-  (forall (pn : pos_nat), P pn -> P (DepConstr(1, pos_nat) pn)) ->
-  forall (pn : pos_nat), P pn.
+DepConstr(1, $\Sigma$ (n : nat) . vector T n) t s : $\Sigma$ (n : nat) . vector T n :=
+  $\exists$
+    (Constr(1, nat) ($\pi_l$ s))                      (* S ($\pi_l$ s) *)
+    (Constr(1, vector T) ($\pi_l$ s) t ($\pi_r$ s)). (* Vector.cons ... *)
 \end{lstlisting}
-It is then straightforward to adapt functions and proofs over \lstinline{nat} to \lstinline{pos_nat}.
-The intuition is that \lstinline{DepElim} just removes the zero case 
-For example, the addition function just becomes this:
+These constructors \textit{pack} the index as in \textsc{Devoid}.
+Also like \textsc{Devoid}, \lstinline{DepElim} eliminates its projections:
 
 \begin{lstlisting}
-fun n m : pos_nat =>
-  $\exists$ ($\pi_l$ n + $\pi_l$ m) (DepElim _ eq_refl (fun _ _ => eq_refl) n)
-\end{lstlisting} % TODO syntax
-The program tranformation can then transport that to inductive \lstinline{positive}.
+DepElim($\Sigma$ (n : nat) . vector T n, s, P)
+  (f$_0$ : P (DepConstr(0, $\Sigma$ (n : nat) . vector T n))
+  (f$_1$ : $\forall$ t s, P ($\exists$ ($\pi_l$ s) ($\pi_r$ s)) -> P (DepConstr(1, $\Sigma$ (n : nat) . vector T n) t s))
+  (s : $\Sigma$ (n : nat) . vector T n)
+: P ($\exists$ ($\pi_l$ s) ($\pi_r$ s)) :=
+  (* eliminate over the vector projection *)
+  Elim($\pi_r$ s, $\lambda$ (n : nat) (v : vector T n) . P ($\exists$ n v))
+    f$_0$
+    ($\lambda$ (t : T) (n : nat) (v : vector T n) . f$_1$ t ($\exists$ n v)). 
+\end{lstlisting}
 
+Section~\ref{sec:search} shows how to get from this to the repair we mentioned earlier.
 Section~\ref{sec:search} includes many more examples, including cases when \A and \B
 themselves have different numbers of constructors (but the configuration requires that
 is exactly one \lstinline{DepConstr(j, A)} for each \lstinline{DepConstr(j, B)}).
