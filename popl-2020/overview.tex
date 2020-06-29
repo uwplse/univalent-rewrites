@@ -38,46 +38,57 @@ This proof says that appending two lists and reversing the result behaves the sa
 the reverse of the second list onto the reverse of the first list.
 This theorem statement \lstinline{rev_app_distr} defined over the old version of \lstinline{list} is our \textit{old specification}.
 When we change the \lstinline{list} type, we get the \textit{new specification}.
-But the \textit{old proof} or tactic script no longer works with this new specification, and it is not
-immediately clear how to adapt the proof based on tactics alone.
-Adapting tactic scripts to changes is in general difficult; \citep{robert2018} 
-discusses the challenges in detail.
+But the \textit{old proof} or tactic script no longer works with this new specification.
 
-With \toolname, however, all we need to do is run this command (denoting our old list type as \lstinline{Old.list} and our new list type as \lstinline{New.list}): % TODO adapted for now
+To updat the proof script with \toolname, all we need to do is run this command (here and throughout, we use $\codeauto{light blue}$ to denote
+functions and proofs that \toolname produces automatically):
 
 \begin{lstlisting}
-Repair Old.list New.list in Coq.Init.Datatypes.rev_app_distr.
+Repair Old.list New.list in rev_app_distr.
 \end{lstlisting}
-and we get back a new tactic script:
+assuming our old and new list types are in separate modules called \lstinline{Old} and \lstinline{New}.
+This refactors all of the functions that our proof refers to as well as the proof itself,
+producing an updated tactic script in the end:
 
 \begin{lstlisting}
+Lemma (@\codeauto{rev_app_distr}@) {A : Type} :
+  forall (x y : list A), (@\codeauto{rev}@) (x (@\codeauto{++}@) y) = (@\codeauto{rev}@) y (@\codeauto{++}@) (@\codeauto{rev}@) x.
 Proof.
   intros x y. revert y. induction x as [a l IHl|].
   - intro y0. simpl.
-    rewrite (IHl y0). simpl. rewrite (app_assoc (rev y0) (rev l) (a::[])). reflexivity.
+    rewrite (IHl y0). simpl. rewrite ((@\codeauto{app_assoc}@) ((@\codeauto{rev}@) y0) ((@\codeauto{rev}@) l) (a::[])). reflexivity.
   - intro y0. induction y0 as [a l IHl|].
-    + simpl. rewrite (app_nil_r (rev l) (a::[])). reflexivity.
+    + simpl. rewrite ((@\codeauto{app_nil_r}@) ((@\codeauto{rev}@) l) (a::[])). reflexivity.
     + reflexivity.
 Qed.
 \end{lstlisting}
-which we can tweak to something that more closely matches the original:
+If we'd like, we can tweak this to something that more closely matches the original:
 
 \begin{lstlisting}
 Proof.
   induction x as [a l IHl|].
-  - intro y. simpl.
-    rewrite (IHl y). rewrite app_assoc; trivial.
-  - induction y as [a l IHl|].
-    + simpl. rewrite app_nil_r; auto.
-    + auto.
+  intro y. simpl.
+  rewrite (IHl y). rewrite (@\codeauto{app_assoc}@); trivial.
+  induction y as [a l IHl|].
+  simpl. rewrite (@\codeauto{app_nil_r}@); auto.
+  simpl. auto.
 Qed.
 \end{lstlisting}
 We can even refactor the entire list module all at once by running the \lstinline{Repair module}
-command; the results of this are in \lstinline{Overview.v}.\footnote{Link withheld for double-blind review.} % TODO
+command; the results of this are in \lstinline{Swap.v}.\footnote{Link withheld for double-blind review.} % TODO
 
 \paragraph{Configure, Transform, Decompile}
 The key to success here is that \toolname does not even attempt to refactor the poorly structured proof script directly.
-Coq compiles the proof script to a proof term---\toolname repairs that term.
+Even for the simple proof script above, this would not be straightforward: Grouping tactics by line, there are $6! = 620$
+permutations of this proof script.
+It is not clear which lines to swap since these tactics do not have a semantics beyond the meaning imposed by evaluating them.
+Furthermore, just swapping lines is not enough: even for a simple refactoring, we must also swap
+arguments, so that \lstinline{induction x as [| a l IHl]} becomes \lstinline{induction x as [a l IHl|}.
+Handling even swapping constructors this way would require a specific search procedure that would not generalize to other changes.
+\citep{robert2018} describes the challenges of refactoring tactics directly in detail.
+
+Instead, \toolname takes advantage of the fact that Coq's \textit{proof term} language Gallina is well structured.
+Coq compiles each proof script to a proof term---\toolname repairs that term.
 \toolname then decompiles the repaired proof term back to a proof script that the user can maintain.
 
 \begin{figure}
@@ -98,7 +109,7 @@ This program transformation transforms the old proof term into a new proof term 
 in place of the old specification (here, the theorem that refers to our updated \lstinline{New.list}),
 and otherwise preserves the behavior of the old proof term.
 The configuration instantiates the program transformation to a particular change in specification---it corresponds
-to a particular relation between the old and new specificationss.
+to a particular relation between the old and new specifications.
 Figure~\ref{fig:system} shows how this comes together when the user invokes \toolname:
 
 \begin{enumerate}
@@ -114,12 +125,12 @@ Figure~\ref{fig:system} shows how this comes together when the user invokes \too
 Our example uses automatic configuration. When we run the \lstinline{Repair} command:
 
 \begin{lstlisting}
-Repair Coq.Init.Datatypes.list list in Coq.Init.Datatypes.rev_app_distr.
+Repair Old.list New.list in rev_app_distr.
 \end{lstlisting}
 \textbf{Configure} invokes a special search procedure that automatically discovers that \lstinline{New.list}
 is just \lstinline{Old.list} with a single moved constructor.
-The search procedure proves an equivalence between our old and new versions of lists,
-then configures \textbf{Transform} using that equivalence and some additional information.
+The search procedure proves an equivalence between \lstinline{Old.list} and \lstinline{New.list},
+then configures \textbf{Transform} using that equivalence.
 \textbf{Transform} then ports the proof term that inducted over \lstinline{Old.list}
 to instead induct over \lstinline{New.list}, and finally
 \textbf{Decompile} produces the tactic script that we see.
@@ -127,6 +138,6 @@ to instead induct over \lstinline{New.list}, and finally
 While this is a simple refactoring, this same workflow can get us much more.
 Section~\ref{sec:search} shows how we have used \toolname to support industrial integration with Coq,
 write dependently-typed functions and proofs with little user effort,
-port proofs between unary and binary natural numbers,
-and support repair examples from benchmarks from real Coq proof engineers in the wild.
+support examples from a benchmark from Coq proof engineers,
+and port proofs between unary and binary natural numbers.
 
