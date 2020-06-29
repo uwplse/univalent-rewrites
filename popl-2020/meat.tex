@@ -302,10 +302,19 @@ The transformation in \textbf{Transform} then ports functions and proofs across 
 The other two rules corresponding to the configuration deal with transporting equalities.
 Since our language does not assume univalence, we do not have that equivalence is equivalent to equality.
 The result of this, as noted in \citet{tabareau2019marriage},
-is that we must do additional work to transform definitional and propositional equalities.
+is that we must do additional work to transform equalities.
 Otherwise, if we tranform a term \lstinline{t : T} to some \lstinline{t' : T'}, we do not necessarily
 have that our transformation maps \lstinline{T} to \lstinline{T'}.
-For this to work, we may sometimes need to transform definitional equalities to propositional equalities.
+The two rules that correspond to this in the program transformation are \lstinline{Id-Eta} and \lstinline{Rew-Eta},
+which use configuration parts \lstinline{IdEta} (\textit{eta-expanded identity}) and \lstinline{RewEta} (\textit{eta-expanded rewrites}), respectively.
+
+At a high level, \lstinline{IdEta} describes how to expand the identity function in a way that preserves equalities
+coherently with the definitions of \lstinline{DepConstr} and \lstinline{DepElim}.
+This is what allows us to forego the assumption from \textsc{Devoid} that our language has primitive projections.
+Each \lstinline{RewEta}---one per inductive hypothesis in \lstinline{DepElim}---describes and proves the refolding behavior
+of \lstinline{DepElim} on the corresponding inductive hypothesis.
+These together describe the essence of identity and equality as they relate to \lstinline{DepConstr}
+and \lstinline{DepElim}.
 
 \paragraph{Examples}
 
@@ -408,6 +417,8 @@ When our types are ornaments, like with our simple refactor above, every \lstinl
 Correspondingly, the proofs of \lstinline{section} and \lstinline{retraction} for the equivalence
 follow by induction and rewriting, since the types have the same refolding behavior over the dependent constructors
 and eliminators.
+
+these induce proofs of section \& retraction I think
 
 \subsubsection{Equivalence \& Equality}
 \label{sec:art}
