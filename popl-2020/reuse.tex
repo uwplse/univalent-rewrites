@@ -27,7 +27,7 @@ and proofs behaved exactly the same way.
 \begin{figure}
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-f T (l : Old.list T) : New.list T :=
+(@\codeauto{f}@) T (l : Old.list T) : New.list T :=
   Old.list_rect
     T
     (fun (l : Old.list T) => New.list T)
@@ -36,7 +36,7 @@ f T (l : Old.list T) : New.list T :=
       New.cons T t IHl)
     l.
 
-Lemma section:
+Lemma (@\codeauto{section}@):
   $\forall$ T (l : Old.list T), g T (f T l) = l.
 Proof.
   intros T l. symmetry. induction l.
@@ -48,7 +48,7 @@ Defined.
 \hfill
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-g T (l : New.list T) : Old.list T :=
+(@\codeauto{g}@) T (l : New.list T) : Old.list T :=
   New.list_rect
     T
     (fun (l : New.list T) => Old.list T)
@@ -57,7 +57,7 @@ g T (l : New.list T) : Old.list T :=
     Old.nil
     l.
 
-Lemma retraction:
+Lemma (@\codeauto{retraction}@):
   $\forall$ T (l : New.list T), f T (g T l) = l.
 Proof.
   intros T l. symmetry. induction l.
