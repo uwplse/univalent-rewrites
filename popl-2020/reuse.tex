@@ -37,7 +37,7 @@ and proofs behaved exactly the same way.
     l.
 
 Lemma (@\codeauto{section}@):
-  $\forall$ T (l : Old.list T), g T (f T l) = l.
+  $\forall$ T (l : Old.list T), (@\codeauto{g}@) T ((@\codeauto{f}@) T l) = l.
 Proof.
   intros T l. symmetry. induction l.
   - reflexivity.
@@ -58,7 +58,7 @@ Defined.
     l.
 
 Lemma (@\codeauto{retraction}@):
-  $\forall$ T (l : New.list T), f T (g T l) = l.
+  $\forall$ T (l : New.list T), (@\codeauto{f}@) T ((@\codeauto{g}@) T l) = l.
 Proof.
   intros T l. symmetry. induction l.
   - simpl. rewrite <- IHl. reflexivity.
@@ -71,7 +71,8 @@ Defined.
 \end{figure}
 
 More formally, \toolname was able to find a pair of two functions that map between \lstinline{Old.list}
-and \lstinline{New.list} and prove that they are mutual inverses (Figure~\ref{fig:equivalence}).
+and \lstinline{New.list} and prove that they are mutual inverses, generating the functions and tactic
+proofs in Figure~\ref{fig:equivalence} automatically.
 \toolname could then use that information to configure its proof term transformation to refactor
 functions and proofs about \lstinline{Old.list} to functons and proofs about \lstinline{New.list} with
 the same exact behavior.

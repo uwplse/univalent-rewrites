@@ -122,7 +122,7 @@ Definition op (r : bool * (nat * bool)) : nat * bool :=
 to this function:
 
 \begin{lstlisting}
-Definition op (r : Record.input) : Record.output :=
+Definition (@\codeauto{op}@) (r : Record.input) : Record.output :=
   {|
      numberO := numberI r;
      andBools := andb (fistBool r) (secondBool r)
@@ -144,17 +144,21 @@ Proof.
   intuition.
 Qed.
 \end{lstlisting}
-and then used \toolname to automatically port this proof back to a proof of the original function: % TODO induction & preprocess though
+and then used \toolname to automatically port this proof back to a proof of the original function
+(with a bit of massaging to clean up the tactic output): % TODO induction & preprocess though
 
 \begin{lstlisting}
-Theorem and_spec_true_true :
+Theorem (@\codeauto{and_spec_true_true}@) :
   forall (r : Tuple.input),
     fst r = true ->
     snd (snd r) = true ->
     andb (Tuple.op r) = true.
+Proof.
+  destruct r as [ a b].
+  apply andb_true_intro.
+  intuition.
+Qed.
 \end{lstlisting}
-The proof engineer had no need for the decompiler here because the proof engineer modified
-the proof over records directly. % TODO it is being silly; can we get it working?
 
 \subsubsection{Takeaways}
 

@@ -1,23 +1,31 @@
 \section{Decompiling Proof Terms to Tactics}
 \label{sec:decompiler}
 
-As in \textsc{DEVOID}, such a proof term transformation produces a proof term,
-while the proof engineer typically writes proof scripts made up of tactics.
-Feeding the user proof terms does not make for a very good user experience.
-Restating our final insight:
+\textbf{Transform} produces a proof term,
+while the proof engineer typically writes and maintains proof scripts made up of tactics.
+We improve user experience thanks to our final insight:
 
 \begin{quote}
 \textbf{Insight 3}: The transformed proof terms can then be translated back to tactics.
 \end{quote}
 
-For now, the rest of this text is copied from a draft that RanDair sent.
-I will turn this into semantics and revise it soon.
+The \textbf{Decompile} component implements a prototype of this translation.
+This decompiler prototype has shown early promising results.
+For example, it produced the automatically generated tactic proof for \lstinline{rev_app_distr} 
+in Section~\ref{sec:overview}, as well as the tactic proofs of \lstinline{section}
+and \lstinline{retraction} in Section~\ref{fig:equivalence}..
+
+The prototype decompiler works by decompiling Gallina proof terms to Ltac proof scripts that use a predefined set of tactics (Section~\ref{sec:first}).
+The proof engineer can then clean up those tactics, sometimes with the help of the decompiler (Section~\ref{sec:second}).
+
+\subsection{Decompilation}
+\label{sec:first}
 
 The decompiler accepts a proof term and generates an equivalent Ltac script. 
 The initial goal of the Ltac proof is the type of the proof term itself. Therefore, the theorem can be trivially proved by a single “apply” tactic. This is typically unreadable, but it does provide a last resort for any subgoals which fail to generate viable tactics.
 The decompiler matches on 3 term constructors: lambda abstractions, function applications, and let expressions. All other terms are inserted in their entirety with the apply tactic. 
 
-\subsection{First Pass}
+tactics it tries beyond apply not always correct, but close enough to get us to something useful sometimes
 
 \paragraph{Introduction}
 Lambda abstractions correspond to assumptions of hypotheses. Thus, each abstraction generates an “intro” tactic, adding a new hypothesis into the environment. The algorithm recurses on the body of the abstraction.
@@ -70,11 +78,14 @@ Pose is a catch-all for let-expressions. It explicitly binds a new name to a val
 
 \paragraph{Apply}
 
-\subsection{Second Pass}
+\subsection{Cleanup}
+\label{sec:second}
 
 Collapse multiple \lstinline{intro}s of several assumptions into a single \lstinline{intros} tactic assuming multiple hypotheses.
 Replace all \lstinline{apply eq_refl} with the \lstinline{reflexivity} tactic.
 Cool things we could do with this: use original tactics, semicolons. Apply just the function name instead of the whole application (need to try it out, this pass is a good place to try it out). Morphisms. Decision procedures.
+
+take user input here,
 
 not same tactics as original
 
