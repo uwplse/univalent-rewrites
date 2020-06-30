@@ -39,7 +39,8 @@ As with \textbf{Transform}, we present the semantics using an extension of CIC$_
 The extension adds let expressions, taking it one step closer to Gallina.
 It does not include any of the configuration parts from \textbf{Transform}, since these just compile down to proof terms in CIC$_{\omega}$.
 We present the semantics assuming that all names are fresh, but the implementation generates fresh names automatically.
-We assume an inductive type \lstinline{=} for propositional equality, as in Coq.
+We assume an inductive type \lstinline{=} for propositional equality,
+with eliminators that rewrite in both directions, as in Coq.
 
 \begin{figure}
 \small
@@ -71,11 +72,11 @@ We do not attempt to formalize the semantics of even a subset of Ltac.
   { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{Intro}\ n. p }\\
 
 \inferrule[Rewrite]
-  { \Gamma \vdash H : y\ =\ x \\ \Gamma \vdash p_x \Rightarrow p }
+  { \Gamma \vdash H : y = x \\ \Gamma \vdash p_x \Rightarrow p }
   { \Gamma \vdash \mathrm{Elim}(H,\ P) \{ x,\ p_x,\ y \} \Rightarrow \mathrm{Rewrite} (\rightarrow, H). p }
 
 \inferrule[Rewrite-By]
-  { \Gamma \vdash H : x\ =\ y \\ \Gamma \vdash p_x \Rightarrow p }
+  { \Gamma \vdash H : x = y \\ \Gamma \vdash p_x \Rightarrow p }
   { \Gamma \vdash \mathrm{Elim}(H,\ P) \{ x,\ p_x,\ y \} \Rightarrow \mathrm{Rewrite} (\leftarrow, H). p }
 
 \inferrule[Induction]
