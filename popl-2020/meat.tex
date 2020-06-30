@@ -134,7 +134,7 @@ and \lstinline{rev}.
 $\lambda$ (T : Type) (l m : list T) .
  Elim (l, $\lambda$(l: list T).list T $\rightarrow$ list T))
  {
-   (@\codediff{($\lambda$ m . m)}@)
+   (@\codediff{($\lambda$ m . m)}@),
    ($\lambda$ t _ IHl m.
       Constr((@\codediff{1}@), list T) t (IHl m))
  } m.
@@ -147,7 +147,7 @@ $\lambda$ (T : Type) (l m : list T) .
  Elim (l, $\lambda$(l: list T).list T $\rightarrow$ list T))
  {
    ($\lambda$ t _ IHl m.
-      Constr((@\codediff{0}@), list T) t (IHl m))
+      Constr((@\codediff{0}@), list T) t (IHl m)),
    (@\codediff{($\lambda$ m . m)}@)
  } m.
 \end{lstlisting}
@@ -174,7 +174,8 @@ specifications herself.
 \subsection{The Configuration}
 \label{sec:configurable}
 
-At a high level, the configuration ensures that the transformation accomplishes two goals:
+The behavior of the proof term transformation at a particular equivalence hinges on correct configuration.
+The configuration ensures that the transformation accomplishes two goals: % TODO is ``ensures'' too strong if we don't prove it?
 
 \begin{enumerate}
 \item it preserves the equivalence between \A and \B, and
@@ -186,59 +187,50 @@ These two goals each correspond to a pair of configuration parts, respectively:
 \item \lstinline{DepConstr} and \lstinline{DepElim} define how to transform constructors and eliminators, thereby preserving the equivalence (Section~\ref{sec:equivalence}), and 
 \item \lstinline{IdEta} and \lstinline{RewEta} define how to transform identity and equalities, thereby producing well-typed terms (Section~\ref{sec:equality}).
 \end{enumerate}
-
-Each of these parts is defined using terms in CIC$_{\omega}$.
 The four parts of this configuration must be in relation to one another in a certain way in order for the proof
 term transformation to work correctly (Section~\ref{sec:art}).
-Section~\ref{sec:search} shows many example configurations.
 
 \subsubsection{Equivalence}
 \label{sec:equivalence}
 
-The proof term transformation is correct when it maps an input to an output that is equal
-to the input up to transport along the supplied equivalence between \A and \B.
-The two rules that correspond to this in the program transformation are \lstinline{Dep-Constr} and \lstinline{Dep-Elim},
-which use configuration parts \lstinline{DepConstr} (\textit{dependent constructors}) and \lstinline{DepElim} (\textit{dependent eliminators}), respectively.
+The two configuration parts responsible for ensuring that the program transformation 
+are \lstinline{DepConstr} (\textit{dependent constructors}) and \lstinline{DepElim} (\textit{dependent eliminators}).
+These describe how to construct and eliminate \A and \B, wrapping the two types with a common inductive structure.
+There are the same number of dependent constructors and inductive hypotheses in dependent eliminators for both \A and \B,
+even if \A and \B are inductive types with different numbers of constructors.
+The idea is to port functions and proofs over \A to functions and proofs over \B by viewing \B as if it is an \A.
+This way, the rest of the transformation can replace constructions of \A with constructions of \B and
+inductive proofs about \A with inductive proofs about \B, but otherwise just recursively lift
+the other subterms without changing the order or number of arguments.
 
 \begin{figure}
-\begin{minipage}{0.46\textwidth}
+\begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-DepConstr(0, list T) : list T := Constr(0, list T).
-DepConstr(1, list T) (t : T) (l : list T) : list T :=
-  Constr (1, list T) t l.
+DepConstr(0, list T) : list T :=
+  Constr((@\codediff{0}@), list T).
+DepConstr(1, list T) t l : list T :=
+  Constr ((@\codediff{1}@), list T) t l.
 
-DepElim(l, P)
-  (p$_{nil}$ : P DepConstr(0, list T))
-  (p$_{cons}$ : $\forall$ t l, P l -> P (DepConstr (1, list T) t l))
-: P l :=
-  Elim(l, P) p$_{nil}$ p$_{cons}$.
+DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=
+  Elim(l, P) { (@\codediff{p$_{\mathtt{nil}}$}@), (@\codediff{p$_{\mathtt{cons}}$}@) }.
 \end{lstlisting}
 \end{minipage}
 \hfill
-\begin{minipage}{0.46\textwidth}
+\begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-DepConstr(0, list T) : list T := Constr((@\codediff{1}@), list T).
-DepConstr(1, list T) (t : T) (l : list T) : list T :=
+DepConstr(0, list T) : list T :=
+  Constr((@\codediff{1}@), list T).
+DepConstr(1, list T) t l : list T :=
   Constr((@\codediff{0}@), list T) t l.
 
-DepElim(l, P)
-  (p$_{nil}$ : P DepConstr(0, list T))
-  (p$_{cons}$ : $\forall$ t l, P l -> P (DepConstr (1, list T) t l))
-: P l :=
-  Elim(l, P) (@\codediff{p$_{cons}$}@) (@\codediff{p$_{nil}$}@).
+DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=
+  Elim(l, P) { (@\codediff{p$_{\mathtt{cons}}$}@), (@\codediff{p$_{\mathtt{nil}}$}@) }.
 \end{lstlisting}
 \end{minipage}
-\caption{The dependent constructors and eliminators for \lstinline{Old.list} (left) and \lstinline{New.list} (right).}
+\caption{The dependent constructors and eliminators for old (left) and refactored (right) \lstinline{list}.}
 \label{fig:listconfig}
 \end{figure}
 
-At a high level, these describe how to construct and eliminate \A and \B, wrapping the two types with a common inductive structure.
-The idea is to port functions and proofs over \A to functions and proofs over \B by viewing \B as if it is an \A.
-This way, the rest of the transformation can replace constructions of \A with constructions of \B,
-replace inductive proofs about \A with inductive proofs about \B, and otherwise just recursively lift
-the other subterms without having to change the order or number of arguments.
-
-\paragraph{Examples}
 For the \lstinline{list} refactoring from Figure~\ref{fig:listswap},
 the configuration that \toolname discovers uses the the dependent constructors
 and eliminators in Figure~\ref{fig:listconfig}. The dependent constructors for \lstinline{Old.list}
@@ -248,11 +240,9 @@ back to the original order.
 Similarly, the dependent eliminator for \lstinline{Old.list} is just the normal eliminator for \lstinline{Old.list},
 while the dependent eliminator for \lstinline{New.list} swaps the \lstinline{nil} and \lstinline{cons} cases.
 
-
 \begin{figure}
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-(* 1: Original term *)
 $\lambda$ (T : Type) (l m : list T) .
  Elim
    (l, $\lambda$(l: list T).list T $\rightarrow$ list T))
@@ -261,32 +251,11 @@ $\lambda$ (T : Type) (l m : list T) .
    ($\lambda$ t _ IHl m.
       Constr(1, list T) t (IHl m))
  } m.
- 
-(* 2: With DepElim and DepConstr *)
-$\lambda$ (T : Type) (l m : list T) .
- (@\codediff{DepElim}@)
-   (l, $\lambda$(l: list T).list T $\rightarrow$ list T))
- {
-   ($\lambda$ m . m)
-   ($\lambda$ t _ IHl m.
-      (@\codediff{DepConstr}@)(1, list T) t (IHl m))
- } m.
 \end{lstlisting}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-(* 4: Final term *)
-$\lambda$ (T : Type) (l m : list T) .
- (@\codediff{Elim}@)
-   (l, $\lambda$(l: list T).list T $\rightarrow$ list T))
- {
-   ($\lambda$ t _ IHl m.
-      (@\codediff{Constr}@)(0, list T) t (IHl m))
-   ($\lambda$ m . m)
- } m.
-
-(* 3: Same term, refactored list *)
 $\lambda$ (T : Type) (l m : list T) .
  (@\codediff{DepElim}@)
    (l, $\lambda$(l: list T).list T $\rightarrow$ list T))
@@ -297,25 +266,23 @@ $\lambda$ (T : Type) (l m : list T) .
  } m.
 \end{lstlisting}
 \end{minipage}
-\caption{Refactoring the list append function, counterclockwise: (1) orginal, (2) expanded to refer to the configuration, (3) refactored to the new type, (4) refactored and reduced to no longer refer to the configuration.}
+\caption{The original list append function (left) and the same function rewritten to use \lstinline{DepConstr} (right).}
 \label{fig:appswap2}
 \end{figure}
 
-Figure~\ref{fig:appswap2} shows how \toolname uses these to refactor the append function \lstinline{++}
-from Section~\ref{sec:overview}, using a loose CIC$_{\omega}$ syntax mixed with some Coq notation for brevity.
-During transformation, \toolname identifies and expands applications of \lstinline{DepConstr} and \lstinline{DepElim}
-to refer to the configuration explicitly.
-As it recursively transforms the other subterms, it transforms constructors to corresponding constructors,
-and it lifts the eliminator to the corresponding eliminator.
-Note that the swapping step is handled automatically by the configuration, by definition of \lstinline{DepConstr}
-and \lstinline{DepElim}---that way, the transformation itself need not reason about the order of arguments.
+To refactor the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
+identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (Figure~\ref{fig:appswap2}).
+The transformation then just recursively substitutes in the refactored \lstinline{list} type
+for the original \lstinline{list} type, which moves \lstinline{DepConstr} and \lstinline{DepElim}
+to construct and eliminate over the refactored type.
+Finally, this reduces to the term on the right of Figure~\ref{fig:appswap2}.
 Transforming proofs works the same way.
 
 When our types are not both inductive types, the constructors and eliminators can be \textit{dependent}.
-For example, we mentioned in Section~\ref{sec:overview} that \textsc{Devoid} supports
-refactoring functions and proofs about lists to functions and proofs about $\Sigma$\lstinline{(n : nat).vector T n}.
-Following \textsc{Devoid}, we can instantiate the \toolname transformation to perform this same refactoring
-by configurating the dependent constructors to \textit{pack} the index into an existential, for example:
+One example of this arises from integrating the refactoring between lists and $\Sigma$\lstinline{(n : nat).vector T n} that
+\textsc{Devoid} supports into the \toolname framework.
+We can configure the \toolname transformation to perform this same refactoring
+by configuring the dependent constructors to \textit{pack} the index into an existential, for example:
 
 \begin{lstlisting}
 DepConstr(0, $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n :=
@@ -330,35 +297,21 @@ DepElim(s, P) { f$_0$ f$_1$ } : P ($\exists$ ($\pi_l$ s) ($\pi_r$ s)) :=
     ($\lambda$ (t : T) (n : nat) (v : vector T n) . f$_1$ t ($\exists$ n v))
   }. 
 \end{lstlisting}
-Essentially, this moves the constructor and eliminator rules from the \textsc{Devoid} transformation
-into configuration, so that the rest of the \toolname transformation does not need to add or drop arguments.
 
-For both of the examples above, the \textsc{Configure} component of \toolname is able to discover \lstinline{DepConstr}
-and \lstinline{DepElim} from just the types \A and \B.
-Section~\ref{sec:search} shows many more example configurations, including
+In both of these examples, the only interesting work moves into the configuration:
+the configuration for the swap example takes care of swapping constructors and cases,
+and the configuration for the \textsc{Devoid} example implements the constructor and eliminator rules from the \textsc{Devoid} transformation.
+That way, that the rest of the \toolname transformation does not need to add, drop, or reorder arguments at any point.
+In essence, all of the difficult work moves into the configuration, but once it is done, it is done.
+Furthermore, for both of the examples above, the \textsc{Configure} component of \toolname is able to discover \lstinline{DepConstr}
+and \lstinline{DepElim} from just the types \A and \B, taking care of even the difficult work.
+
+Of course, both when designing a search procedure for an automatic configuration and when
+configuring \toolname manually, choosing correct and useful \lstinline{DepConstr} and \lstinline{DepElim} is important,
+and it is not always straightforward.
+Section~\ref{sec:search} shows more example configurations, including
 how to configure the repair that maps \{\lstinline{l : list T | length l = n}\} to \lstinline{vector T n},
 and including cases when \A and \B themselves have different number of constructors.
-
-\paragraph{Intuition}
-The intuition behind this construction is that,
-since Coq is a constructive logic, the only way to construct an \A (respectively \B) is to use its constructors.
-Similarly, since we assume primitive eliminators, the only way to match over an \A (respectively \B) is to apply its eliminator. 
-The \lstinline{Dep-Constr} rule thus rewrites constructions of \A to constructions of \B,
-while the \lstinline{Dep-Elim} rule rewrites applications of eliminators of \A to applications of eliminators of \B.
-The result will construct \B in place of \A, and it will eliminate \B in place of \A.
-Thanks to this, \toolname can remove all references to the old type \A,
-and produce a refactored or repaired term that refers only to the new type \B.
-
-Together, these dependent constructors and eliminators induce a type equivalence between \A and \B,
-formed by one function that eliminates \A and constructs \B, and another function that eliminates \B and constructs \A:
-
-\begin{lstlisting}
-f : A -> B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
-g : B -> A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
-\end{lstlisting}
-Each search procedure that \textbf{Configure} implements discovers the configuration
-along with these two functions, and (optionally for the proof engineer) produces a proof in Coq that these functions form an equivalence.
-The transformation in \textbf{Transform} then ports functions and proofs across this equivalence.
 
 \subsubsection{Equality}
 \label{sec:equality}
@@ -379,8 +332,6 @@ Each \lstinline{RewEta}---one per inductive hypothesis in \lstinline{DepElim}---
 of \lstinline{DepElim} on the corresponding inductive hypothesis.
 These together describe the essence of identity and equality as they relate to \lstinline{DepConstr}
 and \lstinline{DepElim}.
-
-\paragraph{Examples}
 
 We see this with natural numbers \lstinline{nat} and binary numbers \lstinline{binnat}
 in Section~\ref{sec:search}.
@@ -467,22 +418,10 @@ fun (n : pos_nat) => $\exists$ ($\pi_l$ n) ($\pi_r$ n)
 \end{lstlisting}
 so that, unlike \textsc{Devoid}, we do not need our algorithm to assume primitive projections.
 
-\paragraph{Intuition}
-
-For any type \A or \B,
-There is just one \lstinline{IdEta}, but there are as many \lstinline{RewEta} as there are
-inductive hypotheses of \lstinline{DepElim}.
-This is because we can minimize the equality problem to preserving definitional equalities
-in the eliminator---we'll see this more in Section~\ref{sec:search}.
-
 \lstinline{RewEta} in the above example is not reflexivity precisely becuse our two inductive types
 \lstinline{nat} and \lstinline{Bin.nat} do not have the same inductive structure---they are not \textit{ornaments}. % TODO cite
 When our types are ornaments, like with our simple refactor above, every \lstinline{RewEta} just rewrites by reflexivity.
-Correspondingly, the proofs of \lstinline{section} and \lstinline{retraction} for the equivalence
-follow by induction and rewriting, since the types have the same refolding behavior over the dependent constructors
-and eliminators.
-
-these induce proofs of section \& retraction I think
+More in Section~\ref{sec:search}.
 
 \subsubsection{Equivalence \& Equality}
 \label{sec:art}
@@ -527,6 +466,40 @@ All of this comes together to transport functions and proofs across the equivale
 using a program transformation.
 TODO show some examples.
 Section~\ref{sec:search} shows some particular instantions of this configuration and their applicability to real programs and proofs.
+
+\paragraph{Orphaned}
+
+For any type \A or \B,
+There is just one \lstinline{IdEta}, but there are as many \lstinline{RewEta} as there are
+inductive hypotheses of \lstinline{DepElim}.
+This is because we can minimize the equality problem to preserving definitional equalities
+in the eliminator---we'll see this more in Section~\ref{sec:search}.
+
+these induce proofs of section \& retraction I think.
+so note with ornaments the section and retraction proofs are just induction and rewriting since \lstinline{RewEta} is
+rewriting by reflexivity.
+
+\paragraph{Orphaned}
+The intuition behind \lstinline{DepConstr} and \lstinline{DepElim} is that,
+since CIC$_{\omega}$ is a constructive logic, the only way to construct an \A (respectively \B) is to use its constructors.
+Similarly, the only way to match over an \A (respectively \B) is to apply its eliminator. 
+The \lstinline{Dep-Constr} rule thus rewrites constructions of \A to constructions of \B,
+while the \lstinline{Dep-Elim} rule rewrites applications of eliminators of \A to applications of eliminators of \B.
+The result will construct \B in place of \A, and it will eliminate \B in place of \A.
+Thanks to this, \toolname can remove all references to the old type \A,
+and produce a refactored or repaired term that refers only to the new type \B.
+
+Together, these dependent constructors and eliminators induce a type equivalence between \A and \B,
+formed by one function that eliminates \A and constructs \B, and another function that eliminates \B and constructs \A:
+
+\begin{lstlisting}
+f : A -> B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
+g : B -> A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
+\end{lstlisting}
+Each search procedure that \textbf{Configure} implements discovers the configuration
+along with these two functions, and (optionally for the proof engineer) produces a proof in Coq that these functions form an equivalence.
+The transformation in \textbf{Transform} then ports functions and proofs across this equivalence.
+
 
 \subsection{The Tool}
 \label{sec:implementation}
