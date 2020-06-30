@@ -13,19 +13,97 @@ The \textbf{Decompile} component implements a prototype of this translation.
 This decompiler prototype has shown early promising results.
 For example, it produced the automatically generated tactic proof for \lstinline{rev_app_distr} 
 in Section~\ref{sec:overview}, as well as the tactic proofs of \lstinline{section}
-and \lstinline{retraction} in Section~\ref{fig:equivalence}..
+and \lstinline{retraction} in Section~\ref{fig:equivalence}.
 
-The prototype decompiler works by decompiling Gallina proof terms to Ltac proof scripts that use a predefined set of tactics (Section~\ref{sec:first}).
-The proof engineer can then clean up those tactics, sometimes with the help of the decompiler (Section~\ref{sec:second}).
+The prototype decompiler works by decompiling Gallina proof terms to candidate Ltac proof scripts that use a predefined set of 
+tactics (Section~\ref{sec:first}).
+The proof engineer can then clean up those tactics, sometimes with additional help from the decompiler (Section~\ref{sec:second}).
 
 \subsection{Decompilation}
 \label{sec:first}
 
-The decompiler accepts a proof term and generates an equivalent Ltac script. 
-The initial goal of the Ltac proof is the type of the proof term itself. Therefore, the theorem can be trivially proved by a single “apply” tactic. This is typically unreadable, but it does provide a last resort for any subgoals which fail to generate viable tactics.
-The decompiler matches on 3 term constructors: lambda abstractions, function applications, and let expressions. All other terms are inserted in their entirety with the apply tactic. 
+\begin{figure}
+\small
+\begin{grammar}
+<i> $\in \mathbbm{N}$, <v> $\in$ Vars, <s> $\in$ \{ Prop, Set, Type<i> \}
 
-tactics it tries beyond apply not always correct, but close enough to get us to something useful sometimes
+<t> ::= <v> | <s> | $\Pi$ (<v> : <t>) . <t> | $\lambda$ (<v> : <t>) . <t> | <t> <t> | \\
+Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\} | \\
+Let (<v>, <t>, <t>, <t>)
+\end{grammar}
+\caption{Syntax for CIC$_{\omega}$ extended with let expressions.}
+\label{fig:gallinasyntax}
+\end{figure}
+
+The implementation of \textbf{Decompile} operates over Gallina, the proof term language in Coq.
+As with \textbf{Transform}, we present the semantics using an extension of CIC$_{\omega}$ (Figure~\ref{fig:gallinasyntax}).
+The extension adds let expressions, taking it one step closer to Gallina.
+It does not include any of the configuration parts from \textbf{Transform}, since these just compile down to proof terms in CIC$_{\omega}$.
+
+\begin{figure}
+\begin{mathpar}
+\mprset{flushleft}
+\small
+\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Uparrow$ $t'$}\\
+
+\inferrule[Intro]
+  { \\ }
+  { \\ }
+
+\inferrule[Rewrite]
+  { \\ }
+  { \\ }
+
+\inferrule[Induction]
+  { \\ }
+  { \\ }
+
+\inferrule[Left]
+  { \\ }
+  { \\ }
+
+\inferrule[Right]
+  { \\ }
+  { \\ }
+
+\inferrule[Split]
+  { \\ }
+  { \\ }
+
+\inferrule[Symmetry]
+  { \\ }
+  { \\ }
+
+\inferrule[Rewrite-In]
+  { \\ }
+  { \\ }
+
+\inferrule[Apply-In]
+  { \\ }
+  { \\ }
+
+\inferrule[Pose]
+  { \\ }
+  { \\ }
+
+\inferrule[Apply]
+  { \\ }
+  { \\ }
+\end{mathpar}
+\caption{Prototype decompiler semantics.}
+\label{fig:someantics}
+\end{figure}
+
+Figure~\ref{fig:someantics} shows the semantics of the decompiler.
+The decompiler accepts a proof term and generates a candidate Ltac proof script that attempts to prove the same theorem.
+The baseline for success of the decompiler is the naive proof script that applies the entire proof term with the \lstinline{apply} tactic.
+Such a proof script will always work, but will often be unreadable.
+The decompiler defaults to this baseline behavior when it cannot find a suitable candidate proof script (\textsc{Apply}).
+
+Otherwise, the goal of the decompiler is to improve on that baseline as much as possible,
+or else produce a candidate proof script that is close enough that the proof engineer can manually massage it into something that
+both works and is maintainable.
+It does this by recursing over the proof term and constructing an Ltac proof script using a predefined set of tactics.
 
 \paragraph{Introduction}
 Lambda abstractions correspond to assumptions of hypotheses. Thus, each abstraction generates an “intro” tactic, adding a new hypothesis into the environment. The algorithm recurses on the body of the abstraction.
@@ -75,8 +153,6 @@ Performing \lstinline{apply f in H1}, Coq transforms the goal to be the result t
 \paragraph{Pose}
 Pose is a catch-all for let-expressions. It explicitly binds a new name to a value.
 \lstinline{let A : B := C in D} generates \lstinline{pose C as A}, recurse on the body.
-
-\paragraph{Apply}
 
 \subsection{Cleanup}
 \label{sec:second}
