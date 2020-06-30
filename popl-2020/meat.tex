@@ -309,7 +309,8 @@ and \lstinline{DepElim} from just the types \A and \B, taking care of even the d
 Of course, both when designing a search procedure for an automatic configuration and when
 configuring \toolname manually, choosing correct and useful \lstinline{DepConstr} and \lstinline{DepElim} is important,
 and it is not always straightforward.
-Section~\ref{sec:search} shows more example configurations, including
+Section~\ref{sec:art} defines what it means for these to be correct,
+and Section~\ref{sec:search} shows some useful examples, including
 how to configure the repair that maps \{\lstinline{l : list T | length l = n}\} to \lstinline{vector T n},
 and including cases when \A and \B themselves have different number of constructors.
 
@@ -320,108 +321,98 @@ The other two rules corresponding to the configuration deal with transporting eq
 Since our language does not assume univalence, we do not have that equivalence is equivalent to equality.
 The result of this, as noted in \citet{tabareau2019marriage},
 is that we must do additional work to transform equalities.
-Otherwise, if we tranform a term \lstinline{t : T} to some \lstinline{t' : T'}, we do not necessarily
+Otherwise, if we transform a term \lstinline{t : T} to some \lstinline{t' : T'}, we do not necessarily
 have that our transformation maps \lstinline{T} to \lstinline{T'}.
 The two rules that correspond to this in the program transformation are \lstinline{Id-Eta} and \lstinline{Rew-Eta},
 which use configuration parts \lstinline{IdEta} (\textit{eta-expanded identity}) and \lstinline{RewEta} (\textit{eta-expanded rewrites}), respectively.
-
-At a high level, \lstinline{IdEta} describes how to expand the identity function in a way that preserves equalities
-coherently with the definitions of \lstinline{DepConstr} and \lstinline{DepElim}.
-This is what allows us to forego the assumption from \textsc{Devoid} that our language has primitive projections.
-Each \lstinline{RewEta}---one per inductive hypothesis in \lstinline{DepElim}---describes and proves the refolding behavior
-of \lstinline{DepElim} on the corresponding inductive hypothesis.
 These together describe the essence of identity and equality as they relate to \lstinline{DepConstr}
 and \lstinline{DepElim}.
 
-We see this with natural numbers \lstinline{nat} and binary numbers \lstinline{binnat}
-in Section~\ref{sec:search}.
-There, we at some point try to repair this theorem over \lstinline{nat} from the Coq standard library:
+\lstinline{IdEta} describes how to expand the identity function in a way that preserves equalities
+coherently with the definitions of \lstinline{DepConstr} and \lstinline{DepElim}.
+For example, for the refactoring from list to \lstinline{$\Sigma$(n : nat).vector T n}, we have:
 
 \begin{lstlisting}
-(* TODO update this text and example now that we've changed 6, or move 6 up *)
-Lemma plus_Sn_m :
-  forall (n m : nat), S n + m = S (n + m).
-Proof.
-  intros n m; induction n; simpl; auto.
-Qed.
+IdEta ($\Sigma$(n : nat).vector T n) :=
+  $\lambda$ (s : $\Sigma$(n : nat).vector T n).$\exists$ (\$pi_l$ s) (\$pi_r$ s).
 \end{lstlisting}
-to instead refer to binary numbers.
-The term underneath this is just reflexivity:
+which corresponds to the strategic packing in the \textsc{Devoid} implementation to deal with
+non-primitive projections not handled by the transformation. Thanks to this, we can forego the assumption from the \textsc{Devoid} transformation
+that our language has primitive projections.
+
+\begin{figure}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=8]{nattobin.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=10, lastline=17]{nattobin.tex}
+\end{minipage}
+\caption{Unary (left) and binary (right) natural numbers.}
+\label{fig:nattobin}
+\end{figure}
+
+Each \lstinline{RewEta}---one per inductive hypothesis in \lstinline{DepElim}---describes and proves the refolding behavior
+of \lstinline{DepElim} on the corresponding inductive hypothesis.
+Considered together, they describe how the inductive structures of \A and \B differ from one another.
+We see this with natural numbers \lstinline{nat} and binary numbers \lstinline{N} as defined in the Coq standard library (Figure~\ref{fig:nattobin}).
+A binary number \lstinline{N} is either zero or a positive binary number. A positive binary number
+is either 1 (\lstinline{xH}), the result of shifting left and adding 1 (\lstinline{xI}),
+or the result of shifting left and not adding anything (\lstinline{xO}).
+
+While \lstinline{nat} and \lstinline{N} are equivalent, their inductive structures are not the same---there is no
+\textit{ornament} describing the relationship between them. % TODO cite
+So while we can in fact define \lstinline{DepConstr} and \lstinline{DepElim} to induce an equivalence
+between them (see Section~\ref{sec:search}), we run into trouble reasoning about applications of \lstinline{DepElim}
+the same way. This is because the refolding behavior that we take for granted over natural numbers:
 
 \begin{lstlisting}
-(fun n m : nat => eq_refl) : forall n m : nat, S n + m = S (n + m)
+nat.refold_elim_S:
+  $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
+    DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
-Naively transforming reflexivity (definitional equality) to reflexivity results in a type error,
-since the transported depenedent constructor corresponding to \lstinline{S}---
-a function that takes the successor of any binary natural number---
-does not preserve definitional equality.
-
-The trick to transforming this correctly is to view the definitional equality above as a contracted propositional equality:
+while still true over binary numbers:
 
 \begin{lstlisting}
-(fun n m : nat =>
-  eq_rect
-    (fun m => S n + m)
-    (fun (p : nat -> nat) => S n + m = p m)
-    eq_refl
-    (fun m => S (n + m))
-    eq_refl)
-: forall n m : nat, S n + m = S (n + m)
+N.refold_elim_S:
+  $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
+    DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
-We can then transform that propositional equality to a propositional equality over binary numbers (after transforming \lstinline{+} to operate
-over binary numbers):
+no longer holds by reflexivity.
+
+The result of this is that proofs about \lstinline{nat} that hold by reflexivity
+do not necessarily hold by reflexivity over \lstinline{N}. For example, in Coq,
+while \lstinline{S (n + m) = S n + m} holds by reflexivity over \lstinline{nat},
+when we define \lstinline{+} with our new dependent eliminator over \lstinline{N},
+this no longer holds by reflexivity.
+We must port \textit{definitional} equalities over the successor case of the \lstinline{nat} dependent eliminator
+to \textit{propositional} equalities over the successor case of the \lstinline{N} dependent eliminator.
+
+\lstinline{RewEta} simply describes how to do this.
+For both \lstinline{nat} and \lstinline{N}, each \lstinline{RewEta} in the successor case:
 
 \begin{lstlisting}
-(fun n m : Bin.nat =>
-  eq_rect
-    (fun m => Bin.S n + m)
-    (fun (p : Bin.nat -> Bin.nat) => S n + m = p m)
-    eq_refl
-    (fun m => Bin.S (n + m))
-    (refold_elim_S (fun _ => Bin.nat -> Bin.nat) (fun b3 : Bin.nat => b3) (fun _ add (b3 : Bin.nat) => Bin.S (add b3)) n)
-: forall n m : Bin.nat, S n + m = S (n + m)
+RewEta(nat) :
+  $\forall$ P P$_\texttt{0}$ P$_\texttt{S}$ n (Q : P (DepConstr(1, nat) n) $\rightarrow$ Type),
+    Q (DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ }) $\rightarrow$ 
+    Q ((@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ })).
+
+RewEta(N) :
+  $\forall$ P P$_\texttt{0}$ P$_\texttt{S}$ n (Q : P (DepConstr(1, N) n) $\rightarrow$ Type),
+    Q (DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ }) $\rightarrow$ 
+    Q ((@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ })).
 \end{lstlisting}
+is formed by rewriting over the corresponding proof of \lstinline{refold_elim_S}.
+For \lstinline{nat}, this happens to be a rewrite by reflexivity---so we essentially end up
+viewing each definitional equality as a contracted propositional equality.
+\lstinline{Rew-Eta} then lets us transform that propositional equality to a propositional equality over \lstinline{N},
 which gives us a proof of the theorem we want.
 
-The key to this working is \lstinline{refold_elim_S}, which essentially states that
-we can always refold the successor case of inductive proofs about \lstinline{Bin.nat}
-that go through the dependent eliminator over \lstinline{Bin.nat}:
-
-\begin{lstlisting}
-refold_elim_S :
-  forall (P : Bin.nat -> Type) (PO : P Bin.O) (PS : forall n, P n -> P (Bin.S n)) (n : Bin.nat),
-    DepElim P PO PS (Bin.S n) = PS n (DepElim P PO PS n).
-\end{lstlisting}
-% TODO everywhere here need to be consistent about DepConstr, DepElim, syntax, etc.
-The equivalent over \lstinline{nat} would follow by reflexivity, so its application is implicit.
-We can derive a rewrite rule from this:
-
-\begin{lstlisting}
-(fun P PO PS n (Q : P (Bin.S n) -> Type) (H : Q (DepElim P PO PS (Bin.S n))) : Q (PS n (DepElim P PO PS n)) :=
-  eq_rect
-    (DepElim P PO PS (Bin.S n))
-    (fun (H : P (Bin.S n)) => Q H)
-    H
-    (PS n (DepElim P PO PS n))
-    (refold_elim_S P PO PS n)
-: forall P PO PS n (Q : P (Bin.S n) -> Type), Q (DepElim P PO PS (Bin.S n)) -> Q (PS n (DepElim P PO PS n)).
-\end{lstlisting}
-This rewrite rule turns out to be \lstinline{RewEta} for \lstinline{Bin.nat}, one of the two configuration parts that 
-handles contracted equalities:
-\lstinline{Rew-Eta} uses \lstinline{RewEta} to transform expanded propositional equalities, while
-\lstinline{Id-Eta} uses \lstinline{IdEta} to transform the expanded identity function.
-In this example, \lstinline{IdEta} is just the identity function.
-In our repair, \lstinline{IdEta} expands the existential:
-
-\begin{lstlisting}
-fun (n : pos_nat) => $\exists$ ($\pi_l$ n) ($\pi_r$ n)
-\end{lstlisting}
-so that, unlike \textsc{Devoid}, we do not need our algorithm to assume primitive projections.
-
-\lstinline{RewEta} in the above example is not reflexivity precisely becuse our two inductive types
-\lstinline{nat} and \lstinline{Bin.nat} do not have the same inductive structure---they are not \textit{ornaments}. % TODO cite
-When our types are ornaments, like with our simple refactor above, every \lstinline{RewEta} just rewrites by reflexivity.
-More in Section~\ref{sec:search}.
+\lstinline{RewEta(N)} in the above example is not reflexivity precisely because there is no ornament
+between \lstinline{nat} and \lstinline{N}.
+When there is an ornament between our types, like with either of the \lstinline{list} refactorings we have seen so far,
+each \lstinline{RewEta} just rewrites by reflexivity.
+Section~\ref{sec:search} describes examples of both cases, and elaborates on this example.
 
 \subsubsection{Equivalence \& Equality}
 \label{sec:art}
