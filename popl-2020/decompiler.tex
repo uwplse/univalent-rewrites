@@ -15,9 +15,9 @@ For example, it produced the automatically generated tactic proof for \lstinline
 in Section~\ref{sec:overview}, as well as the tactic proofs of \lstinline{section}
 and \lstinline{retraction} in Section~\ref{fig:equivalence}.
 
-The prototype decompiler works by decompiling Gallina proof terms to candidate Ltac proof scripts that use a predefined set of 
-tactics (Section~\ref{sec:first}).
-The proof engineer can then clean up those tactics, sometimes with additional help from the decompiler (Section~\ref{sec:second}).
+The prototype decompiler works by decompiling Gallina proof terms to candidate Ltac proof scripts that 
+use a predefined set of tactics (Section~\ref{sec:first}).
+It then helps clean up and pretty-print that proof script for the proof engineer (Section~\ref{sec:second}).
 
 \subsection{Decompilation}
 \label{sec:first}
@@ -28,35 +28,59 @@ The proof engineer can then clean up those tactics, sometimes with additional he
 <i> $\in \mathbbm{N}$, <v> $\in$ Vars, <s> $\in$ \{ Prop, Set, Type<i> \}
 
 <t> ::= <v> | <s> | $\Pi$ (<v> : <t>) . <t> | $\lambda$ (<v> : <t>) . <t> | <t> <t> | \\
-Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\} | \\
-Let (<v>, <t>, <t>, <t>)
+Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\} | Let (<v>, <t>, <t>, <t>)
 \end{grammar}
 \caption{Syntax for CIC$_{\omega}$ extended with let expressions.}
 \label{fig:gallinasyntax}
 \end{figure}
 
-The implementation of \textbf{Decompile} operates over Gallina, the proof term language in Coq.
+The input language for the implementation of \textbf{Decompile} is Gallina, the proof term language in Coq.
 As with \textbf{Transform}, we present the semantics using an extension of CIC$_{\omega}$ (Figure~\ref{fig:gallinasyntax}).
 The extension adds let expressions, taking it one step closer to Gallina.
 It does not include any of the configuration parts from \textbf{Transform}, since these just compile down to proof terms in CIC$_{\omega}$.
+We present the semantics assuming that all names are fresh, but the implementation generates fresh names automatically.
+We assume an inductive type \lstinline{=} for propositional equality, as in Coq.
+
+\begin{figure}
+\small
+\begin{grammar}
+<d> $\in$ \{ $\leftarrow$, $\rightarrow$ \}, <v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
+
+<p> ::= Intro <v> | Intros \{<v>,\ldots,<v>\} | Revert \{<v>, \ldots, <v>\} | Pose (<v>, <t>) | \\
+Apply <t> | ApplyIn (<t>, <t>) | Rewrite (<d>, <t>) | RewriteIn (<d>, <t>, <t>) | Induction <t> |  \\
+Reflexivity | Simpl | Left | Right | Symmetry | Split | <p> . <p>
+\end{grammar}
+\caption{Syntax for a predefined set of Ltac tactics.}
+\label{fig:ltacsyntax}
+\end{figure}
+
+The output language comes from a predefined set of tactics in Ltac, the proof script language for Coq.
+The syntax for this set of Ltac tactics is in Figure~\ref{fig:ltacsyntax}.
+Note that Ltac tactics can refer to Gallina terms (here extended CIC$_{\omega}$ terms),
+and the semantics of Ltac depends on the semantics of Gallina and on search procedures written in OCaml.
+We do not attempt to formalize the semantics of even a subset of Ltac.
 
 \begin{figure}
 \begin{mathpar}
 \mprset{flushleft}
 \small
-\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Uparrow$ $t'$}\\
+\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Rightarrow$ $p$}\\
 
 \inferrule[Intro]
-  { \\ }
-  { \\ }
+  { \Gamma,\ n : T \vdash b \Rightarrow p }
+  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{Intro}\ n. p }\\
 
 \inferrule[Rewrite]
-  { \\ }
-  { \\ }
+  { \Gamma \vdash H : y\ =\ x \\ \Gamma \vdash p_x \Rightarrow p }
+  { \Gamma \vdash \mathrm{Elim}(H,\ P) \{ x,\ p_x,\ y \} \Rightarrow \mathrm{Rewrite} (\rightarrow, H). p }
+
+\inferrule[Rewrite-By]
+  { \Gamma \vdash H : x\ =\ y \\ \Gamma \vdash p_x \Rightarrow p }
+  { \Gamma \vdash \mathrm{Elim}(H,\ P) \{ x,\ p_x,\ y \} \Rightarrow \mathrm{Rewrite} (\leftarrow, H). p }
 
 \inferrule[Induction]
   { \\ }
-  { \\ }
+  { \\ } % TODO needs revert
 
 \inferrule[Left]
   { \\ }
@@ -90,7 +114,7 @@ It does not include any of the configuration parts from \textbf{Transform}, sinc
   { \\ }
   { \\ }
 \end{mathpar}
-\caption{Prototype decompiler semantics.}
+\caption{Decompiler semantics.}
 \label{fig:someantics}
 \end{figure}
 
@@ -154,9 +178,10 @@ Performing \lstinline{apply f in H1}, Coq transforms the goal to be the result t
 Pose is a catch-all for let-expressions. It explicitly binds a new name to a value.
 \lstinline{let A : B := C in D} generates \lstinline{pose C as A}, recurse on the body.
 
-\subsection{Cleanup}
+\subsection{Cleanup \& Printing}
 \label{sec:second}
 
+Pretty printing at the very end.
 Collapse multiple \lstinline{intro}s of several assumptions into a single \lstinline{intros} tactic assuming multiple hypotheses.
 Replace all \lstinline{apply eq_refl} with the \lstinline{reflexivity} tactic.
 Cool things we could do with this: use original tactics, semicolons. Apply just the function name instead of the whole application (need to try it out, this pass is a good place to try it out). Morphisms. Decision procedures.
