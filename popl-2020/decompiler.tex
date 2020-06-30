@@ -39,16 +39,16 @@ As with \textbf{Transform}, we present the semantics using an extension of CIC$_
 The extension adds let expressions, taking it one step closer to Gallina.
 It does not include any of the configuration parts from \textbf{Transform}, since these just compile down to proof terms in CIC$_{\omega}$.
 We present the semantics assuming that all names are fresh, but the implementation generates fresh names automatically.
-We assume an inductive type \lstinline{=} for propositional equality,
-with eliminators that rewrite in both directions, as in Coq.
+We assume an inductive type $=$ for propositional equality with symmetry proof \lstinline{eq_sym},
+as well an inductive type $\vee$ for disjunction, as in Coq.
 
 \begin{figure}
 \small
 \begin{grammar}
 <d> $\in$ \{ $\leftarrow$, $\rightarrow$ \}, <v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
 
-<p> ::= Intro <v> | Intros \{<v>,\ldots,<v>\} | Revert \{<v>, \ldots, <v>\} | Pose (<v>, <t>) | \\
-Apply <t> | ApplyIn (<t>, <t>) | Rewrite (<d>, <t>) | RewriteIn (<d>, <t>, <t>) | Induction <t> |  \\
+<p> ::= Intro <v> | Intros \{<v>,\ldots,<v>\} | Revert \{<v>, \ldots, <v>\} | Pose <t> <v> | \\
+Apply <t> | ApplyIn <t> <t> | Rewrite <d> <t> | RewriteIn <d> <t> <t> | Induction <t> |  \\
 Reflexivity | Simpl | Left | Right | Symmetry | Split | <p> . <p>
 \end{grammar}
 \caption{Syntax for a predefined set of Ltac tactics.}
@@ -56,7 +56,7 @@ Reflexivity | Simpl | Left | Right | Symmetry | Split | <p> . <p>
 \end{figure}
 
 The output language comes from a predefined set of tactics in Ltac, the proof script language for Coq.
-The syntax for this set of Ltac tactics is in Figure~\ref{fig:ltacsyntax}.
+The grammar for this set of Ltac tactics is in Figure~\ref{fig:ltacsyntax}.
 Note that Ltac tactics can refer to Gallina terms (here extended CIC$_{\omega}$ terms),
 and the semantics of Ltac depends on the semantics of Gallina and on search procedures written in OCaml.
 We do not attempt to formalize the semantics of even a subset of Ltac.
@@ -69,35 +69,35 @@ We do not attempt to formalize the semantics of even a subset of Ltac.
 
 \inferrule[Intro]
   { \Gamma,\ n : T \vdash b \Rightarrow p }
-  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{Intro}\ n. p }\\
+  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{Intro}\ n.\ p }\\
 
 \inferrule[Rewrite]
-  { \Gamma \vdash H : y = x \\ \Gamma \vdash p_x \Rightarrow p }
-  { \Gamma \vdash \mathrm{Elim}(H,\ P) \{ x,\ p_x,\ y \} \Rightarrow \mathrm{Rewrite} (\rightarrow, H). p }
+  { \Gamma \vdash p_x \Rightarrow p }
+  { \Gamma \vdash \mathrm{Elim}(\mathtt{eq\_sym}\ H,\ P) \{ x,\ p_x,\ y \} \Rightarrow \mathrm{Rewrite} \rightarrow H.\ p }
 
 \inferrule[Rewrite-By]
-  { \Gamma \vdash H : x = y \\ \Gamma \vdash p_x \Rightarrow p }
-  { \Gamma \vdash \mathrm{Elim}(H,\ P) \{ x,\ p_x,\ y \} \Rightarrow \mathrm{Rewrite} (\leftarrow, H). p }
+  { \Gamma \vdash p_x \Rightarrow p }
+  { \Gamma \vdash \mathrm{Elim}(H,\ P) \{ x,\ p_x,\ y \} \Rightarrow \mathrm{Rewrite} \leftarrow H.\ p }
 
 \inferrule[Induction]
   { \\ }
   { \\ } % TODO needs revert
 
 \inferrule[Left]
-  { \\ }
-  { \\ }
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{Left}.\ p }
 
 \inferrule[Right]
-  { \\ }
-  { \\ }
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{Right}.\ p }
 
 \inferrule[Split]
   { \\ }
   { \\ }
 
 \inferrule[Symmetry]
-  { \\ }
-  { \\ }
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{Symmetry}.\ p }
 
 \inferrule[Rewrite-In]
   { \\ }
@@ -108,12 +108,12 @@ We do not attempt to formalize the semantics of even a subset of Ltac.
   { \\ }
 
 \inferrule[Pose]
-  { \\ }
-  { \\ }
+  { \Gamma,\ n : T \vdash b \Rightarrow p }
+  { \Gamma \vdash \mathrm{Let}(n,\ t,\ T,\ b) \Rightarrow \mathrm{Pose}\ t\ n.\ p }
 
 \inferrule[Apply]
   { \\ }
-  { \\ }
+  { \Gamma \vdash t \Rightarrow \mathrm{Apply}\ t. }
 \end{mathpar}
 \caption{Decompiler semantics.}
 \label{fig:someantics}
