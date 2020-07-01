@@ -37,7 +37,7 @@ We then explain how we scale that up to the actual implementation (Section~\ref{
 \label{fig:ltacsyntax1}
 \end{figure}
 
-The toy decompiler takes CIC$_{\omega}$ terms and produces tactics in a toy version of Ltac which we call Qtac.\footnote{Pronounced \textit{cute-tac}}.
+The toy decompiler takes CIC$_{\omega}$ terms and produces tactics in a toy version of Ltac which we call Qtac.\footnote{Pronounced \textit{cute-tac}.}
 The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
 Qtac includes hypothesis introduction (\lstinline{intro},
 rewriting by equalities (\lstinline{rewrite}), symmetry (\lstinline{symmetry}) of equality,
@@ -117,13 +117,37 @@ The remaining applications become apply tactics (\textsc{Apply}).
 In all cases, the decompiler recurses on the remaining body, breaking into cases when relevant, until no other preconditions match.
 At that point the \textsc{Base} case holds, and we are done.
 
-While the toy compiler is very simple, if we move from CIC$_{\omega}$ to Coq,
-this can already handle some of the example proofs \toolname has produced.
-The generated proof term of \codeauto{\lstinline{rev_app_distr}} from Section~\ref{sec:overview},
+While the toy compiler is very simple, only a few simple changes are needed
+to move this from CIC$_{\omega}$ to Coq.
+Furthermore, the result can already handle some of the example proofs \toolname has produced.
+The generated proof term of \codeauto{\lstinline{rev_app_distr}} with swapped list constructors from Section~\ref{sec:overview},
 for example, consists only of induction, rewriting, simplification, and reflexivity.
-Since \toolname uses the \lstinline{Preprocess} command from \textsc{Devoid}, \textit{all} of the proof terms that \toolname
+The proof term for the base case:
+
+\begin{lstlisting}
+fun (@\codesimb{(y0 : list A)}@) =>
+  (@\codesima{list_rect}@) _ _
+    (fun (@\codesima{a l IHl}@) =>
+      (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))
+    (@\codesime{eq_refl}@)
+    (@\codesima{y0}@)
+\end{lstlisting}
+decompiles to this proof term:
+
+\begin{lstlisting}
+- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l IHl|]}.@)
+  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{reflexivity.}@)
+  + (@\codesime{reflexivity.}@)
+\end{lstlisting}
+where corresponding terms and tactics are highlighted with the same color, and nothing else is highlighted for clarity.
+There are very few differences from the toy decompiler needed to produce this,
+for example handling of rewrites in both directions (\lstinline{eq_ind_r} as opposed to \lstinline{eq_ind}),
+simplifying to handle motive inference for rewrites,
+and turning applications of \lstinline{eq_refl} into reflexivity.
+
+In fact, since \toolname uses the \lstinline{Preprocess} command from \textsc{Devoid}, \textit{all} of the proof terms that \toolname
 produces will use induction and rewriting rather than fixpoints and pattern matching.
-In short, because we have control over output terms, even a toy decompiler gets us pretty far.
+Because we have control over output terms, even a toy decompiler gets us pretty far.
 
 \subsection{Scaling Up}
 \label{sec:second}
@@ -140,6 +164,7 @@ To produce a more natural set of tactics, \textbf{Decompile} operates in two pas
 like the toy decompiler, and then it modifies those tactics to produce a more natural proof script.
 For example, the first pass, like the toy decompiler, produces a single \lstinline{intro} per hypothesis in a lambda abstraction;
 the second pass combines each sequence of \lstinline{intro} tactics into an \lstinline{intros} tactic.
+The second pass also translates certain applications into some common goal-solving tactics like \lstinline{reflexivity}. 
 
 The prototype decompiler still has no special reasoning for decision procedures and custom tactics, which are common
 in some proof engineering styles.
@@ -193,4 +218,7 @@ and is maintainable.
 For convenience, it includes scripts that automate the process of printing all of these tactic proofs to a Coq file,
 in case the proof engineer does not want such an interactive workflow.
 \toolname keeps all output proof terms from the proof term transformation in the Coq environment as a fallback in case the decompiler does not succeed.
+Once the proof engineer has this new proof, she can remove the old specifications, functions, and proofs, using the refactored or repaired
+versions from then on.
+
 
