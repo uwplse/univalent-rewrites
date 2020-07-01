@@ -12,7 +12,7 @@ we can decompile these Gallina terms to Ltac proof scripts for the proof enginee
 
 The \textbf{Decompile} component implements a prototype of this translation.
 This decompiler prototype has shown early promising results.
-For example, it produced the automatically generated tactic proof for \lstinline{rev_app_distr} 
+For example, it produced the automatically generated tactic proof for \codeauto{\lstinline{rev_app_distr}} 
 in Section~\ref{sec:overview}, as well as the tactic proofs of \lstinline{section}
 and \lstinline{retraction} in Section~\ref{fig:equivalence}.
 
@@ -62,11 +62,19 @@ The implementation reasons about Ltac and so does not make these assumptions.
 
 \inferrule[Symmetry]
   { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{symmetry}.\ p }
+  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{symmetry}.\ p } \\
 
 \inferrule[Split]
   { \Gamma \vdash l \Rightarrow p \\ \Gamma \vdash r \Rightarrow q }
   { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l r \Rightarrow \mathrm{split} \{ p, q \}.\ }
+
+\inferrule[Left]
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }
+
+\inferrule[Right]
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p } \\
 
 \inferrule[Rewrite]
   { \Gamma \vdash H_1 : x = y \\ \Gamma \vdash H_2 \Rightarrow p }
@@ -76,14 +84,6 @@ The implementation reasons about Ltac and so does not make these assumptions.
   { \Gamma \vdash \vec{f} \Rightarrow \vec{p} }
   { \Gamma \vdash \mathrm{Elim}(t,\ P)\ \vec{f} \Rightarrow \mathrm{induction}\ P\ t\ \vec{p} }
 
-\inferrule[Left]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }
-
-\inferrule[Right]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }
-
 \inferrule[Apply]
   { \Gamma \vdash t \Rightarrow p }
   { \Gamma \vdash f t \Rightarrow \mathrm{apply}\ f.\ p }
@@ -92,7 +92,7 @@ The implementation reasons about Ltac and so does not make these assumptions.
   { \\ }
   { \Gamma \vdash t \Rightarrow \mathrm{apply}\ t }
 \end{mathpar}
-\caption{Toy decompiler semantics.}
+\caption{Qtac decompiler semantics.}
 \label{fig:someantics}
 \end{figure}
 
@@ -117,50 +117,49 @@ The remaining applications become apply tactics (\textsc{Apply}).
 In all cases, the decompiler recurses on the remaining body, breaking into cases when relevant, until no other preconditions match.
 At that point the \textsc{Base} case holds, and we are done.
 
-% TODO example
+While the toy compiler is very simple, if we move from CIC$_{\omega}$ to Coq,
+this can already handle some of the example proofs \toolname has produced.
+The generated proof term of \codeauto{\lstinline{rev_app_distr}} from Section~\ref{sec:overview},
+for example, consists only of induction, rewriting, simplification, and reflexivity.
+Since \toolname uses the \lstinline{Preprocess} command from \textsc{Devoid}, \textit{all} of the proof terms that \toolname
+produces will use induction and rewriting rather than fixpoints and pattern matching.
+Because we have control over output terms, even a toy decompiler gets us pretty far.
 
 \subsection{Scaling Up}
+\label{sec:second}
 
-The prototype decompiler works by decompiling proof terms to candidate proof scripts that 
-use a predefined set of Ltac tactics.
-It then pretty-prints and helps clean up that proof script for the proof engineer.
-The proof engineer can massage the final result as desired into a proof script that both works and is maintainable.
+TODO placeholder draft copypasta
 
+While the toy decompiler is a nice example, it abstracts a lot of the details that make Ltac so useful to proof engineers---and so painful to 
+reason about automatically.
+This section discusses how we scale up from this toy decompiler to a real Gallina to Ltac decompiler.
+
+\paragraph{Second Pass}
+Collapse multiple \lstinline{intro}s of several assumptions into a single \lstinline{intros} tactic assuming multiple hypotheses.
+Replace all \lstinline{apply eq_refl} with the \lstinline{reflexivity} tactic.
+Cool things we could do with this: use original tactics, semicolons. Apply just the function name instead of the whole application (need to try it out, this pass is a good place to try it out). Morphisms. Decision procedures.
+Take user input here.
+
+\paragraph{Induction and Rewriting}
+unification: simplifying rewrites, inductive motives, revert.
+\lstinline{simpl} before \lstinline{rewrite} (for now just always when we do induction, but eventually can be smarter based on motive) (technically not
+in second pass yet, but easier conceptually).
+rewrite direction (swaps for rewrite in).
+Applications of induction eliminators are deconstructed into a proof of each case, arguments to the motive, and the value we perform induction on.
+The position of the inducted value (hard time explaining this): Pos = \# of arguments … – pms + 1 (???)
+Following the inducted value are additional arguments to the motive. A “revert” tactic is inserted for each such hypothesis before induction. This forgets the hypotheses by adding them as arguments to the goal, producing a motive requiring these arguments exactly, and so they must be re-introduced in each case.
+
+\paragraph{Manipulating Hypotheses}
 Coq instead of CIC$_{\omega}$.
+Corresponds to let bindings.
 extend with let expressions. pose. rewrite-in. apply-in. subgoals for those.
 checking if let binding is actually in the conclusion.
 skipping if it is not.
-
-matching/non-primitive eliminatorss
-
-simplifying rewrites
-
-rewrite direction
-
-inductive motives, revert, generalize
-
-\begin{figure}
-\small
-\begin{grammar}
-<d> $\in$ \{ $\leftarrow$, $\rightarrow$ \}, <v> $\in$ Vars, <t> $\in$ Gallina
-
-<p> ::= Intro <v> | Intros \{<v>,\ldots,<v>\} | Revert \{<v>, \ldots, <v>\} | Pose <t> <v> | \\
-Apply <t> | Rewrite <d> <t> | Induction <t> \{ <p>, \ldots, <p> \} | Split \{ <p>, <p> \} | \\
-ApplyIn <t> <t> \{ <p>, \ldots, <p> \} | RewriteIn <d> <t> <t> \{ <p>, \ldots, <p> \} | \\
-Reflexivity | Simpl | Left | Right | Symmetry | <p> . <p>
-\end{grammar}
-\caption{Syntax for a predefined set of Ltac tactics.}
-\label{fig:ltacsyntax2}
-\end{figure}
-
-\paragraph{Rewrite In}
 Rewrite-in transforms an existing hypothesis by binding a new hypothesis to replace all occurrences of the original in the remainder of the proof.
 \lstinline{let _ : _ := eq_ind _ _ _ H2 _ H1 in _} where
 		H2 is a hypothesis in context,
 		H2 doesn’t occur in the body.
 		Generate \lstinline{rewrite H1 in H2}. Recurse on body.
-
-\paragraph{Apply In}
 Apply-in transforms a hypothesis by applying a function to it, rebinding its type to the result of the function.
 		In general,
 		\lstinline{let _ : _ := f H in _} where
@@ -171,53 +170,13 @@ Apply-in transforms a hypothesis by applying a function to it, rebinding its typ
 		\lstinline{let H2 : _ := f H1 in H2 _} where
 function \lstinline{f} expects additional arguments after \lstinline{H1}.
 Performing \lstinline{apply f in H1}, Coq transforms the goal to be the result type of \lstinline{f}, and creates additional goals for arguments required after H1. Thus, we recurse on H2 and all following arguments it’s applied to.
-
-
-\paragraph{Introduction}
-Lambda abstractions correspond to assumptions of hypotheses. Thus, each abstraction generates an “intro” tactic, adding a new hypothesis into the environment. The algorithm recurses on the body of the abstraction.
-
-\paragraph{Rewriting}
-Applications of the equality eliminators (eq_ind, eq_rec, eq_rect, eq_ind_r, eq_rec_r, eq_rect_r) generate a single “rewrite” tactic. In an Ltac proof, rewrite accepts a proof of equality between two terms and transforms the goal. The following tactics must prove the new goal. The decompiler generates a rewrite of the equality (the sixth argument of the eliminator) and recurses on the new goal (the fourth argument). If the eliminator is without the “_r”, then it is written “rewrite <-“ indicating the direction of the equality. (???)
-
-\paragraph{Induction}
-Applications of induction eliminators are deconstructed into a proof of each case, arguments to the motive, and the value we perform induction on.
-The position of the inducted value (hard time explaining this): Pos = \# of arguments … – pms + 1 (???)
-Following the inducted value are additional arguments to the motive. A “revert” tactic is inserted for each such hypothesis before induction. This forgets the hypotheses by adding them as arguments to the goal, producing a motive requiring these arguments exactly, and so they must be re-introduced in each case.
-
-\paragraph{Left}
-Application of \lstinline{or_introl}, constructing a logical or. A \lstinline{left} tactic is generated, transforming the goal to be the left side of the disjunction, and we recurse on the given proof.
-Vs. (template-y description)
-\lstinline{@or_introl A B H : A \/ B}
-Generate \lstinline{left.}
-Recurse on \lstinline{H.}
-
-\paragraph{Right}
-Application of \lstinline{or_intror}, constructing a logical or. A \lstinline{right} tactic is generated, transforming the goal to be the left side of the disjunction, and we recurse on the given proof.
-
-\paragraph{Split}
-Application of \lstinline{conj} constructing a logical and. A \lstinline{split} tactic is generated, creating a goal for each side of the conjunction, and we recurse on both proofs, generating the left side first.
-
-\paragraph{Symmetry}
-
-\paragraph{Pose}
 Pose is a catch-all for let-expressions. It explicitly binds a new name to a value.
 \lstinline{let A : B := C in D} generates \lstinline{pose C as A}, recurse on the body.
 
-\subsection{Cleanup \& Printing}
-\label{sec:second}
+\paragraph{Pretty Printing}
+When all this is done, it pretty-prints and helps clean up that proof script for the proof engineer.
+The proof engineer can massage the final result as desired into a proof script that both works and is maintainable.
 
-Pretty printing at the very end.
-Collapse multiple \lstinline{intro}s of several assumptions into a single \lstinline{intros} tactic assuming multiple hypotheses.
-Replace all \lstinline{apply eq_refl} with the \lstinline{reflexivity} tactic.
-\lstinline{simpl} before \lstinline{rewrite} (for now just always when we do induction, but eventually can be smarter based on motive) (technically not
-in second pass yet, but easier conceptually).
-Cool things we could do with this: use original tactics, semicolons. Apply just the function name instead of the whole application (need to try it out, this pass is a good place to try it out). Morphisms. Decision procedures.
-
-take user input here,
-
-not same tactics as original
-
-not perfect
 
 
 
