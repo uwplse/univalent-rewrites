@@ -36,7 +36,7 @@ Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldo
 
 The input language for the implementation of \textbf{Decompile} is Gallina, the proof term language in Coq.
 As with \textbf{Transform}, we present the semantics using an extension of CIC$_{\omega}$ (Figure~\ref{fig:gallinasyntax}).
-The extension adds let expressions, taking it one step closer to Gallina.
+The extension adds dependent let expressions, taking it one step closer to Gallina.
 It does not include any of the configuration parts from \textbf{Transform}, since these just compile down to proof terms in CIC$_{\omega}$.
 We present the semantics assuming that all names are fresh, but the implementation generates fresh names automatically.
 We assume an inductive type $=$ for propositional equality with symmetry proof \lstinline{eq_sym},
@@ -108,7 +108,7 @@ We do not attempt to formalize the semantics of even a subset of Ltac.
   { \\ }
 
 \inferrule[Pose]
-  { \Gamma,\ n : T \vdash b \Rightarrow p }
+  { \Gamma,\ n := t : T \vdash b \Rightarrow p }
   { \Gamma \vdash \mathrm{Let}(n,\ t,\ T,\ b) \Rightarrow \mathrm{Pose}\ t\ n.\ p }
 
 \inferrule[Apply]
