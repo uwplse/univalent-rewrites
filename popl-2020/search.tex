@@ -84,13 +84,13 @@ between nested tuples and named records.
 The search procedure triggered automatically when the proof engineer called the \lstinline{Repair} or \lstinline{Repair module} command
 with the tuple and record as arguments.
 It set \A to be the record type and \B to be the tuple.
-There were no \lstinline{RewEta} since there were no inductive hypotheses.
-For the record \A, it set \lstinline{IdEta} to identity, \lstinline{DepConstr} to the single
+There were no nontrivial \lstinline{Iota} since there were no inductive cases.
+For the record \A, it set \lstinline{Eta} to identity, \lstinline{DepConstr} to the single
 constructor corresponding to the record constructor, and \lstinline{DepElim} to the standard record eliminator.
 For the tuple \B, on the other hand, it expanded identity to deal with non-primitive projections,
 in our example:
 \begin{lstlisting}
-Definition id_eta_B (H : Tuple.input) : Tuple.input :=
+Definition eta_B (H : Tuple.input) : Tuple.input :=
   (fst H, (fst (snd H), snd (snd H))).
 \end{lstlisting}
 it constructed a nested tuple by recursively applying the pair constructor:
@@ -102,9 +102,9 @@ Definition dep_constr_0_B (firstBool : bool) (numberI : nat) (secondBool : bool)
 and it recursively eliminated over the pair:
 
 \begin{lstlisting}
-Definition dep_elim_B (P : Tuple.input -> Type) (f : $\forall$ f n s, P (dep_constr_0_B f n s)) (i : Tuple.input) : P (id_eta_B i) :=
+Definition dep_elim_B (P : Tuple.input -> Type) (f : $\forall$ f n s, P (dep_constr_0_B f n s)) (i : Tuple.input) : P (eta_B i) :=
   prod_rect
-    (fun p : bool * (nat * bool) => P (id_eta_b p))
+    (fun p : bool * (nat * bool) => P (eta_b p))
     (fun (a : bool) (b : nat * bool) =>
       f a (fst b) (snd b))
     i.
@@ -236,14 +236,14 @@ a step that \textsc{Devoid} had left to the user.
 
 The search procedure for the first configuration is based heavily on the search procedure from \textsc{Devoid}.
 Since \textsc{Devoid} supports ornaments which by definition represent types with the same inductive structure,
-\lstinline{RewEta} for both \A and \B was always reflexivity.
-For the inductive type \A, \lstinline{IdEta}, \lstinline{DepConstr}, and \lstinline{DepElim}
+\lstinline{Iota} for both \A and \B was always reflexivity.
+For the inductive type \A, \lstinline{Eta}, \lstinline{DepConstr}, and \lstinline{DepElim}
 correspond to the identity function, the constructors of \A, and the eliminator for \A, respectively.
-For \B, \lstinline{IdEta} expands the input to avoid reliance on primitive projections,
+For \B, \lstinline{Eta} expands the input to avoid reliance on primitive projections,
 in our example:
 
 \begin{lstlisting}
-Definition id_eta_B (T : Type) (s : $\Sigma$ (n : nat) . vector T n) : $\Sigma$ (n : nat) . vector T n  :=
+Definition eta_B (T : Type) (s : $\Sigma$ (n : nat) . vector T n) : $\Sigma$ (n : nat) . vector T n  :=
   $\exists$ ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
 This implements \textit{repacking} from \textsc{Devoid}.
@@ -260,7 +260,7 @@ Definition dep_constr_B_1 (T : Type) (t : T) (s : $\Sigma$ (n : nat) . vector T 
 and \lstinline{DepElim} eliminates its projections:
 
 \begin{lstlisting}
-Definition dep_elim_B_0 (T : Type) (P : $\Sigma$ (n : nat) . vector T n -> Type) (pnil : P (dep_constr_B_0 T)) (pcons : $\forall$ t s, P (id_eta_B T s) -> P (dep_constr_B_1 T t s)) (s : $\Sigma$ (n : nat) . vector T n) : P (id_eta_B T s) :=
+Definition dep_elim_B_0 (T : Type) (P : $\Sigma$ (n : nat) . vector T n -> Type) (pnil : P (dep_constr_B_0 T)) (pcons : $\forall$ t s, P (eta_B T s) -> P (dep_constr_B_1 T t s)) (s : $\Sigma$ (n : nat) . vector T n) : P (eta_B T s) :=
   vector_rect
     T
     (fun (n : nat) (v : vector T n) => P ($\exists$ n v))
@@ -290,10 +290,10 @@ since the left-hand sides of these two equivalences are equal up to transport al
 The second configuration is similar to the first configuration, except that it also carries equality proofs over the indices.
 That is, it views the type \B like \lstinline{vector T n} as implicitly representing \{\lstinline{ v : vector T n' & n' = n }\} for some \lstinline{n'}.
 This is seen, for example, in the identity rule for \B, here: 
-% TODO both should take the same number of arguments, even if id_eta_A takes fewer. also does this belong in rew_eta?
+% TODO both should take the same number of arguments, even ifeta_A takes fewer. also does this belong in rew_eta?
 
 \begin{lstlisting}
-Definition id_eta_B (T : Type) (n n' : nat) (v : vector T n') (H : n = n') : vector T n :=
+Definition eta_B (T : Type) (n n' : nat) (v : vector T n') (H : n = n') : vector T n :=
   eq_rect n' (vector T) v n H.
 \end{lstlisting}
 which is the identity function generalized over any equal index.
@@ -356,7 +356,7 @@ by adding and removing arguments,
 as that work is done in the configuration.
 Implementing the second configuration was less straightforward,
 especially when it came to understanding the behaviors of equalities.
-There are still some open challenges in correctly supporting \lstinline{RewEta} to port any arbitrary
+There are still some open challenges in correctly supporting \lstinline{Iota} to port any arbitrary
 proof backward along the second configuration in the opposite direction.
 
 \paragraph{Workflow Integration}
@@ -523,7 +523,7 @@ Definition dep_elim_B :
 :=
   N.peano_rect.
 \end{lstlisting}
-\lstinline{RewEta} was almost written for us.
+\lstinline{Iota} was almost written for us.
 The Coq standard library included a lemma that showed that the dependent eliminator preserved the successor case:
 
 \begin{lstlisting}
@@ -531,10 +531,10 @@ N.peano_rect_succ :
   $\forall$ (P : N -> Type) (a : P 0%N) (f : $\forall$ (n : N), P n -> P (N.succ n)) (n : N),
     N.peano_rect P a f (N.succ n) = f n (N.peano_rect P a f n).
 \end{lstlisting}
-From there, \lstinline{RewEta} over the successor case is a simple rewrite, as we saw in Section~\ref{sec:equality}:
+From there, \lstinline{Iota} over the successor case is a simple rewrite, as we saw in Section~\ref{sec:equality}:
 
 \begin{lstlisting}
-Lemma rew_eta_1_B :
+Lemma iota_1_B :
   $\forall$ (P : N -> Type) (a : P 0%N) (PS : $\forall$ (n : N), P n -> P (N.succ n)) (n : N) (Q : P (N.succ n) -> Type),
      Q (PS n (N.peano_rect P PO PS n)) ->
      Q (N.peano_rect P PO PS (N.succ n)).
@@ -543,7 +543,7 @@ Proof.
 Defined.
 \end{lstlisting}
 
-The need for a nontrivial \lstinline{RewEta} comes from the fact that \lstinline{N} has a different
+The need for a nontrivial \lstinline{Iota} comes from the fact that \lstinline{N} has a different
 inductive structure from \lstinline{nat}.
 The need for it is noted as far back as \citet{magaud2000changing}.
 This corresponds to a broader pattern---it captures the essence of the change in inductive structure.
@@ -567,7 +567,7 @@ Lemma add_fast_add:
     slow_add n m = N.add n m.
 Proof.
   induction n using N.peano_rect; intros m; auto. unfold slow_add.
-  rewrite N.peano_rect_succ. (* <- rew_eta_1_B *)
+  rewrite N.peano_rect_succ. (* <- iota_1_B *)
   unfold slow_add in IHn. rewrite IHn.
   rewrite N.add_succ_l.
   reflexivity.
@@ -585,7 +585,7 @@ slow_plus_n_Sm : $\forall$ (n m : N), N.succ (slow_add n m) = slow_add n (N.succ
 \end{lstlisting}
 This was not quite as push-button.
 It involved a manual expansion step, turning implicit casts in the inductive case
-into explicit applications of \lstinline{RewEta} over \A.
+into explicit applications of \lstinline{Iota} over \A.
 These applications were formulaic, but tricky to write.
 Once we had that, though, we could run the same \lstinline{Repair} command
 to get \lstinline{slow_plus_n_Sm}.
@@ -609,15 +609,15 @@ The change from \lstinline{nat} to \lstinline{N} using \toolname was a refactori
 but allowed for simple compatibility with functions with better performance.
 
 \paragraph{Configuration \& Flexibility}
-\lstinline{RewEta} was the key to supporting this case,
+\lstinline{Iota} was the key to supporting this case,
 and it was enough to implement this transformation that had previously been its own tool
-just by writing a configuration with \lstinline{RewEta}. 
+just by writing a configuration with \lstinline{Iota}. 
 
 \paragraph{Workflow Integration}
 This was another case when we did not need tactic integration, since we
 ultimately wanted compatibility with a faster version of the function.
 The most difficult part was manually expanding proofs about \lstinline{nat}
-to explicitly apply \lstinline{RewEta}.
+to explicitly apply \lstinline{Iota}.
 This is because there is not yet any way for manual configuration to supply custom matching functions,
 and unification was not enough.
 We discuss some ideas for this in Section~\ref{sec:discussion}. % TODO actually do
@@ -680,8 +680,8 @@ The entire file took under a second for us to compile using \toolname.
 %DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := Elim(a, p){f$_{1}$, $\ldots$, f$_{n}$}
 %DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := DepElim(b, p)
 
-%IdEta(A) := $\lambda$(a : A).a
-%IdEta(B) := $\lambda$(b : B).$\exists$ ($\pi_l$ b) ($\pi_r$ b)
+%Eta(A) := $\lambda$(a : A).a
+%Eta(B) := $\lambda$(b : B).$\exists$ ($\pi_l$ b) ($\pi_r$ b)
 %\end{lstlisting}
 
 % TODO investigate below projection thing, and write in when you finish
@@ -704,8 +704,8 @@ The entire file took under a second for us to compile using \toolname.
 %DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := (* TODO *)
 %DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := Elim(b, p){f$_{1}$, $\ldots$, f$_{n}$}
 
-%IdEta(A) := $\lambda$(a : A).$\exists$ ($\exists$ ($\pi_l$ ($\pi_l$ a)) ($\pi_r$ ($\pi_l$ a))) ($\pi_r$ a)
-%IdEta(B) := $\lambda$(b : B).b
+%Eta(A) := $\lambda$(a : A).$\exists$ ($\exists$ ($\pi_l$ ($\pi_l$ a)) ($\pi_r$ ($\pi_l$ a))) ($\pi_r$ a)
+%Eta(B) := $\lambda$(b : B).b
 %\end{lstlisting}
 
 %\subsubsection{Records and tuples}
@@ -721,6 +721,6 @@ The entire file took under a second for us to compile using \toolname.
 %DepElim(a, p){f$_{1}$, $\ldots$, f$_{n}$} : p a := Elim(a, p){f$_{1}$, $\ldots$, f$_{n}$}
 %DepElim(b, p){f$_{1}$, $\ldots$, f$_{n}$} : p b := (* TODO recursively eliminate product *)
 
-%IdEta(A) := $\lambda$(a : A).a
-%IdEta(B) := (* TODO recursive eta *)
+%Eta(A) := $\lambda$(a : A).a
+%Eta(B) := (* TODO recursive eta *)
 %\end{lstlisting}
