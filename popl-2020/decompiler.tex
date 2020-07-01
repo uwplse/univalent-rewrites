@@ -3,7 +3,8 @@
 
 \textbf{Transform} produces a proof term,
 while the proof engineer typically writes and maintains proof scripts made up of tactics.
-We improve user experience thanks to our final insight:
+We improve user experience thanks the realization that, since Coq's proof term language Gallina is very structured,
+we can decompile these gallina terms to Ltac proof scripts for the proof engineer to maintain. In other words:
 
 \begin{quote}
 \textbf{Insight 3}: The transformed proof terms can then be translated back to tactics.
@@ -15,9 +16,10 @@ For example, it produced the automatically generated tactic proof for \lstinline
 in Section~\ref{sec:overview}, as well as the tactic proofs of \lstinline{section}
 and \lstinline{retraction} in Section~\ref{fig:equivalence}.
 
-The prototype decompiler works by decompiling Gallina proof terms to candidate Ltac proof scripts that 
-use a predefined set of tactics (Section~\ref{sec:first}).
-It then helps clean up and pretty-print that proof script for the proof engineer (Section~\ref{sec:second}).
+The prototype decompiler works by decompiling proof terms to candidate proof scripts that 
+use a predefined set of Ltac tactics (Section~\ref{sec:first}).
+It then pretty-prints and helps clean up that proof script for the proof engineer (Section~\ref{sec:second}).
+The proof engineer can massage the final result as desired into a proof script that both works and is maintainable.
 
 \subsection{Decompilation}
 \label{sec:first}
@@ -38,9 +40,10 @@ The input language for the implementation of \textbf{Decompile} is Gallina, the 
 As with \textbf{Transform}, we present the semantics using an extension of CIC$_{\omega}$ (Figure~\ref{fig:gallinasyntax}).
 The extension adds dependent let expressions, taking it one step closer to Gallina.
 It does not include any of the configuration parts from \textbf{Transform}, since these just compile down to proof terms in CIC$_{\omega}$.
-We present the semantics assuming that all names are fresh, but the implementation generates fresh names automatically.
+We assume all names are fresh. %, but the implementation generates fresh names automatically.
 We assume an inductive type $=$ for propositional equality with symmetry proof \lstinline{eq_sym},
-as well an inductive type $\vee$ for disjunction, as in Coq.
+as well an inductive types $\vee$ and $\wedge$ for disjunction and conjunction, as in Coq.
+We assume the existence of an oracle $\subseteq$ that returns true when a Gallina term is a syntactic subterm of another term.
 
 \begin{figure}
 \small
@@ -48,8 +51,9 @@ as well an inductive type $\vee$ for disjunction, as in Coq.
 <d> $\in$ \{ $\leftarrow$, $\rightarrow$ \}, <v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
 
 <p> ::= Intro <v> | Intros \{<v>,\ldots,<v>\} | Revert \{<v>, \ldots, <v>\} | Pose <t> <v> | \\
-Apply <t> | ApplyIn <t> <t> | Rewrite <d> <t> | RewriteIn <d> <t> <t> | Induction <t> |  \\
-Reflexivity | Simpl | Left | Right | Symmetry | Split | <p> . <p>
+Apply <t> | Rewrite <d> <t> | Induction <t> \{ <p>, \ldots, <p> \} | Split \{ <p>, <p> \} | \\
+ApplyIn <t> <t> \{ <p>, \ldots, <p> \} | RewriteIn <d> <t> <t> \{ <p>, \ldots, <p> \} | \\
+Reflexivity | Simpl | Left | Right | Symmetry | <p> . <p>
 \end{grammar}
 \caption{Syntax for a predefined set of Ltac tactics.}
 \label{fig:ltacsyntax}
@@ -69,19 +73,23 @@ We do not attempt to formalize the semantics of even a subset of Ltac.
 
 \inferrule[Intro]
   { \Gamma,\ n : T \vdash b \Rightarrow p }
-  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{Intro}\ n.\ p }\\
+  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{Intro}\ n.\ p }
+
+\inferrule[Symmetry]
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{Symmetry}.\ p } \\
 
 \inferrule[Rewrite]
-  { \Gamma \vdash p_x \Rightarrow p }
-  { \Gamma \vdash \mathrm{Elim}(\mathtt{eq\_sym}\ H,\ P) \{ x,\ p_x,\ y \} \Rightarrow \mathrm{Rewrite} \rightarrow H.\ p }
+  { \Gamma \vdash H_2 \Rightarrow p }
+  { \Gamma \vdash \mathrm{Elim}(\mathtt{eq\_sym}\ H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{Rewrite} \rightarrow H_1.\ p }
 
 \inferrule[Rewrite-By]
-  { \Gamma \vdash p_x \Rightarrow p }
-  { \Gamma \vdash \mathrm{Elim}(H,\ P) \{ x,\ p_x,\ y \} \Rightarrow \mathrm{Rewrite} \leftarrow H.\ p }
+  { \Gamma \vdash H_2 \Rightarrow p }
+  { \Gamma \vdash \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{Rewrite} \leftarrow H_1.\ p }
 
 \inferrule[Induction]
   { \\ }
-  { \\ } % TODO needs revert
+  { \\ } \\ % TODO needs revert
 
 \inferrule[Left]
   { \Gamma \vdash H \Rightarrow p }
@@ -92,28 +100,32 @@ We do not attempt to formalize the semantics of even a subset of Ltac.
   { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{Right}.\ p }
 
 \inferrule[Split]
-  { \\ }
-  { \\ }
+  { \Gamma \vdash l \Rightarrow p \\ \Gamma \vdash r \Rightarrow q }
+  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l r \Rightarrow \mathrm{Split} \{ p, q \}.\ }
 
-\inferrule[Symmetry]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{Symmetry}.\ p }
+\inferrule[Rewrite-In] % TODO needs cases somehow
+  { \Gamma \vdash H_2 \nsubseteq b \\ \Gamma,\ n := \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} : T \vdash b \Rightarrow p }
+  { \Gamma \vdash \mathrm{Let}(n,\ \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \},\ T,\ b) \Rightarrow \mathrm{RewriteIn} \rightarrow H_1\ H_2.\ p }
 
-\inferrule[Rewrite-In]
-  { \\ }
-  { \\ }
+\inferrule[Rewrite-In-By] % TODO needs cases somehow
+  { \Gamma \vdash H_2 \nsubseteq b \\ \Gamma,\ n := \mathrm{Elim}(\mathtt{eq\_sym}\ H_1,\ P) \{ x,\ H_2,\ y \} : T \vdash b \Rightarrow p }
+  { \Gamma \vdash \mathrm{Let}(n,\ \mathrm{Elim}(\mathtt{eq\_sym}\ H_1,\ P) \{ x,\ H_2,\ y \},\ T,\ b) \Rightarrow \mathrm{RewriteIn} \leftarrow H_1\ H_2.\ p }
 
-\inferrule[Apply-In]
-  { \\ }
-  { \\ }
+\inferrule[Apply-In] % TODO needs cases somehow
+  { \Gamma \vdash H \nsubseteq b \\ \Gamma,\ n := f\ H : T \vdash b \Rightarrow \vec{p}  }
+  { \Gamma \vdash \mathrm{Let}(n,\ f\ H,\ T,\ b) \Rightarrow \mathrm{ApplyIn}\ f\ H.\ p }
 
 \inferrule[Pose]
-  { \Gamma,\ n := t : T \vdash b \Rightarrow p }
+  { \Gamma \vdash n \subseteq b \\ \Gamma,\ n := t : T \vdash b \Rightarrow p }
   { \Gamma \vdash \mathrm{Let}(n,\ t,\ T,\ b) \Rightarrow \mathrm{Pose}\ t\ n.\ p }
+
+\inferrule[Subgoal]
+  { \\ }
+  { \Gamma \vdash t \Rightarrow \mathrm{Apply}\ t }
 
 \inferrule[Apply]
   { \\ }
-  { \Gamma \vdash t \Rightarrow \mathrm{Apply}\ t. }
+  { \Gamma \vdash t \Rightarrow \mathrm{Apply}\ t }
 \end{mathpar}
 \caption{Decompiler semantics.}
 \label{fig:someantics}
@@ -129,6 +141,9 @@ Otherwise, the goal of the decompiler is to improve on that baseline as much as 
 or else produce a candidate proof script that is close enough that the proof engineer can manually massage it into something that
 both works and is maintainable.
 It does this by recursing over the proof term and constructing an Ltac proof script using a predefined set of tactics.
+
+impl details: non-deterministic and abstracts away some things, like generating several subgoals vs. applying whole thing at once.
+fresh names.
 
 \paragraph{Introduction}
 Lambda abstractions correspond to assumptions of hypotheses. Thus, each abstraction generates an “intro” tactic, adding a new hypothesis into the environment. The algorithm recurses on the body of the abstraction.
@@ -185,6 +200,8 @@ Pose is a catch-all for let-expressions. It explicitly binds a new name to a val
 Pretty printing at the very end.
 Collapse multiple \lstinline{intro}s of several assumptions into a single \lstinline{intros} tactic assuming multiple hypotheses.
 Replace all \lstinline{apply eq_refl} with the \lstinline{reflexivity} tactic.
+\lstinline{simpl} before \lstinline{rewrite} (for now just always when we do induction, but eventually can be smarter based on motive) (technically not
+in second pass yet, but easier conceptually).
 Cool things we could do with this: use original tactics, semicolons. Apply just the function name instead of the whole application (need to try it out, this pass is a good place to try it out). Morphisms. Decision procedures.
 
 take user input here,
