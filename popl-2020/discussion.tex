@@ -1,11 +1,32 @@
 \section{Conclusions \& Future Work}
 \label{sec:discussion}
 
-blah blah blah conclusion with Talia-style text leading into a nontraditional future work section
-that combines with a discussion, with this discussion elaborated sigificantly, because this is way more fun
-than traditional future work sections which are basically useless
+We showed how to combine a configurable proof term transformation with a tactic decompiler to build \toolname,
+a proof refactoring and repair tool that is flexible and useful for real proof engineering scenarios.
+\toolname has already helped an industrial proof engineer integrate Coq with a company proof engineering workflow,
+and has supported refactoring and repair benchmarks common in the proof engineering community.
 
-\paragraph{Discussion: Univalent Constraint Solvers}
+Moving forward, our goal is to make proofs easier to reuse and maintain regardless of proof engineering expertise.
+We want to reach more users, and we want \toolname to integrate seemlessly with Coq.
+We believe that the most significant progress here will come from adapting data structures and ideas
+from the rewrite system and constraint solver communities to use the notion of equality that encodes the correctness of \textsc{Transform}: equality up 
+to transport. After all, three of the biggest challenges we encountered in scaling up the \toolname proof term transformation---ambiguous matches, nontermination, and the need for custom rewrite rules---are problems that those communities have spent decades researching already.% TODO cite
+
+We conclude with a discussion of those three challenges (Section~\ref{sec:problems}), why and how we believe ideas from the rewrite system and constraint
+solver communities can help (Section~\ref{sec:egraph}), and how we believe these ideas can help the proof engineering community
+even beyond building better refactoring and repair tools (Section~\ref{sec:beyond}).
+Our hope is to inspire all three of these communities to work together to cover an exciting new domain.
+
+\subsection{Three Challenges}
+
+% TODO cite:
+%https://dl.acm.org/doi/book/10.5555/909447
+%https://dl.acm.org/doi/pdf/10.1145/1186632.1186633
+%https://dl.acm.org/doi/10.1145/1594834.1480915
+
+\paragraph{Ambiguous Matches}
+
+TODO long blog test that will be shortened \& cleaned
 
 The program transformation from Section~\ref{sec:meat} implements transport between equivalent types \A and \B.
 However, it alone does not help the user in any way decide when to \textit{apply} transport.
@@ -26,9 +47,6 @@ and for other systems may be to adapt special data structures from the constrain
 notion of equivalence that corresponds to equality up to transport (Section~\ref{sec:egraph}).
 This may help not only build better proof refactoring and repair tools, but also build better proof reuse tools,
 implement better congruence tactics in univalent type theories, and better automate transport in HoTT.
-
-\subsection{Type-Directed Search is Ideal}
-\label{sec:ideal}
 
 \toolname replaces every occurrence of \A with an occurrence of \B.
 Because of this, users sometimes encounter confusing behavior.
@@ -115,8 +133,20 @@ However, the authors note that this approach scales poorly, and that without the
 hints, it can be slow or diverge.
 This is a step in the right direction, but it is not enough.
 
-\subsection{Enter Univalent E-Graphs}
+\paragraph{Nontermination}
+
+TODO enforcing termination / how it would help all of these things
+
+\paragraph{Custom Rewrite Rules}
+
+TODO matching Iota is just letting the user add additional rewrite rules (or call out to custom code).
+see chandra conversation.
+cite szalinski to note how to not be just syntactic/how to call out to something else
+
+\subsection{Three Proposed Solutions with Univalent E-Graphs}
 \label{sec:egraph}
+
+TODO draft text, not done yet.
 
 Automatic transport is really nothing but a rewrite system.
 Equality up to transport is just an equivalence relation, and automatic transport just searches for proofs of that relation and rewrites along those proofs, either by directly applying transport (in homotopy type theory and univalent parametricity) or by transforming the term in a metalanguage (in \toolname).
@@ -131,12 +161,16 @@ choose from.
 
 Recent work extended these data structures to handle dependent types. The result was wonderful automation of equality proofs in the Lean theorem prover. The cost was introducing an axiom called UIP to Lean that is not in Coq and is incompatible with homotopy type theory (without any axioms, the notion of equality between dependent types is just not very useful for automation like this).
 
-What if we were to implement this data structure for equality up to transport rather than heterogenous equality as in Lean? In univalent type theories like homotopy type theory, I bet we could implement automatic transport this way, using what would essentially be an extremely powerful congruence tactic coupled with the transport function. In the univalent parametricity framework, I imagine we could get much more predictable and efficient type-directed transport when managing a lot of equivalences. And in \toolname, I bet we could also get efficient type-directed search.
-
+What if we were to implement this data structure for equality up to transport rather than heterogenous equality as in Lean?
 I think this also hides the key to better proof repair. Proof repair is really nothing but proof reuse over time. And I bet that, in a dependently-typed language, you can think of any change as an equivalence between sigma types. The problem just becomes exposing a good interface around searching for and transporting along this equivalence (maybe using example-based search like the original PUMPKIN PATCH, maybe doing something different), getting rid of all references to the old type (which \toolname can do), and then hopefully at some point converting everything back to a reasonable, maintainable set of tactics (which our decompiler does). This is the future, guys.
 
-% TODO e-matching---matching RewEta is just letting the user add additional rewrite rules (or call out to custom code).
-% see chandra conversation.
-% cite szalinski to note how to not be just syntactic/how to call out to something else
+\paragraph{Ambiguous Matches}
 
-% TODO enforcing termination / how it would help all of these things
+\paragraph{Termination}
+
+\paragraph{Custom Rewrite Rules}
+
+\subsection{Beyond Refactoring \& Repair}
+
+TODO not done yet: In univalent type theories like homotopy type theory, I bet we could implement automatic transport this way, using what would essentially be an extremely powerful congruence tactic coupled with the transport function. In the univalent parametricity framework, I imagine we could get much more predictable and efficient type-directed transport when managing a lot of equivalences. And in \toolname, I bet we could also get efficient type-directed search. Text about the other challenges.
+
