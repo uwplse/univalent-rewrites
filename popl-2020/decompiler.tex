@@ -123,22 +123,32 @@ The generated proof term of \codeauto{\lstinline{rev_app_distr}} from Section~\r
 for example, consists only of induction, rewriting, simplification, and reflexivity.
 Since \toolname uses the \lstinline{Preprocess} command from \textsc{Devoid}, \textit{all} of the proof terms that \toolname
 produces will use induction and rewriting rather than fixpoints and pattern matching.
-Because we have control over output terms, even a toy decompiler gets us pretty far.
+In short, because we have control over output terms, even a toy decompiler gets us pretty far.
 
 \subsection{Scaling Up}
 \label{sec:second}
 
-TODO placeholder draft copypasta
-
-While the toy decompiler is a nice example, it abstracts a lot of the details that make Ltac so useful to proof engineers---and so painful to 
+The toy decompiler abstracts a lot of the details that make Ltac so useful to proof engineers---and so painful to 
 reason about automatically.
-This section discusses how we scale up from this toy decompiler to a real Gallina to Ltac decompiler.
+This section discusses how we scale up from this toy decompiler to a prototype Gallina to Ltac decompiler,
+and how we imagine the decompiler continuing to evolve from there.
 
 \paragraph{Second Pass}
-Collapse multiple \lstinline{intro}s of several assumptions into a single \lstinline{intros} tactic assuming multiple hypotheses.
-Replace all \lstinline{apply eq_refl} with the \lstinline{reflexivity} tactic.
-Cool things we could do with this: use original tactics, semicolons. Apply just the function name instead of the whole application (need to try it out, this pass is a good place to try it out). Morphisms. Decision procedures.
-Take user input here.
+The toy decompiler reasons about tactics one subterm at a time, and produces tactics only from a predefined set of tactics.
+This does not always match the thought processes of proof engineers.
+To produce a more natural set of tactics, \textsc{Decompile} operates in two passes: first it runs something that looks a lot
+like the toy decompiler, and then it modifies those tactics to produce a more natural proof script.
+For example, the first pass, like the toy decompiler, produces a single \lstinline{intro} per hypothesis in a lambda abstraction;
+the second pass combines each sequence of \lstinline{intro} tactics into an \lstinline{intros} tactic.
+
+The prototype decompiler still can do very little with decision procedures and custom tactics, which are very common
+in some proof engineering styles.
+This second pass will be the natural integration point for these.
+Our current plan is to take additional input in this pass, either directly from the proof engineer
+or by feeding in the original proof script from before \textsc{Transform}.
+We can then iteratively replace tactics with custom tactics and decision procedures, and check the result see if it works.
+We also plan to support tacticals like \lstinline{;} and \lstinline{try}.
+For now, massaging the output to use these is left to the proof engineer.
 
 \paragraph{Induction and Rewriting}
 unification: simplifying rewrites, inductive motives, revert.
@@ -148,8 +158,11 @@ rewrite direction (swaps for rewrite in).
 Applications of induction eliminators are deconstructed into a proof of each case, arguments to the motive, and the value we perform induction on.
 The position of the inducted value (hard time explaining this): Pos = \# of arguments … – pms + 1 (???)
 Following the inducted value are additional arguments to the motive. A “revert” tactic is inserted for each such hypothesis before induction. This forgets the hypotheses by adding them as arguments to the goal, producing a motive requiring these arguments exactly, and so they must be re-introduced in each case.
+why it's a candidate and not guaranteed.
 
 \paragraph{Manipulating Hypotheses}
+TODO left off here
+
 Coq instead of CIC$_{\omega}$.
 Corresponds to let bindings.
 extend with let expressions. pose. rewrite-in. apply-in. subgoals for those.
