@@ -4,7 +4,7 @@
 \textbf{Transform} produces a proof term,
 while the proof engineer typically writes and maintains proof scripts made up of tactics.
 We improve user experience thanks the realization that, since Coq's proof term language Gallina is very structured,
-we can decompile these gallina terms to Ltac proof scripts for the proof engineer to maintain. In other words:
+we can decompile these Gallina terms to Ltac proof scripts for the proof engineer to maintain. In other words:
 
 \begin{quote}
 \textbf{Insight 3}: The transformed proof terms can then be translated back to tactics.
@@ -16,54 +16,39 @@ For example, it produced the automatically generated tactic proof for \lstinline
 in Section~\ref{sec:overview}, as well as the tactic proofs of \lstinline{section}
 and \lstinline{retraction} in Section~\ref{fig:equivalence}.
 
-The prototype decompiler works by decompiling proof terms to candidate proof scripts that 
-use a predefined set of Ltac tactics (Section~\ref{sec:first}).
-It then pretty-prints and helps clean up that proof script for the proof engineer (Section~\ref{sec:second}).
-The proof engineer can massage the final result as desired into a proof script that both works and is maintainable.
+The output language for the implementation of \textbf{Decompile} is Ltac, the proof script language for Coq.
+Ltac can be confusing to reason about, since Ltac tactics can refer to Gallina terms, and the semantics of Ltac depends both on the
+semantics of Gallina and on the implementation of proof search procedures written in OCaml.
+To give a sense of how the decompiler works without the clutter of these proof search details, we start by defining a toy
+decompiler from CIC$_{\omega}$ to a simple subset of Ltac containing just a few predefined tactics (Section~\ref{sec:first}).
+We then explain how we scale that up to the actual implementation (Section~\ref{sec:second}).
 
-\subsection{Decompilation}
+\subsection{A Toy Decompiler}
 \label{sec:first}
 
 \begin{figure}
 \small
 \begin{grammar}
-<i> $\in \mathbbm{N}$, <v> $\in$ Vars, <s> $\in$ \{ Prop, Set, Type<i> \}
+<v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
 
-<t> ::= <v> | <s> | $\Pi$ (<v> : <t>) . <t> | $\lambda$ (<v> : <t>) . <t> | <t> <t> | \\
-Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\} | Let (<v>, <t>, <t>, <t>)
+<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right | <p> . <p>
 \end{grammar}
-\caption{Syntax for CIC$_{\omega}$ extended with let expressions.}
-\label{fig:gallinasyntax}
+\caption{Qtac syntax.}
+\label{fig:ltacsyntax1}
 \end{figure}
 
-The input language for the implementation of \textbf{Decompile} is Gallina, the proof term language in Coq.
-As with \textbf{Transform}, we present the semantics using an extension of CIC$_{\omega}$ (Figure~\ref{fig:gallinasyntax}).
-The extension adds dependent let expressions, taking it one step closer to Gallina.
-It does not include any of the configuration parts from \textbf{Transform}, since these just compile down to proof terms in CIC$_{\omega}$.
-We assume all names are fresh. %, but the implementation generates fresh names automatically.
-We assume an inductive type $=$ for propositional equality with symmetry proof \lstinline{eq_sym},
-as well an inductive types $\vee$ and $\wedge$ for disjunction and conjunction, as in Coq.
-We assume the existence of an oracle $\subseteq$ that returns true when a Gallina term is a syntactic subterm of another term.
+The toy decompiler takes CIC$_{\omega}$ terms and produces tactics in a toy version of Ltac which we call Qtac.\footnote{Pronounced \textit{cute-tac}}.
+The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
+Qtac includes hypothesis introduction (\lstinline{intro},
+rewriting by equalities (\lstinline{rewrite}), symmetry (\lstinline{symmetry}) of equality,
+application of a term to prove the goal (\lstinline{apply}), induction over terms (\lstinline{induction}),
+case splitting of conjunctions (\lstinline{split}),
+constructors of disjunctions (\lstinline{left} and \lstinline{right}), and
+composition (\lstinline{.}).
 
-\begin{figure}
-\small
-\begin{grammar}
-<d> $\in$ \{ $\leftarrow$, $\rightarrow$ \}, <v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
-
-<p> ::= Intro <v> | Intros \{<v>,\ldots,<v>\} | Revert \{<v>, \ldots, <v>\} | Pose <t> <v> | \\
-Apply <t> | Rewrite <d> <t> | Induction <t> \{ <p>, \ldots, <p> \} | Split \{ <p>, <p> \} | \\
-ApplyIn <t> <t> \{ <p>, \ldots, <p> \} | RewriteIn <d> <t> <t> \{ <p>, \ldots, <p> \} | \\
-Reflexivity | Simpl | Left | Right | Symmetry | <p> . <p>
-\end{grammar}
-\caption{Syntax for a predefined set of Ltac tactics.}
-\label{fig:ltacsyntax}
-\end{figure}
-
-The output language comes from a predefined set of tactics in Ltac, the proof script language for Coq.
-The grammar for this set of Ltac tactics is in Figure~\ref{fig:ltacsyntax}.
-Note that Ltac tactics can refer to Gallina terms (here extended CIC$_{\omega}$ terms),
-and the semantics of Ltac depends on the semantics of Gallina and on search procedures written in OCaml.
-We do not attempt to formalize the semantics of even a subset of Ltac.
+Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always take a motive explicitly, rather than relying on a unification engine.
+Smilarly, \lstinline{apply} applies only the function without inferring any arguments, and leaves those arguments to proof obligations.
+The implementation reasons about Ltac and so does not make these assumptions.
 
 \begin{figure}
 \begin{mathpar}
@@ -73,77 +58,120 @@ We do not attempt to formalize the semantics of even a subset of Ltac.
 
 \inferrule[Intro]
   { \Gamma,\ n : T \vdash b \Rightarrow p }
-  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{Intro}\ n.\ p }
+  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{intro}\ n.\ p }
 
 \inferrule[Symmetry]
   { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{Symmetry}.\ p } \\
-
-\inferrule[Rewrite]
-  { \Gamma \vdash H_2 \Rightarrow p }
-  { \Gamma \vdash \mathrm{Elim}(\mathtt{eq\_sym}\ H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{Rewrite} \rightarrow H_1.\ p }
-
-\inferrule[Rewrite-By]
-  { \Gamma \vdash H_2 \Rightarrow p }
-  { \Gamma \vdash \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{Rewrite} \leftarrow H_1.\ p }
-
-\inferrule[Induction]
-  { \\ }
-  { \\ } \\ % TODO needs revert
-
-\inferrule[Left]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{Left}.\ p }
-
-\inferrule[Right]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{Right}.\ p }
+  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{symmetry}.\ p }
 
 \inferrule[Split]
   { \Gamma \vdash l \Rightarrow p \\ \Gamma \vdash r \Rightarrow q }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l r \Rightarrow \mathrm{Split} \{ p, q \}.\ }
+  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l r \Rightarrow \mathrm{split} \{ p, q \}.\ }
 
-\inferrule[Rewrite-In] % TODO needs cases somehow
-  { \Gamma \vdash H_2 \nsubseteq b \\ \Gamma,\ n := \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} : T \vdash b \Rightarrow p }
-  { \Gamma \vdash \mathrm{Let}(n,\ \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \},\ T,\ b) \Rightarrow \mathrm{RewriteIn} \rightarrow H_1\ H_2.\ p }
+\inferrule[Rewrite]
+  { \Gamma \vdash H_1 : x = y \\ \Gamma \vdash H_2 \Rightarrow p }
+  { \Gamma \vdash \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{symmetry}.\ \mathrm{rewrite}\ P\ H_1.\ p }
 
-\inferrule[Rewrite-In-By] % TODO needs cases somehow
-  { \Gamma \vdash H_2 \nsubseteq b \\ \Gamma,\ n := \mathrm{Elim}(\mathtt{eq\_sym}\ H_1,\ P) \{ x,\ H_2,\ y \} : T \vdash b \Rightarrow p }
-  { \Gamma \vdash \mathrm{Let}(n,\ \mathrm{Elim}(\mathtt{eq\_sym}\ H_1,\ P) \{ x,\ H_2,\ y \},\ T,\ b) \Rightarrow \mathrm{RewriteIn} \leftarrow H_1\ H_2.\ p }
+\inferrule[Induction]
+  { \Gamma \vdash \vec{f} \Rightarrow \vec{p} }
+  { \Gamma \vdash \mathrm{Elim}(t,\ P)\ \vec{f} \Rightarrow \mathrm{induction}\ P\ t\ \vec{p} }
 
-\inferrule[Apply-In] % TODO needs cases somehow
-  { \Gamma \vdash H \nsubseteq b \\ \Gamma,\ n := f\ H : T \vdash b \Rightarrow \vec{p}  }
-  { \Gamma \vdash \mathrm{Let}(n,\ f\ H,\ T,\ b) \Rightarrow \mathrm{ApplyIn}\ f\ H.\ p }
+\inferrule[Left]
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }
 
-\inferrule[Pose]
-  { \Gamma \vdash n \subseteq b \\ \Gamma,\ n := t : T \vdash b \Rightarrow p }
-  { \Gamma \vdash \mathrm{Let}(n,\ t,\ T,\ b) \Rightarrow \mathrm{Pose}\ t\ n.\ p }
-
-\inferrule[Subgoal]
-  { \\ }
-  { \Gamma \vdash t \Rightarrow \mathrm{Apply}\ t }
+\inferrule[Right]
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }
 
 \inferrule[Apply]
+  { \Gamma \vdash t \Rightarrow p }
+  { \Gamma \vdash f t \Rightarrow \mathrm{apply}\ f.\ p }
+
+\inferrule[Base]
   { \\ }
-  { \Gamma \vdash t \Rightarrow \mathrm{Apply}\ t }
+  { \Gamma \vdash t \Rightarrow \mathrm{apply}\ t }
 \end{mathpar}
-\caption{Decompiler semantics.}
+\caption{Toy decompiler semantics.}
 \label{fig:someantics}
 \end{figure}
 
-Figure~\ref{fig:someantics} shows the semantics of the decompiler.
-The decompiler accepts a proof term and generates a candidate Ltac proof script that attempts to prove the same theorem.
-The baseline for success of the decompiler is the naive proof script that applies the entire proof term with the \lstinline{apply} tactic.
+The semantics for the toy decompiler are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
+This decompiler works like the real decompiler: it accepts a proof term and generates a candidate proof script that attempts to prove the same theorem.
+As with the real decompiler, the baseline for success of the toy decompiler is the naive proof script
+that applies the entire proof term with the \lstinline{apply} tactic.
 Such a proof script will always work, but will often be unreadable.
-The decompiler defaults to this baseline behavior when it cannot find a suitable candidate proof script (\textsc{Apply}).
+The decompiler defaults to this baseline behavior (\textsc{Base}).
 
 Otherwise, the goal of the decompiler is to improve on that baseline as much as possible,
 or else produce a candidate proof script that is close enough that the proof engineer can manually massage it into something that
 both works and is maintainable.
-It does this by recursing over the proof term and constructing an Ltac proof script using a predefined set of tactics.
+It does this by recursing over the proof term and constructing a proof script using a predefined set of tactics.
 
-impl details: non-deterministic and abstracts away some things, like generating several subgoals vs. applying whole thing at once.
-fresh names.
+For the toy decompiler, this is fairly straightforward: Lambda terms become introduction of hypotheses (\textsc{Intro}), since they introduce new bindings
+in the environment of the body. Applications of \lstinline{eq_sym} become symmetry of equality (\textsc{Symmetry}).
+Constructors of conjunction and disjunction become map to the respective tactics (\textsc{Split}, \textsc{Left}, and \textsc{Right}).
+Applications of equality eliminators compose symmetry (to orient the rewrite direction with the goal) with rewrites (\textsc{Rewrite}),
+and all other applications of eliminators become induction (\textsc{Induction}).
+The remaining applications become apply tactics (\textsc{Apply}).
+In all cases, the decompiler recurses on the remaining body, breaking into cases when relevant, until no other preconditions match.
+At that point the \textsc{Base} case holds, and we are done.
+
+% TODO example
+
+\subsection{Scaling Up}
+
+The prototype decompiler works by decompiling proof terms to candidate proof scripts that 
+use a predefined set of Ltac tactics.
+It then pretty-prints and helps clean up that proof script for the proof engineer.
+The proof engineer can massage the final result as desired into a proof script that both works and is maintainable.
+
+Coq instead of CIC$_{\omega}$.
+extend with let expressions. pose. rewrite-in. apply-in. subgoals for those.
+checking if let binding is actually in the conclusion.
+skipping if it is not.
+
+matching/non-primitive eliminatorss
+
+simplifying rewrites
+
+rewrite direction
+
+inductive motives, revert, generalize
+
+\begin{figure}
+\small
+\begin{grammar}
+<d> $\in$ \{ $\leftarrow$, $\rightarrow$ \}, <v> $\in$ Vars, <t> $\in$ Gallina
+
+<p> ::= Intro <v> | Intros \{<v>,\ldots,<v>\} | Revert \{<v>, \ldots, <v>\} | Pose <t> <v> | \\
+Apply <t> | Rewrite <d> <t> | Induction <t> \{ <p>, \ldots, <p> \} | Split \{ <p>, <p> \} | \\
+ApplyIn <t> <t> \{ <p>, \ldots, <p> \} | RewriteIn <d> <t> <t> \{ <p>, \ldots, <p> \} | \\
+Reflexivity | Simpl | Left | Right | Symmetry | <p> . <p>
+\end{grammar}
+\caption{Syntax for a predefined set of Ltac tactics.}
+\label{fig:ltacsyntax2}
+\end{figure}
+
+\paragraph{Rewrite In}
+Rewrite-in transforms an existing hypothesis by binding a new hypothesis to replace all occurrences of the original in the remainder of the proof.
+\lstinline{let _ : _ := eq_ind _ _ _ H2 _ H1 in _} where
+		H2 is a hypothesis in context,
+		H2 doesn’t occur in the body.
+		Generate \lstinline{rewrite H1 in H2}. Recurse on body.
+
+\paragraph{Apply In}
+Apply-in transforms a hypothesis by applying a function to it, rebinding its type to the result of the function.
+		In general,
+		\lstinline{let _ : _ := f H in _} where
+		H is a hypothesis in context,
+		H doesn’t occur in the body.
+		Generate  \lstinline{apply f in H}. Recurse on body.
+		Unless we have,
+		\lstinline{let H2 : _ := f H1 in H2 _} where
+function \lstinline{f} expects additional arguments after \lstinline{H1}.
+Performing \lstinline{apply f in H1}, Coq transforms the goal to be the result type of \lstinline{f}, and creates additional goals for arguments required after H1. Thus, we recurse on H2 and all following arguments it’s applied to.
+
 
 \paragraph{Introduction}
 Lambda abstractions correspond to assumptions of hypotheses. Thus, each abstraction generates an “intro” tactic, adding a new hypothesis into the environment. The algorithm recurses on the body of the abstraction.
@@ -170,25 +198,6 @@ Application of \lstinline{or_intror}, constructing a logical or. A \lstinline{ri
 Application of \lstinline{conj} constructing a logical and. A \lstinline{split} tactic is generated, creating a goal for each side of the conjunction, and we recurse on both proofs, generating the left side first.
 
 \paragraph{Symmetry}
-
-\paragraph{Rewrite In}
-Rewrite-in transforms an existing hypothesis by binding a new hypothesis to replace all occurrences of the original in the remainder of the proof.
-\lstinline{let _ : _ := eq_ind _ _ _ H2 _ H1 in _} where
-		H2 is a hypothesis in context,
-		H2 doesn’t occur in the body.
-		Generate \lstinline{rewrite H1 in H2}. Recurse on body.
-
-\paragraph{Apply In}
-Apply-in transforms a hypothesis by applying a function to it, rebinding its type to the result of the function.
-		In general,
-		\lstinline{let _ : _ := f H in _} where
-		H is a hypothesis in context,
-		H doesn’t occur in the body.
-		Generate  \lstinline{apply f in H}. Recurse on body.
-		Unless we have,
-		\lstinline{let H2 : _ := f H1 in H2 _} where
-function \lstinline{f} expects additional arguments after \lstinline{H1}.
-Performing \lstinline{apply f in H1}, Coq transforms the goal to be the result type of \lstinline{f}, and creates additional goals for arguments required after H1. Thus, we recurse on H2 and all following arguments it’s applied to.
 
 \paragraph{Pose}
 Pose is a catch-all for let-expressions. It explicitly binds a new name to a value.
