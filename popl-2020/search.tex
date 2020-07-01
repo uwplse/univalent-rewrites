@@ -492,8 +492,11 @@ structure.
 A classic example of this is translating unary natural numbers to binary natural numbers~\cite{magaud2000changing}.
 We have realized this functionality with \toolname using a manual configuration. % TODO change now that redundant with earlier thing
 
-The binary numbers (Figure~\ref{fig:nattobin} in Section~\ref{sec:key2}) from the Coq standard library
-allow for a fast addition function, also found in the Coq standard library.
+Our definition of the binary numbers (Figure~\ref{fig:nattobin} in Section~\ref{sec:key2}) comes from the Coq standard library.
+A binary number \lstinline{N} is either zero or a positive binary number. A positive binary number
+is either 1 (\lstinline{xH}), the result of shifting left and adding 1 (\lstinline{xI}),
+or the result of shifting left and not adding anything (\lstinline{xO}).
+This definition allows for a fast addition function, also found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we use \toolname to derive a slow binary
 addition function that does not refer to \lstinline{nat} at all.
 From that, we are able to port our theorems over unary addition to binary addition,

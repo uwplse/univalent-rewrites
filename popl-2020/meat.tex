@@ -185,7 +185,7 @@ These two goals each correspond to a pair of configuration parts, respectively:
 
 \begin{enumerate}
 \item \lstinline{DepConstr} and \lstinline{DepElim} define how to transform constructors and eliminators, thereby preserving the equivalence (Section~\ref{sec:equivalence}), and 
-\item \lstinline{Eta} and \lstinline{Iota} define how to transform identity and equalities, thereby producing well-typed terms (Section~\ref{sec:equality}).
+\item \lstinline{Eta} and \lstinline{Iota} define how to transform $\eta$-expansion and $\iota$-reduction of these constructors and eliminators, thereby producing well-typed terms (Section~\ref{sec:equality}).
 \end{enumerate}
 The four parts of this configuration must be in relation to one another in a certain way in order for the proof
 term transformation to work correctly (Section~\ref{sec:art}).
@@ -323,12 +323,14 @@ The result of this, as noted in \citet{tabareau2019marriage},
 is that we must do additional work to transform equalities.
 Otherwise, if we transform a term \lstinline{t : T} to some \lstinline{t' : T'}, we do not necessarily
 have that our transformation maps \lstinline{T} to \lstinline{T'}.
-The two rules that correspond to this in the program transformation are \lstinline{Eta} and \lstinline{Iota},
-which use configuration parts \lstinline{Eta} (\textit{eta-expanded identity}) and \lstinline{Iota} (\textit{iota reduction}, or refolding cases of eliminators), respectively.
-These together describe the essence of identity and equality as they relate to \lstinline{DepConstr}
-and \lstinline{DepElim}.
 
-\lstinline{Eta} describes how to expand the identity function in a way that preserves equalities
+The two rules that correspond to this in the program transformation are \lstinline{Eta} and \lstinline{Iota},
+which use configuration parts with the same name.
+These together describe identity and equality as they relate to \lstinline{DepConstr} and \lstinline{DepElim}.
+More formally, they define $\eta$-expansion and $\iota$-reduction over \lstinline{DepConstr} and \lstinline{DepElim},
+which may be propositional rather than definitional, and so must be represented explicitly in the transformation.
+
+\lstinline{Eta} describes how to $\eta$-expand the identity function in a way that preserves equalities
 coherently with the definitions of \lstinline{DepConstr} and \lstinline{DepElim}.
 For example, for the refactoring from list to \lstinline{$\Sigma$(n : nat).vector T n}, we have:
 
@@ -338,7 +340,7 @@ Eta ($\Sigma$(n : nat).vector T n) :=
 \end{lstlisting}
 which corresponds to the strategic packing in the \textsc{Devoid} implementation to deal with
 non-primitive projections not handled by the transformation. Thanks to this, we can forego the assumption from the \textsc{Devoid} transformation
-that our language has primitive projections.
+that our language has primitive projections (definitional $\eta$ for $\Sigma$ types).
 
 \begin{figure}
 \begin{minipage}{0.48\textwidth}
@@ -352,26 +354,20 @@ that our language has primitive projections.
 \label{fig:nattobin}
 \end{figure}
 
-Each \lstinline{Iota}---one per constructor---describes and proves the refolding behavior
-of \lstinline{DepElim} on the corresponding case.
-Considered together, they describe how the inductive structures of \A and \B differ from one another.
-We see this with natural numbers \lstinline{nat} and binary numbers \lstinline{N} as defined in the Coq standard library (Figure~\ref{fig:nattobin}).
-A binary number \lstinline{N} is either zero or a positive binary number. A positive binary number
-is either 1 (\lstinline{xH}), the result of shifting left and adding 1 (\lstinline{xI}),
-or the result of shifting left and not adding anything (\lstinline{xO}).
-
-While \lstinline{nat} and \lstinline{N} are equivalent, their inductive structures are not the same---there is no
-\textit{ornament} describing the relationship between them. % TODO cite
-So while we can in fact define \lstinline{DepConstr} and \lstinline{DepElim} to induce an equivalence
-between them (see Section~\ref{sec:search}), we run into trouble reasoning about applications of \lstinline{DepElim}
-the same way. This is because the refolding behavior that we take for granted over natural numbers:
+Each \lstinline{Iota}---one per constructor---describes and proves the $\iota$-reduction behavior
+of \lstinline{DepElim} on the corresponding case. For example, with unary natural numbers defined in the standard way,
+and using the standard eliminator over the natural numbers, the $\iota$ rules are definitional, since:
 
 \begin{lstlisting}
 nat.refold_elim_S:
   $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
     DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
-while still true over binary numbers:
+goes through by reflexivity.
+However, this is no longer true for binary numbers \lstinline{N} as defined in the Coq standard library (Figure~\ref{fig:nattobin}).
+So while we can in fact define \lstinline{DepConstr} and \lstinline{DepElim} to induce an equivalence
+between them (see Section~\ref{sec:bin}), we run into trouble reasoning about applications of \lstinline{DepElim},
+since the corresponding $\iota$ rule:
 
 \begin{lstlisting}
 N.refold_elim_S:
@@ -385,35 +381,23 @@ do not necessarily hold by reflexivity over \lstinline{N}. For example, in Coq,
 while \lstinline{S (n + m) = S n + m} holds by reflexivity over \lstinline{nat},
 when we define \lstinline{+} with our new dependent eliminator over \lstinline{N},
 this no longer holds by reflexivity.
-We must port \textit{definitional} equalities over the successor case of the \lstinline{nat} dependent eliminator
-to \textit{propositional} equalities over the successor case of the \lstinline{N} dependent eliminator.
+To transform proofs about \lstinline{nat} to proofs about \lstinline{N}, we must transform \textit{definitional} $\iota$-reduction over \lstinline{nat}
+to explicit \textit{propositional} $\iota$-reduction over \lstinline{N}.
+For our choice of equivalence in Section~\ref{sec:bin} between \lstinline{nat} and \lstinline{N}, the \lstinline{Iota} rules are trivial
+for the base case and are exactly the proofs of theorems above for the succesor case.
 
-\lstinline{Iota} simply describes how to do this.
-For both \lstinline{nat} and \lstinline{N}, each \lstinline{Iota} in the successor case:
+Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ from one another.
+The structures of \lstinline{DepElim} over \A and \B are always the same, so if \A and \B have the same 
+inductive structure (if they are \textit{ornaments}~\cite{mcbride}),
+then if $\iota$-reduction is definitional over \lstinline{DepElim} on \A, it will also be definitional on \B.
+Otherwise, if \A and \B have different inductive structures, as with \lstinline{nat} and \lstinline{N},
+then definitional $\iota$ over one would lift to propositional $\iota$ over the other.
+The \lstinline{Iota} rule of the transformation encodes this fact.
 
-\begin{lstlisting}
-Iota(nat) :
-  $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n (Q : P (DepConstr(1, nat) n) $\rightarrow$ Type),
-    Q (DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ }) $\rightarrow$ 
-    Q ((@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ })).
-
-Iota(N) :
-  $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n (Q : P (DepConstr(1, N) n) $\rightarrow$ Type),
-    Q (DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ }) $\rightarrow$ 
-    Q ((@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ })).
-\end{lstlisting}
-is formed by rewriting over the corresponding proof of \lstinline{refold_elim_S}.
-For \lstinline{nat}, this happens to be a rewrite by reflexivity---so we essentially end up
-viewing each simplification of the inductive case of the eliminator (by casting or by applying reflexivity)
-as a contracted propositional equality.
-\lstinline{Iota} then lets us transform that propositional equality to a propositional equality over \lstinline{N},
-which gives us a proof of the theorem we want.
-
-\lstinline{Iota(N)} in the above example is not reflexivity precisely because there is no ornament
-between \lstinline{nat} and \lstinline{N}.
-When there is an ornament between our types, like with either of the \lstinline{list} refactorings we have seen so far,
-each \lstinline{Iota} just rewrites by reflexivity.
-Section~\ref{sec:search} describes examples of both cases, and elaborates on this example.
+For the case of \lstinline{nat} and \lstinline{N},
+the need for explicit $\iota$ was noted as far back as \citet{magaud2000changing}.
+What \textsc{Iota} does in the proof term transformation is encode this more generally for any change in inductive type.
+Section~\ref{sec:search} describes more examples of both \lstinline{Eta} and \lstinline{Iota}, and elaborates on this example.
 
 \subsubsection{Equivalence \& Equality}
 \label{sec:art}
@@ -430,8 +414,7 @@ Thankfully, once the art is done, we at least understand what it means for it to
 The correctness criteria for the configuration relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}
 in a way that preserves equivalence (Section~\ref{sec:equivalence}) coherently with equality (Section~\ref{sec:equality}).
 
-\paragraph{Preserving Equivalence}
-In particular, we need that \lstinline{DepElim} and \lstinline{DepConstr} together induce an equivalence between \A and \B,
+To preserve equivalence, we need that \lstinline{DepElim} and \lstinline{DepConstr} together induce an equivalence between \A and \B,
 formed by one function that eliminates \A and constructs \B, and another function that eliminates \B and constructs \A:
 
 \begin{lstlisting}
@@ -446,7 +429,6 @@ In addition, we need that:
 \item $\forall$ \lstinline{(a : A) (b : B) (P : A -> Type) (Q : B -> Type)}, if \lstinline{a} is equal to \lstinline{b} and \lstinline{P} is equal to \lstinline{Q} up to transport along that equivalence,
 then \lstinline{DepElim(a, P)} is equal to \lstinline{DepElim(b, Q)} up to transport along that equivalence.
 \end{enumerate}
-
 The intuition for this is based on insights from \textsc{Devoid},
 and is proven on an example from \textsc{Devoid} in the univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
 Essentially, that these are equal up to transport along the equivalence means that replacing dependent constructors (respectively eliminators) of \A
@@ -455,12 +437,10 @@ Furthermore, since CIC$_{\omega}$ is a constructive logic, the \textit{only} way
 and the \textit{only} way to match over an \A (respectively \B) is to apply its eliminator.
 Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and eliminators.
 So, as long as we are able to identify and expand all implicit applications of \lstinline{DepConstr} and \lstinline{DepElim},
-\lstinline{Dep-Constr} and \lstinline{Dep-Elim} preserve correctness of the transformation and cover all constructions and eliminations of \A and \B.
+\textsc{Dep-Constr} and \textsc{Dep-Elim} preserve correctness of the transformation and cover all constructions and eliminations of \A and \B.
 
-\paragraph{Coherence with Equality}
-To preserve equality, we need to relate the dependent constructors and eliminators to
-\lstinline{Eta} and \lstinline{Iota}. Since constructors and eliminators are dual,
-it is enough to relate them to \lstinline{DepElim}.
+To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules
+over \lstinline{DepConstr} and \lstinline{DepElim}.
 For \lstinline{Eta}, we need it to have the same definitional behavior as the
 eliminator, in other words:
 
@@ -469,25 +449,26 @@ DepElim(a, P) { f$_0$, ..., f$_n$ } : P (Eta(A) a)
 \end{lstlisting}
 and similarly for \B. % TODO do we need anything for DepConstr?
 
-Each \lstinline{Iota} needs to prove and rewrite along the refolding behavior that corresponds to a case of the dependent eliminator, in other words:
+Each \lstinline{Iota} needs to prove and rewrite along the simplification or refolding behavior that corresponds to a case of the dependent eliminator, in other words:
 
 \begin{lstlisting}
-(* TODO make more formal and define everything, placeholder because I'm hungry: *)
 Iota(A) :
   $\forall$ P $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),
     Q (DepElim((@\codediff{DepConstr(j, A) $\vec{x}$}@), P) $\vec{f}$ $\rightarrow$ 
-    Q ((@\codediff{$\vec{f}$[j]}@) ... (DepElim(IH_0, P) $\vec{f}$) ... (DepElim(IH_n, P) $\vec{f}$) ...)
+    Q ((@\codediff{$\vec{f}$[j]}@) ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)
 \end{lstlisting}
+where each \lstinline{IH}$_i$ is each recursive occurrence of \A in the eliminator case,
 and similarly for \B.
 Together, these induce proofs of \lstinline{section} and \lstinline{retraction} (used in conjunction with
 induction and rewriting).
 The intuition here is that it should be enough to preserve the reduction behavior
 of the eliminators and constructors, since again those are the only ways we can construct or eliminate our types.
 
-These can be difficult to prove---the former requires either a special framework % TODO cite UP
-or a univalent type theory.
-Thankfully, the user does not need to prove these in order to use \toolname.
-Rather, these simply need to hold in order for the proof term transformation to work correctly.
+It can be difficult to prove the correctness criteria for the configuration---proving equality of the dependent eliminators
+up to transport, for example, requires either a special framework~\cite{tabareau2017equivalences} % TODO cite UP
+or a univalent type theory~\cite{univalent2013homotopy}.
+Thankfully, the user does not need to prove the correctness criteria for a configuration in order to use \toolname.
+Rather, the correctness criteria simply need to hold in order for the proof term transformation to work correctly.
 
 \subsection{The Tool}
 \label{sec:implementation}

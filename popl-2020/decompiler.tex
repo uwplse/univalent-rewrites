@@ -149,6 +149,8 @@ In fact, since \toolname uses the \lstinline{Preprocess} command from \textsc{De
 produces will use induction and rewriting rather than fixpoints and pattern matching.
 Because we have control over output terms, even a toy decompiler gets us pretty far.
 
+% TODO add any new things RanDair implements, like exists
+
 \subsection{Scaling Up}
 \label{sec:second}
 
@@ -164,7 +166,6 @@ To produce a more natural set of tactics, \textbf{Decompile} operates in two pas
 like the toy decompiler, and then it modifies those tactics to produce a more natural proof script.
 For example, the first pass, like the toy decompiler, produces a single \lstinline{intro} per hypothesis in a lambda abstraction;
 the second pass combines each sequence of \lstinline{intro} tactics into an \lstinline{intros} tactic.
-The second pass also translates certain applications into some common goal-solving tactics like \lstinline{reflexivity}. 
 
 The prototype decompiler still has no special reasoning for decision procedures and custom tactics, which are common
 in some proof engineering styles.
