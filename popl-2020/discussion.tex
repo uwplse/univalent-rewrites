@@ -8,13 +8,10 @@ and has supported refactoring and repair benchmarks common in the proof engineer
 
 Moving forward, our goal is to make proofs easier to reuse and maintain regardless of proof engineering expertise.
 We want to reach more users, and we want \toolname to integrate seemlessly with Coq.
-We believe that the most significant progress here will come from adapting data structures and ideas
-from the rewrite system and constraint solver communities to use the notion of equality that encodes the correctness of \textsc{Transform}: equality up 
-to transport. After all, three of the biggest challenges we encountered in scaling up the \toolname proof term transformation---multiple equivalences, nontermination, and the need for custom rewrite rules---are problems that those communities have spent decades researching already.% TODO cite
-
-We conclude with a discussion of those three challenges (Section~\ref{sec:problems}), and why and how we believe ideas from the rewrite system and constraint
-solver communities can address those challenges and open the door to better tools for proof engineering (Section~\ref{sec:egraph}).
-Our hope is to inspire these communities to work together to cover an exciting new domain.
+We conclude with a discussion of the three biggest challenges we encountered in scaling up the \toolname proof term 
+transformation (Section~\ref{sec:problems}), and how we believe ideas from the rewrite system and constraint
+solver communities can address those challenges (Section~\ref{sec:egraph}).
+Our hope is to inspire these communities to work together and open the door to better tools for proof engineering
 
 \subsection{Three Challenges}
 \label{sec:problems}
