@@ -81,7 +81,35 @@ This would make for a much better workflow.
 
 \paragraph{Nontermination}
 
-TODO enforcing termination / how it would help all of these things
+Naively applying the proof term transformation from Section~\ref{sec:key2} can result in nontermination,
+especially when the output type refers to the input type.
+Consider the second equivalence that we used in Section~\ref{sec:dep}: % TODO make sure we mention this equivalence in that section
+
+\begin{lstlisting}
+$\forall$ n, $\Sigma$(s : $\Sigma$(n : nat).vector T n).$\pi_l$ s = n $\simeq$ vector T n
+\end{lstlisting}
+\toolname lifts the term:
+
+\begin{lstlisting}
+vector T 0
+\end{lstlisting}
+backwards along this equivalence, to the term:
+
+\begin{lstlisting}
+$\Sigma$(s : $\Sigma$(n : nat).vector T n).$\pi_l$ s = 0
+\end{lstlisting}
+and then stops.
+However, it could just as well keep going:
+
+\begin{lstlisting}
+$\Sigma$(s : $\Sigma$(n : nat).$\Sigma$(r : $\Sigma$(m : nat).vector T m).$\pi_l$ r = n).$\pi_l$ s = 0
+\end{lstlisting}
+and so on, forever.
+
+To cope with this, \toolname includes termination checks, and does not attempt to run a transformation rule
+if it determines that doing so would result in divergent behavior.
+However, these termination checks are ad-hoc and do not capture every potentially nonterminating use case.
+This can both clutter the code and result in unreliable behavior.
 
 \paragraph{Custom Rewrite Rules}
 
