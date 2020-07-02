@@ -10,128 +10,74 @@ Moving forward, our goal is to make proofs easier to reuse and maintain regardle
 We want to reach more users, and we want \toolname to integrate seemlessly with Coq.
 We believe that the most significant progress here will come from adapting data structures and ideas
 from the rewrite system and constraint solver communities to use the notion of equality that encodes the correctness of \textsc{Transform}: equality up 
-to transport. After all, three of the biggest challenges we encountered in scaling up the \toolname proof term transformation---ambiguous matches, nontermination, and the need for custom rewrite rules---are problems that those communities have spent decades researching already.% TODO cite
+to transport. After all, three of the biggest challenges we encountered in scaling up the \toolname proof term transformation---multiple equivalences, nontermination, and the need for custom rewrite rules---are problems that those communities have spent decades researching already.% TODO cite
 
 We conclude with a discussion of those three challenges (Section~\ref{sec:problems}), why and how we believe ideas from the rewrite system and constraint
 solver communities can help (Section~\ref{sec:egraph}), and how we believe these ideas can help the proof engineering community
 even beyond building better refactoring and repair tools (Section~\ref{sec:beyond}).
-Our hope is to inspire all three of these communities to work together to cover an exciting new domain.
+Our hope is to inspire these communities to work together to cover an exciting new domain.
 
 \subsection{Three Challenges}
+\label{sec:problems}
 
-% TODO cite:
-%https://dl.acm.org/doi/book/10.5555/909447
-%https://dl.acm.org/doi/pdf/10.1145/1186632.1186633
-%https://dl.acm.org/doi/10.1145/1594834.1480915
+\paragraph{Multiple Equivalences}
 
-\paragraph{Ambiguous Matches}
+Deciding when to run the transformation rules from the proof term transformation in Section~\ref{sec:key2} is left to the implementation.
+\toolname automates the most basic case of this: changing \textit{every} occurrence of the old type \A to the equivalent new type \B.
+This can lead to confusing or undesired behavior.
+The ideal would be a type-directed search procedure that decides when to apply a given rule in the proof term transformation.
 
-TODO long blog test that will be shortened \& cleaned
+\begin{figure}
+\begin{minipage}{0.54\textwidth}
+\begin{lstlisting}
+Repair (@\codediff{Tuple.output}@) (@\codediff{Record.output}@) 
+  in Tuple.op as op_1.
+Repair (@\codediff{Tuple.input}@) (@\codediff{Record.input}@)
+  in op_1 as op.
 
-The program transformation from Section~\ref{sec:meat} implements transport between equivalent types \A and \B.
-However, it alone does not help the user in any way decide when to \textit{apply} transport.
-This is a problem independent from whether transport is implemented as a function in the type theory itself
-or as a program transformation.
-Many implementations of transport, like those in CoqHoTT and Cubical Agda, % TODO check
-do not include any automation to help the user with this decision.
+(@\codeauto{op}@) : ((@\codediff{bool * Record.output}@)) $\rightarrow$ (@\texttt{Record.output}@).
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.44\textwidth}
+\begin{lstlisting}
+Repair (@\codediff{Tuple.input}@) (@\codediff{Record.input}@)
+  in Tuple.op as op_1.
+Repair (@\codediff{Tuple.output}@) (@\codediff{Record.output}@)
+  in op_1 as op.
 
-\toolname automates the most basic case of this when possible: changing \textit{every} occurrence of \A to \B.
-However, even for repair, this is not always what the user wants, and this can lead to confusing behavior (Section~\ref{sec:ideal}).
-The ideal would be a type-directed search procedure that decides when to apply transport,
-whether that transport is implemented as a function or a program transformation.
-The only solution we are aware of so far for this is that of the univalent parametricity framework,
-which as the authors note can sometimes be slow or unpredictable without user-supplied hints.
+(@\codeauto{op}@) : (@\codediff{Record.input}@) $\rightarrow$ (@\texttt{Record.output}@).
+\end{lstlisting}
+\end{minipage}
+\caption{The initial attempt at refactoring \lstinline{op} (left) and the correct attempt (right).}
+\label{fig:op}
+\end{figure}
 
-The key to implementing efficient type-directed automatic transport both for \toolname
-and for other systems may be to adapt special data structures from the constraint solver world to use a
-notion of equivalence that corresponds to equality up to transport (Section~\ref{sec:egraph}).
-This may help not only build better proof refactoring and repair tools, but also build better proof reuse tools,
-implement better congruence tactics in univalent type theories, and better automate transport in HoTT.
-
-\toolname replaces every occurrence of \A with an occurrence of \B.
-Because of this, users sometimes encounter confusing behavior.
-Consider an example from the industrial user from Section~\ref{sec:industry}.
-That user's compiler had at one point generated the following specifications and function:
+This challenge came up with our industrial proof engineer from Section~\ref{sec:industry}. % TODO once we fix that section up, move the old example here
+When the proof engineer used \toolname to port a function:
 
 \begin{lstlisting}
-Module Generated.
-
-  Definition input := (bool * (nat * bool)).
-
-  Definition output := (nat * bool).
-
-  Definition op (r : (bool * (nat * bool))) : (nat * bool) :=
-    pair (fst (snd r)) (andb (fst r) (snd (snd r))).
-
-Emd Generated.
+op : (r : bool * (nat * bool)) $\rightarrow$ nat * bool.
 \end{lstlisting}
-He wished to port those tuple specifications to records:
+from the tuples on the left to the records on the right of Figure~\ref{fig:records},
+whether \toolname behaved as expected depended on how the proof engineer interacted with the \lstinline{Repair} command.
+The proof engineer first tried to refactor the output type before the input type (Figure~\ref{fig:op}, left),
+but later had to switch the order (Figure~\ref{fig:op}, right) to get the function with the expected type.
+
+This is because the argument \lstinline{r : (bool * (nat * bool))} to \lstinline{Tuple.op} can be viewed as 
+having either type \lstinline{bool * Tuple.output} or \lstinline{Tuple.input}.
+Both functions in Figure~\ref{fig:op} are correct and equivalent refactorings of \lstinline{Tuple.op},
+but only one is what the proof engineer expected.
+
+The proof engineer wished for type-directed search.
+That way, the proof engineer could write:
 
 \begin{lstlisting}
-Record input :=
-  MkInput { firstBool : bool; numberI : nat; secondBool : bool }.
-
-Record output :=
-  MkOutput { numberO : nat; andBools : bool }.
+Repair Tuple.op as op : (@\texttt{Record.input}@) $\rightarrow$ (@\texttt{Record.input}@).
 \end{lstlisting}
-Whether or not this succeeded with \toolname depended on the order that the user
-called the \lstinline{Repair} command.
-If the user called \lstinline{Repair} in this order:
-
-\begin{lstlisting}
-Repair Generated.input input in Generated.op as op_1.
-Repair Generated.output output in op_1 as op.
-\end{lstlisting}
-then \toolname managed to define the correct lifted \lstinline{op}:
-
-\begin{lstlisting}
-Definition op (r : input) : output :=
-  {|
-      numberO := numberI r;
-      andBools := andb (firstBool r) (secondBool r)
-  |}.
-\end{lstlisting}
-The user could then write his proofs over these records,
-then lift those proofs back to get analogous proofs over the original specification.
-
-This failed, however, if the user instead chose to call \lstinline{Repair} in the opposite order:
-
-\begin{lstlisting}
-Repair Generated.output output in Generated.op as op_1.
-Repair Generated.input input in op_1 as op.
-\end{lstlisting}
-This generated this function instead:
-
-\begin{lstlisting}
-Definition op (r : bool * output) : output := 
-  {|
-    numberO := numberO (snd r);
-    andBools := andb (fst r) (andBools (snd r))
-  |}.
-\end{lstlisting}
-While this function behaves the same way as \lstinline{Generated.op}, it is not the one that the user wanted.
-
-The problem that the user encountered here was that the argument \lstinline{r : (bool * (nat * bool))} to
-\lstinline{Generated.op} could be thought of as having type \lstinline{Generated.input}, or as having type
-\lstinline{bool * Generated.output}.
-There are thus multiple correct implementations of \lstinline{op} to choose from,
-and which one \toolname chooses depends on the order of calls to \lstinline{Repair}.
-
-The user found this confusing and limiting.
-He agreed that the better solution would be implementing automatic transport as type-directed search.
-That way, the user could just say:
-
-\begin{lstlisting}
-Repair Generated.op as op : input -> output.
-\end{lstlisting}
-and \toolname would apply the program transformation along the correct equivalences
-to produce \lstinline{op} with the correct type.
-
-We are aware of exactly one implementation of type-directed automatic transport:
-the univalent parametricity framework uses type classes coupled with user-defined hints to implement type-based search.
-However, the authors note that this approach scales poorly, and that without the right user-defined
-hints, it can be slow or diverge.
-This is a step in the right direction, but it is not enough.
+and have \toolname apply the proof term transformation along the correct equivalences
+to produce \lstinline{op} with the desired type.
+This would make for a much better workflow.
 
 \paragraph{Nontermination}
 
@@ -145,6 +91,26 @@ cite szalinski to note how to not be just syntactic/how to call out to something
 
 \subsection{Three Proposed Solutions with Univalent E-Graphs}
 \label{sec:egraph}
+
+% TODO cite:
+%https://dl.acm.org/doi/book/10.5555/909447
+%https://dl.acm.org/doi/pdf/10.1145/1186632.1186633
+%https://dl.acm.org/doi/10.1145/1594834.1480915
+
+% TODO cite cubical agda congruence and related HoTT stuff
+
+The key to implementing efficient type-directed automatic transport both for \toolname
+and for other systems may be to adapt special data structures from the constraint solver world to use a
+notion of equivalence that corresponds to equality up to transport.
+This may help not only build better proof refactoring and repair tools, but also build better proof reuse tools,
+implement better congruence tactics in univalent type theories, and better automate transport in HoTT.
+
+
+We are aware of exactly one implementation of type-directed automatic transport:
+the univalent parametricity framework uses type classes coupled with user-defined hints to implement type-based search.
+However, the authors note that this approach scales poorly, and that without the right user-defined
+hints, it can be slow or diverge.
+This is a step in the right direction, but it is not enough.
 
 TODO draft text, not done yet.
 
@@ -164,13 +130,19 @@ Recent work extended these data structures to handle dependent types. The result
 What if we were to implement this data structure for equality up to transport rather than heterogenous equality as in Lean?
 I think this also hides the key to better proof repair. Proof repair is really nothing but proof reuse over time. And I bet that, in a dependently-typed language, you can think of any change as an equivalence between sigma types. The problem just becomes exposing a good interface around searching for and transporting along this equivalence (maybe using example-based search like the original PUMPKIN PATCH, maybe doing something different), getting rid of all references to the old type (which \toolname can do), and then hopefully at some point converting everything back to a reasonable, maintainable set of tactics (which our decompiler does). This is the future, guys.
 
-\paragraph{Ambiguous Matches}
+\paragraph{Multiple Equivalences}
 
 \paragraph{Termination}
 
 \paragraph{Custom Rewrite Rules}
 
 \subsection{Beyond Refactoring \& Repair}
+\label{sec:beyond}
 
 TODO not done yet: In univalent type theories like homotopy type theory, I bet we could implement automatic transport this way, using what would essentially be an extremely powerful congruence tactic coupled with the transport function. In the univalent parametricity framework, I imagine we could get much more predictable and efficient type-directed transport when managing a lot of equivalences. And in \toolname, I bet we could also get efficient type-directed search. Text about the other challenges.
+
+TODO cite congruence closure in cubical agda. our thing is just a rewrite system for transport. already used for congruence. so can use for transport too.
+and right now you have to transport manually which sucks.
+The only solution we are aware of so far for this is that of the univalent parametricity framework,
+which as the authors note can sometimes be slow or unpredictable without user-supplied hints.
 
