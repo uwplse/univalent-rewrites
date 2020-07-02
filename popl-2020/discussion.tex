@@ -12,9 +12,8 @@ We believe that the most significant progress here will come from adapting data 
 from the rewrite system and constraint solver communities to use the notion of equality that encodes the correctness of \textsc{Transform}: equality up 
 to transport. After all, three of the biggest challenges we encountered in scaling up the \toolname proof term transformation---multiple equivalences, nontermination, and the need for custom rewrite rules---are problems that those communities have spent decades researching already.% TODO cite
 
-We conclude with a discussion of those three challenges (Section~\ref{sec:problems}), why and how we believe ideas from the rewrite system and constraint
-solver communities can help (Section~\ref{sec:egraph}), and how we believe these ideas can help the proof engineering community
-even beyond building better refactoring and repair tools (Section~\ref{sec:beyond}).
+We conclude with a discussion of those three challenges (Section~\ref{sec:problems}), and why and how we believe ideas from the rewrite system and constraint
+solver communities can address those challenges and open the door to better tools for proof engineering (Section~\ref{sec:egraph}).
 Our hope is to inspire these communities to work together to cover an exciting new domain.
 
 \subsection{Three Challenges}
@@ -127,64 +126,38 @@ rules that expand applications of \lstinline{Iota} automatically, but are faster
 The search procedures in \textbf{Configure} all include custom rewrite rules, but
 without modifying \toolname, there is currently no way for the proof engineer to do the same.
 
-\subsection{Three Proposed Solutions with Univalent E-Graphs}
+\subsection{Univalent E-Graphs}
 \label{sec:egraph}
 
-% TODO cite:
-%https://dl.acm.org/doi/book/10.5555/909447
-%https://dl.acm.org/doi/pdf/10.1145/1186632.1186633
-%https://dl.acm.org/doi/10.1145/1594834.1480915
+We believe that the key to solving all three of these challenges elegantly and efficiently is to use
+a graph data structure for managing equivalences called \textit{e-graphs}~\cite{egraph1}.
+E-graphs allow for clean and efficient management of equivalences in a search procedure or rewrite system.
+They form the backbone of the congruence closure algorithm in the SMT solver Z3~\cite{egraph4},
+and of the rewrite systems underneath some modern program optimizers~\cite{egraph2, egraph3}.
 
-% TODO cite cubical agda congruence and related HoTT stuff
+The proof term transformation underneath \toolname is itself a rewrite system along equivalences,
+and so e-graphs are a perfect fit.
+E-graphs are built specifically to deal with the first challenge:
+choosing between multiple equivalences or matching rewrite rules,
+as in Figure~\ref{fig:op}.
+They remove the burden of the second challenge: ad-hoc reasoning about termination.
+And they make it simple for anyone to extend your rewrite system with new
+rewrite rules, even those that call out
+to external procedures~\ref{egraph5}, making them a good fit for the third challenge, too.
 
-The key to implementing efficient type-directed automatic transport both for \toolname
-and for other systems may be to adapt special data structures from the constraint solver world to use a
-notion of equivalence that corresponds to equality up to transport.
-This may help not only build better proof refactoring and repair tools, but also build better proof reuse tools,
-implement better congruence tactics in univalent type theories, and better automate transport in HoTT.
+The one hurdle is that the notion of equality that \toolname uses---equality up to transport---is heterogenous and reasons 
+about dependent types. Our e-graphs must be \textit{univalent}: we must adapt the simply-typed notion of equality typically
+used in these e-graphs to instead be equality up to transport.
+In cubical type theory, this adaptation is simple and allows for a powerful \lstinline{congruence} tactic~\cite{egraph6}.
 
+With univalent e-graphs, we believe that we can build a type-directed search algorithm for 
+\toolname that is elegant, efficient, and extensible.
+We believe that this would generalize beyond \toolname to \textit{any} tool
+for automatic transport across equivalences, since transport---whether implemented as a function internal to the
+type theory or as automation external to the type theory---is ultimately just rewriting across type equivalences,
+and so automatic transport is just a rewrite system.
+We implore the communities that work on univalent type theories and proof automation to collaborate with
+the communities that work on constraint solvers and rewrite systems to collaborate and build
+the next generation of automation for proof reuse, refactoring, and repair.
 
-We are aware of exactly one implementation of type-directed automatic transport:
-the univalent parametricity framework uses type classes coupled with user-defined hints to implement type-based search.
-However, the authors note that this approach scales poorly, and that without the right user-defined
-hints, it can be slow or diverge.
-This is a step in the right direction, but it is not enough.
-
-TODO draft text, not done yet.
-
-Automatic transport is really nothing but a rewrite system.
-Equality up to transport is just an equivalence relation, and automatic transport just searches for proofs of that relation and rewrites along those proofs, either by directly applying transport (in homotopy type theory and univalent parametricity) or by transforming the term in a metalanguage (in \toolname).
-
-When thinking about how to build clean and efficient type-directed transport, then, we find it natural to look
-at how other programming languages communities have already implemented clean and efficient rewrite systems.
-Modern rewrite systems often use special data structures called e-graphs that are built specifically
-for clean and efficient rewriting across equivalences.
-They are used, for example, inside of SMT solvers like Z3.
-They are basically designed to help deal with the problem like the one we saw with op earlier, when there were multiple equivalences to 
-choose from.
-
-Recent work extended these data structures to handle dependent types. The result was wonderful automation of equality proofs in the Lean theorem prover. The cost was introducing an axiom called UIP to Lean that is not in Coq and is incompatible with homotopy type theory (without any axioms, the notion of equality between dependent types is just not very useful for automation like this).
-
-What if we were to implement this data structure for equality up to transport rather than heterogenous equality as in Lean?
-I think this also hides the key to better proof repair. Proof repair is really nothing but proof reuse over time. And I bet that, in a dependently-typed language, you can think of any change as an equivalence between sigma types. The problem just becomes exposing a good interface around searching for and transporting along this equivalence (maybe using example-based search like the original PUMPKIN PATCH, maybe doing something different), getting rid of all references to the old type (which \toolname can do), and then hopefully at some point converting everything back to a reasonable, maintainable set of tactics (which our decompiler does). This is the future, guys.
-
-\paragraph{Multiple Equivalences}
-
-\paragraph{Termination}
-
-\paragraph{Custom Rewrite Rules}
-
-TODO matching Iota is just letting the user add additional rewrite rules (or call out to custom code).
-see chandra conversation.
-cite szalinski to note how to not be just syntactic/how to call out to something else
-
-\subsection{Beyond Refactoring \& Repair}
-\label{sec:beyond}
-
-TODO not done yet: In univalent type theories like homotopy type theory, I bet we could implement automatic transport this way, using what would essentially be an extremely powerful congruence tactic coupled with the transport function. In the univalent parametricity framework, I imagine we could get much more predictable and efficient type-directed transport when managing a lot of equivalences. And in \toolname, I bet we could also get efficient type-directed search. Text about the other challenges.
-
-TODO cite congruence closure in cubical agda. our thing is just a rewrite system for transport. already used for congruence. so can use for transport too.
-and right now you have to transport manually which sucks.
-The only solution we are aware of so far for this is that of the univalent parametricity framework,
-which as the authors note can sometimes be slow or unpredictable without user-supplied hints.
 
