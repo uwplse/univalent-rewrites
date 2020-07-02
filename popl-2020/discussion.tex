@@ -113,9 +113,19 @@ This can both clutter the code and result in unreliable behavior.
 
 \paragraph{Custom Rewrite Rules}
 
-TODO matching Iota is just letting the user add additional rewrite rules (or call out to custom code).
-see chandra conversation.
-cite szalinski to note how to not be just syntactic/how to call out to something else
+\toolname with manual configuration is not always smart enough to match the appropriate rule in the proof term
+transformation without the proof engineer manually expanding the input term.
+Proof engineers would benefit from the ability to add custom rewrite rules to \toolname
+and expand the input terms automatically.
+
+For example, to support the change from unary \lstinline{nat} to binary \lstinline{N}
+from Section~\ref{sec:bin}, we had to manually expand \lstinline{Nat.add_n_Sm}
+to explicitly apply \lstinline{Iota} over \lstinline{Nat}.
+\toolname was unable to expand the term automatically with Coq's unification alone.
+It would help the proof engineer to be able to extend \toolname with custom rewrite
+rules that expand applications of \lstinline{Iota} automatically, but are faster and less brittle than unification.
+The search procedures in \textbf{Configure} all include custom rewrite rules, but
+without modifying \toolname, there is currently no way for the proof engineer to do the same.
 
 \subsection{Three Proposed Solutions with Univalent E-Graphs}
 \label{sec:egraph}
@@ -163,6 +173,10 @@ I think this also hides the key to better proof repair. Proof repair is really n
 \paragraph{Termination}
 
 \paragraph{Custom Rewrite Rules}
+
+TODO matching Iota is just letting the user add additional rewrite rules (or call out to custom code).
+see chandra conversation.
+cite szalinski to note how to not be just syntactic/how to call out to something else
 
 \subsection{Beyond Refactoring \& Repair}
 \label{sec:beyond}
