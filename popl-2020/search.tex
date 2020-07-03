@@ -83,7 +83,7 @@ between nested tuples and named records.
 The search procedure triggered automatically when the proof engineer called the \lstinline{Repair} command.
 %It set \A to be the record type and \B to be the tuple.
 The configuration it found for the record type was straightforward: identity for \lstinline{Eta},
-the record constructor for \lstinline{DepConstr}, and the record eliminator for \lstinline{DepElim}.
+the record constructor for \lstinline{DepConstr}, the record eliminator for \lstinline{DepElim}, and reflexive \lstinline{Iota}.
 For the tuple, it set \lstinline{Eta} to expand and project, in our example:
 \begin{lstlisting}
 (@\codeauto{eta}@) (H : input) : input := (fst H, (fst (snd H), snd (snd H))).
@@ -104,7 +104,6 @@ and it set \lstinline{DepElim} to recursively eliminate over the pair:
     (fun (a : bool) (b : nat * bool) => f a (fst b) (snd b))
     i.
 \end{lstlisting}
-There were no nontrivial \lstinline{Iota} since there were no inductive cases.
 This induced an equivalence between the nested tuple and record,
 which \toolname generated and proved automatically.
 
@@ -156,7 +155,7 @@ Qed.
 
 \subsubsection{Takeaways}
 
-\paragraph{Configuration \& Flexibility}:
+\paragraph{Configuration \& Flexibility}
 The proof engineer used \toolname most commonly to update tuples to records,
 but also to help write dependently typed functions.
 In total, the proof engineer used at least three automatic configurations and no manual configurations.
@@ -167,7 +166,7 @@ the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
 Flexibility could be further improved by exposing an interface to users to allow them to
 write search procedures themselves.
 
-\paragraph{Workflow Integration}:
+\paragraph{Workflow Integration}
 The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
 workflow using solver-aided tools at \company.
 The workflow for using \toolname itself, however, was a bit nonstandard,
@@ -181,109 +180,112 @@ Both of these observations informed improvements to \toolname, like better error
 and the ability to set terms as opaque to \toolname.
 % TODO how long did compiling the file take?
 
-\subsection{Vectors from Lists and their Lengths}
+\subsection{Vectors from Lists}
 \label{sec:dep}
 
 The proof term transformation in \toolname is based on the proof term transformation from
 the \textsc{Devoid} proof reuse tool.
-\textsc{Devoid} is a proof reuse tool for \textit{algebraic ornaments}~\cite{mcbride}. Algebraic ornaments describe relations
-between two inductive types, where one inductive type is exactly the old inductive type indexed by a fold
-over the original type.
+\textsc{Devoid} is a proof reuse tool for \textit{algebraic ornaments}, which describe relations
+between two inductive types, where one type is exactly the other type indexed by a fold~\cite{mcbride}.
 The running example of this in the \textsc{Devoid} paper is the relation between a list and a
 length-indexed vector, like we saw in Figure~\ref{fig:listtovect} in Section~\ref{sec:key1}.
 
 We configured the generalized algorithm in \toolname to support algebraic ornaments like those found in \textsc{Devoid},
 and passed all of the regression tests from \textsc{Devoid}.
-We found that this simplified the algorithm from \textsc{Devoid}.
+%We found that this simplified the algorithm from \textsc{Devoid}.
 In addition, we added one more configuration to automate effort that had been manual in \textsc{Devoid}.
-Several proof engineers including our industrial proof engineer, a Reddit user,
-and someone on the \lstinline{coq-club} message board contacted us expressing interest in using this functionality,
-though we do not yet know if the latter two ended up using \toolname. % TODO honestly ask
+Several proof engineers including the industrial proof engineer, a Reddit user,
+and someone on the \lstinline{coq-club} message board contacted us expressing interest in using this functionality.
+%, though we do not yet know if the latter two ended up using \toolname. % TODO honestly ask
 
 \subsubsection{Configuration}
 
-We used two configurations to easy development with dependent types using algebraic ornaments.
+We used two configurations to ease development with dependent types using algebraic ornaments.
 The first fits the proof term transformation from \textsc{Devoid} into the \toolname framework:
 it sets \A to the unornamented type and \B to the ornamented type at \textit{some} index---\textsc{Devoid}
-calls the resulting type \textit{packed}.
-In the case of \lstinline{list} and \lstinline{vector}, that configuration
-transports proofs across this equivalence:
+calls the resulting type \textit{packed}. For example, a packed vector is a vector of \textit{some length}:
 
 \begin{lstlisting}
-list T $\simeq$ $\Sigma$ (n : nat) . vector T n
+$\Sigma$(n : nat).vector T n
 \end{lstlisting}
 The second configuration goes beyond the functionality from \textsc{Devoid}, and provides
 the missing link to get proofs about \B at a \textit{particular} index:
 
 \begin{lstlisting}
-{ l : list T & length l = n } $\simeq$ vector T n
+vector T n
 \end{lstlisting}
-producing something \textit{unpacked},
+This produces something \textit{unpacked},
 a step that \textsc{Devoid} had left to the user.
 
 The search procedure for the first configuration is based heavily on the search procedure from \textsc{Devoid}.
-Since \textsc{Devoid} supports ornaments which by definition represent types with the same inductive structure,
-\lstinline{Iota} for both \A and \B was always reflexivity.
-For the inductive type \A, \lstinline{Eta}, \lstinline{DepConstr}, and \lstinline{DepElim}
-correspond to the identity function, the constructors of \A, and the eliminator for \A, respectively.
-For \B, \lstinline{Eta} expands the input to avoid reliance on primitive projections,
-in our example:
+In the case of lists and vectors, it used the equivalence:
 
 \begin{lstlisting}
-Definition eta_B (T : Type) (s : $\Sigma$ (n : nat) . vector T n) : $\Sigma$ (n : nat) . vector T n  :=
-  $\exists$ ($\pi_l$ s) ($\pi_r$ s).
+list T $\simeq$ $\Sigma$(n : nat).vector T n
 \end{lstlisting}
-This implements \textit{repacking} from \textsc{Devoid}.
-Like in \textsc{Devoid},
-\lstinline{DepConstr} packs constructors of \B: % TODO shrink this now that some of it is in the other section
+The configuration for \lstinline{list} was simple: identity for \lstinline{Eta},
+the list constructors for \lstinline{DepConstr}, the list eliminator for \lstinline{DepElim},
+and trivial \lstinline{Iota}.
+For \lstinline{vector}, it set \lstinline{Eta} to expand the input:
 
 \begin{lstlisting}
-Definition dep_constr_B_0 (T : Type) : $\Sigma$ (n : nat) . vector T n :=
-  $\exists$ 0 (Vector.nil A).
+(@\codeauto{eta}@) (T : Type) (s : $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n := $\exists$ ($\pi_l$ s) ($\pi_r$ s).
+\end{lstlisting}
+it set \lstinline{DepConstr} to pack constructors: % TODO shrink this now that some of it is in the other section
 
-Definition dep_constr_B_1 (T : Type) (t : T) (s : $\Sigma$ (n : nat) . vector T n) : $\Sigma$ (n : nat) . vector T n :=
+\begin{lstlisting}
+(@\codeauto{dep_constr_0}@) (T : Type) : $\Sigma$(n : nat).vector T n :=
+  $\exists$ 0 (Vector.nil A).
+(@\codeauto{dep_constr_1}@) (T : Type) (t : T) (s : $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n :=
   $\exists$ (S ($\pi_l$ s)) (Vector.cons ($\pi_l$ s) t ($\pi_r$ s)).
 \end{lstlisting}
-and \lstinline{DepElim} eliminates its projections:
+and it set \lstinline{DepElim} to eliminate its projections:
 
 \begin{lstlisting}
-Definition dep_elim_B_0 (T : Type) (P : $\Sigma$ (n : nat) . vector T n -> Type) (pnil : P (dep_constr_B_0 T)) (pcons : $\forall$ t s, P (eta_B T s) -> P (dep_constr_B_1 T t s)) (s : $\Sigma$ (n : nat) . vector T n) : P (eta_B T s) :=
-  vector_rect
-    T
+(@\codeauto{dep_elim}@) (T : Type) (P : $\Sigma$(n : nat).vector T n $\rightarrow$ Type) (pnil : P (dep_constr_0 T))
+    (pcons : $\forall$ t s, P (eta T s) $\rightarrow$ P (dep_constr_1 T t s)) (s : $\Sigma$(n : nat).vector T n)
+    : P (eta T s) :=
+  vector_rect T
     (fun (n : nat) (v : vector T n) => P ($\exists$ n v))
     pnil
     (fun (t : T) (n : nat) (v : vector T n) => pcons t ($\exists$ n v))
-    ($\pi_l$ s)
-    ($\pi_r$ s).
+    ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
-Together this configuration is enough to capture all of the functionality from \textsc{Devoid} for both search and lifting,
-save for the optional proof that these induce an equivalence, which \toolname borrows from \textsc{Devoid}.
+This configuration was enough to capture all of the search and lifting functionality from \textsc{Devoid}. %for both search and lifting,
+%save for the optional proof that these induce an equivalence, which \toolname borrows from \textsc{Devoid}.
 
-To get from lists to vectors \textit{at a particular length}, \toolname implements one additional configuration.
+To get from lists to vectors \textit{at a particular length}, we implemented one additional configuration.
 This configuration corresponds to the equivalence between packed types at a particular projection
 and unpacked types, in our example:
 
 \begin{lstlisting}
-{ s : $\Sigma$ (n : nat) . vector T n & $\pi_l$ s = n } $\simeq$ vector T n
+$\Sigma$(s : $\Sigma$(m : nat).vector T m).$\pi_l$ s = n $\simeq$ vector T n
 \end{lstlisting}
 By composition with the initial equivalence, this lets us transport proofs
 across the equivalence we eventually want:
 
 \begin{lstlisting}
-{ l : list T & length l = n } $\simeq$ vector T n
+$\Sigma$(l : list T).length l = n $\simeq$ vector T n
 \end{lstlisting}
-since the left-hand sides of these two equivalences are equal up to transport along the first equivalence.
+since these equivalences are equal up to transport along the first equivalence.
 
-The second configuration is similar to the first configuration, except that it also carries equality proofs over the indices.
-That is, it views the type \B like \lstinline{vector T n} as implicitly representing \{\lstinline{ v : vector T n' & n' = n }\} for some \lstinline{n'}.
-This is seen, for example, in the identity rule for \B, here: 
-% TODO both should take the same number of arguments, even ifeta_A takes fewer. also does this belong in rew_eta?
+The second configuration carries equality proofs over the indices.
+For example, it views \lstinline{vector T n} as implicitly representing $\Sigma$\lstinline{(v : vector T m).n = m} for some \lstinline{m}.
+This is seen in \lstinline{eta}, here: 
+% TODO both should take the same number of arguments, even if eta_A takes fewer. also does this belong in iota?
 
 \begin{lstlisting}
-Definition eta_B (T : Type) (n n' : nat) (v : vector T n') (H : n = n') : vector T n :=
-  eq_rect n' (vector T) v n H.
+(@\codeauto{eta}@) (T : Type) (n m : nat) (H : n = m) (v : vector T m) : vector T n :=
+  eq_rect m (vector T) v n H.
 \end{lstlisting}
 which is the identity function generalized over any equal index.
+Since there are no changes in inductive types, \lstinline{DepElim} and \lstinline{DepConstr} are trivial,
+and \lstinline{Iota} does not change.
+
+%\begin{lstlisting}
+%(@\codeauto{dep_elim}@) (T : Type) (P : $\forall$ (n : nat), vector T n $\rightarrow$ Type) (p : $\forall$ n v, P n (eta T n n v)) (v : vector T n) : %P (eta T n n v) :=
+%  p.
+%\end{lstlisting}
 
 \subsubsection{Example}
 
@@ -291,7 +293,7 @@ The expanded example from the \textsc{Devoid} paper is in \lstinline{Example.v}.
 The \textsc{Devoid} example ported a list \lstinline{zip} function,
 a \lstinline{zip_with} function, and a proof \lstinline{zip_with_is_zip} relating the two
 functions from lists to packed vectors.
-It then manually ports those proofs to proofs over unpacked vectors at a particular index.
+It then manually ported those proofs to proofs over unpacked vectors at a particular index.
 The updated \toolname example automates this last step.
 
 The workflow for this was a bit different than it was with \textsc{Devoid}.
@@ -331,7 +333,7 @@ with functions \lstinline{zip_with} and \lstinline{zip} operating directly over 
 Implementing the configuration from \textsc{Devoid} in this framework was straightforward,
 took a couple of days, and simplified the code from \textsc{Devoid} significantly.
 For example, it removed the need for special rules for handling eliminators and constructors
-by adding and removing arguments,
+by adding and removing arguments, and for special handling of non-primitive projections,
 as that work is done in the configuration.
 Implementing the second configuration was less straightforward,
 especially when it came to understanding the behaviors of equalities.
