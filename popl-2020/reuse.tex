@@ -1,13 +1,16 @@
-\section{Problem Definition}
+\section{Proof Repair}
 \label{sec:key1}
 
-Proof refactoring and proof repair are similar problems: both refer to adapting proofs in response to changes
-in specifications. Refactoring refers to semantics-preserving changes, and repair refers to non-semantics-preserving
-changes. We can view both as a form of 
+%Proof refactoring and proof repair are similar problems: both refer to adapting proofs in response to changes
+%in specifications. Refactoring refers to semantics-preserving changes, and repair refers to non-semantics-preserving
+%changes.
+\textit{Proof repair} is the problem of updating a broken proof in response to a change in a program or specification~\cite{PGL-045, pumpkinpatch}.
+We can view this as a form of 
 \textit{proof reuse}~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}, % TODO consider citation list
 or reusing proofs about one specification to derive proofs about another specification.
-The difference is that in standard proof reuse, both specifications continue to exist, whereas with proof refactoring and repair,
-one of the specifications does not.
+The difference is that in standard proof reuse, both of these specifications continue to exist.
+In contrast, proof repair is the process of reusing proofs across \textit{two versions of a single specification},
+only one of which---the new version---continues to exist.
 
 \begin{quote}
 \textbf{Insight 1}:
@@ -18,13 +21,14 @@ The key to supporting proof repair is to build a proof reuse
 tool that can handle that additional challenge (Section~\ref{sec:time}).
 \end{quote}
 
-\subsection{Refactoring as Reuse across Equivalences}
-\label{sec:refactoring}
+\subsection{Repair as Reuse across Equivalences}
+\label{sec:repair}
 
-The example with \lstinline{list} was a simple refactoring, or a semantics-preserving change.
-Thus, \toolname used the old proof of \lstinline{rev_app_distr} defined over \lstinline{Old.list}
+Proof repair can be viewed as a form of proof reuse. 
+In the \lstinline{list} example from Section~\ref{sec:overview}, for example, \toolname
+reused the old proof of \lstinline{rev_app_distr} defined over \lstinline{Old.list}
 to generate the new proof of \lstinline{rev_app_distr} defined over \lstinline{New.list}.
-Since this was a refactoring, this required no additional information from the user, and the resulting functions
+Since this change was simple, this required no additional information from the user, and the resulting functions
 and proofs behaved exactly the same way.
 
 \begin{figure}
@@ -74,28 +78,21 @@ Defined.
 More formally, \toolname was able to find a pair of two functions that map between \lstinline{Old.list}
 and \lstinline{New.list} and prove that they are mutual inverses, generating the functions and tactic
 proofs in Figure~\ref{fig:equivalence} automatically.
-\toolname could then use that information to configure its proof term transformation to refactor
+\toolname could then use that information to configure its proof term transformation to update
 functions and proofs about \lstinline{Old.list} to functons and proofs about \lstinline{New.list} with
-the same exact behavior.
+the same behavior.
 
 Whenever there exist two functions between two types that are mutual inverses,
-there is a \textit{type equivalence}~\cite{univalent2013homotopy} between them, denoted $\simeq$:
+there is a \textit{type equivalence}~\cite{univalent2013homotopy} between them, denoted $\simeq$.
 
 \begin{lstlisting}
 Old.list $\simeq$ New.list
 \end{lstlisting}
-Refactoring corresponds to proof reuse across these equivalences.
-
-\subsection{Repair as Reuse across Refinements}
-\label{sec:repair}
-
-Repair, in contrast, refers to changes that are \textit{not} semantics-preserving---they require additional information
-from the proof engineer.
-Repair, too, corresponds to proof reuse across equivalences, but not between the old and new types.
-Rather, repair is the special case where the equivalence that we port functions and proofs along
+Repair corresponds to proof reuse across these equivalences.
+This can support not just simple changes, but also changes in which the proof engineer adds or removes information.
+In that case, the equivalence that the tool ports functions and proofs along
 is an equivalence between \textit{refinements}.
-This means that it is possible to reduce repair to refactoring, as long as the proof engineer supplies the additional information in
-order to construct proofs about the refinement.
+It is up to the proof engineer to supply the additional information in order to construct proofs about the refinement.
 
 \begin{figure}
 \begin{minipage}{0.40\textwidth}
@@ -110,12 +107,12 @@ order to construct proofs about the refinement.
 \end{figure}
 
 Consider an example from \textsc{Devoid}: changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
-\textsc{Devoid} implemented a refactoring between lists and \textit{vectors of some length}, since:
+\textsc{Devoid} is able to repair proofs about lists to proofs about \textit{vectors of some length}, since:
 
 \begin{lstlisting}
 list T $\simeq$ $\Sigma$ (n : nat) . vector T n.
 \end{lstlisting}
-This was enough to automatically refactor a lemma about lists:
+This is enough to automatically repair a lemma about lists:
 
 \begin{lstlisting}
 $\forall$ {A B} (l1 : list A) (l2 : list B),
@@ -127,8 +124,8 @@ to a lemma about vectors of some length:
 $\forall$ {A B} (l1 : (@\codediff{$\Sigma$(n : nat).vector A n}@)) (l2 : (@\codediff{$\Sigma$(n : nat).vector B n}@)),
   zip_with pair l1 l2 = zip l1 l2.
 \end{lstlisting}
-recursively refactoring dependencies \lstinline{zip} and \lstinline{zip_with}.
-It was not enough, however, to help the proof engineer get from that to a proof about vectors \textit{at a particular index}:
+recursively updating dependencies \lstinline{zip} and \lstinline{zip_with}.
+It is not enough, however, to help the proof engineer get from that to a proof about vectors \textit{at a particular index}:
 
 \begin{lstlisting}
 $\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\codediff{vector B n}@)),
@@ -140,27 +137,26 @@ More desirable is a repair that takes us from lists \textit{at a particular leng
 \begin{lstlisting}
 { l : list T | length l = n } $\simeq$ vector T n.
 \end{lstlisting}
-\toolname can handle this.
-This is a repair because our old specification \lstinline{list} shows up as part of a refinement with an additional proof obligation
-about its length. Practically, when we change our specifications to refer to \lstinline{vector} instead of \lstinline{list},
-to fix our functions and proofs, we must additionally prove invariants about the lengths of our lists.
+\toolname can handle both of these changes.
+Practically, when the proof engineer changes specifications to refer to \lstinline{vector} instead of \lstinline{list},
+to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists.
 \toolname makes it easy to separate out that proof obligation, and then automates the rest.
 
-\subsection{A Tool for Proof Refactoring and Repair}
+\subsection{A Tool for Proof Repair}
 \label{sec:time}
 
 The problem of proof reuse across equivalences is known as \textit{transport}. % TODO cite
-Thus, any tool that can refactor or repair proofs implements transport across the classes
+Thus, any tool that can repair proofs implements transport across the classes
 of equivalences that it supports---and so can handle proof reuse as well.
-But not every proof reuse tool or transport method can support proof refactoring and repair.
-A proof refactoring and repair tool must produce proofs
+But not every proof reuse tool or transport method can support proof repair.
+A proof repair tool must produce proofs
 that no longer refer in any way to the old specification, since the old specification no longer exists.
 
-The goal of a proof refactoring and repair tool is, in essence, to
+The goal of a proof repair tool is, in essence, to
 define a transport method over a broad set of changes that
 removes references to the old specification, rather than converting back and forth
 like standard transport methods.
-For example, the refactored proof of \lstinline{rev_app_distr} and its dependencies
+For example, the updated proof of \lstinline{rev_app_distr} and its dependencies
 from Section~\ref{sec:overview} refer only to \lstinline{New.list} and not to \lstinline{Old.list}.
 The proof inducts directly over \lstinline{New.list} and never, at any point, converts to an \lstinline{Old.list}.
 Thus, we need \lstinline{Old.list} around only until we call the \lstinline{Repair} command;
@@ -172,6 +168,6 @@ The proof term transformation implements transport across equivalences, but in a
 references to the old type.
 The configuration corresponds to a particular equivalence, and tells the proof term transformation how to transform
 constructors, eliminators, and equalities.
-Section~\ref{sec:search} includes many example configurations as applied to real proof refactoring and repair scenarios.
+Section~\ref{sec:search} includes many example configurations as applied to real proof reuse and repair scenarios.
 
 
