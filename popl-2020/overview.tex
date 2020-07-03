@@ -1,4 +1,4 @@
-\section{Proof Refactoring and Repair}
+\section{An Example of Proof Refactoring}
 \label{sec:overview}
 
 \begin{figure}
@@ -14,17 +14,12 @@
 \end{figure}
 
 \toolname is a tool for proof refactoring and repair that is available on Github.\footnote{Link withheld for double-blind review.}
-Proof refactoring and proof repair are similar problems: both refer to adapting proofs in response to changes
-in specifications. Refactoring refers to semantics-preserving changes, and repair refers to non-semantics-preserving
-changes. In both cases, we can think of \toolname as \textit{reusing} the old proof about some old specification
-to derive a proof about some new specification.
-
-Consider a simple example: refactoring list proofs after swapping the two constructors of a list (Figure~\ref{fig:listswap}).
+Consider a simple example of using \toolname: refactoring list proofs after swapping the two constructors of a list (Figure~\ref{fig:listswap}).
 Even such a simple change can quickly cause trouble in existing proofs, like this proof from the Coq standard library:\footnote{Here and throughout, we use induction instead of pattern matching.}
 
 \begin{lstlisting}
 Lemma rev_app_distr {A : Type} :
-  forall (x y : list A), rev (x ++ y) = rev y ++ rev x.
+  $\forall$ (x y : list A), rev (x ++ y) = rev y ++ rev x.
 Proof.
   induction x as [| a l IHl].
   induction y as [| a l IHl].
@@ -34,35 +29,36 @@ Proof.
   rewrite (IHl y). rewrite app_assoc; trivial.
 Qed.
 \end{lstlisting}
-This proof says that appending two lists and reversing the result behaves the same way as appending
+This theorem says that appending two lists and reversing the result behaves the same way as appending
 the reverse of the second list onto the reverse of the first list.
 This theorem statement \lstinline{rev_app_distr} defined over the old version of \lstinline{list} is our \textit{old specification}.
 When we change the \lstinline{list} type, we get the \textit{new specification}.
 But the \textit{old proof} or tactic script no longer works with this new specification.
 
-To updat the proof script with \toolname, all we need to do is run this command (here and throughout, we use $\codeauto{light blue}$ to denote
+To update the proof script with \toolname, all we need to do is run this command (here and throughout, we use $\codeauto{light blue}$ to denote
 functions and proofs that \toolname produces automatically):
 
 \begin{lstlisting}
 Repair Old.list New.list in rev_app_distr.
 \end{lstlisting}
 assuming our old and new list types are in separate modules called \lstinline{Old} and \lstinline{New}.
-This refactors all of the functions that our proof refers to as well as the proof itself,
-producing an updated tactic script in the end:
+This produces a refactored proof script:
 
 \begin{lstlisting}
 Lemma (@\codeauto{rev_app_distr}@) {A : Type} :
-  forall (x y : list A), (@\codeauto{rev}@) (x (@\codeauto{++}@) y) = (@\codeauto{rev}@) y (@\codeauto{++}@) (@\codeauto{rev}@) x.
+  forall (x y : list A), rev (x ++ y) = rev y ++ rev x.
 Proof.
   intros x y. revert y. induction x as [a l IHl|].
   - intro y0. simpl.
-    rewrite (IHl y0). simpl. rewrite ((@\codeauto{app_assoc}@) ((@\codeauto{rev}@) y0) ((@\codeauto{rev}@) l) (a::[])). reflexivity.
+    rewrite (IHl y0). simpl. rewrite (app_assoc (rev y0) (rev l) (a::[])). reflexivity.
   - intro y0. induction y0 as [a l IHl|].
-    + simpl. rewrite ((@\codeauto{app_nil_r}@) ((@\codeauto{rev}@) l) (a::[])). reflexivity.
+    + simpl. rewrite (app_nil_r (rev l) (a::[])). reflexivity.
     + reflexivity.
 Qed.
 \end{lstlisting}
-If we'd like, we can tweak this to something that more closely matches the original:
+where all of the dependencies---\lstinline{rev}, \lstinline{++}, \lstinline{app_assoc}, and \lstinline{app_nil_r}---have
+also been refactored automatically.
+If we'd like, we can manually tweak this to something that more closely matches the original:
 
 \begin{lstlisting}
 Proof.
@@ -83,7 +79,7 @@ Even for the simple proof script above, this would not be straightforward: Group
 permutations of this proof script.
 It is not clear which lines to swap since these tactics do not have a semantics beyond the meaning imposed by evaluating them.
 Furthermore, just swapping lines is not enough: even for a simple refactoring, we must also swap
-arguments, so that \lstinline{induction x as [| a l IHl]} becomes \lstinline{induction x as [a l IHl|}.
+arguments, so that \lstinline{induction x as [| a l IHl]} becomes \lstinline{induction x as [a l IHl|]}.
 Handling even swapping constructors this way would require a specific search procedure that would not generalize to other changes.
 \citep{robert2018} describes the challenges of refactoring tactics directly in detail.
 
@@ -105,11 +101,11 @@ Coq compiles each proof script to a proof term---\toolname repairs that term.
 
 The repair step works using a configurable program transformation.
 This program transformation transforms the old proof term into a new proof term that refers to the new specification
-(here, the theorem that refers to \lstinline{Old.list})
-in place of the old specification (here, the theorem that refers to our updated \lstinline{New.list}),
+(here, the theorem that refers to \lstinline{New.list})
+in place of the old specification (here, the theorem that refers to \lstinline{Old.list}),
 and otherwise preserves the behavior of the old proof term.
-The configuration instantiates the program transformation to a particular change in specification---it corresponds
-to a particular relation between the old and new specifications.
+The configuration instantiates the program transformation to the old and new specifications (here, \lstinline{Old.list} and \lstinline{New.list})
+so that it knows how to preserve behavior modulo that change.
 Figure~\ref{fig:system} shows how this comes together when the user invokes \toolname:
 
 \begin{enumerate}

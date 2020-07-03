@@ -1,18 +1,22 @@
-\section{Proof Reuse Over Time}
+\section{Problem Definition}
 \label{sec:key1}
 
-We can view proof refactoring and repair---like the refactoring we just saw---as a form of 
+Proof refactoring and proof repair are similar problems: both refer to adapting proofs in response to changes
+in specifications. Refactoring refers to semantics-preserving changes, and repair refers to non-semantics-preserving
+changes. We can view both as a form of 
 \textit{proof reuse}~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}, % TODO consider citation list
 or reusing proofs about one specification to derive proofs about another specification.
-The difference from standard proof reuse is that, for proof refactoring and repair, the specification about which
-we are reusing proofs ceases to exist. In other words:
+The difference is that in standard proof reuse, both specifications continue to exist, whereas with proof refactoring and repair,
+one of the specifications does not.
+In other words:
 
 \begin{quote}
 \textbf{Insight 1}:
-Proof refactoring (Section~\ref{sec:refactoring}) and repair (Section~\ref{sec:repair}) are both just 
-proof reuse %
-over time. The key to supporting both is to build a generic proof reuse
-tool that can handle the additional challenges imposed by the reuse occuring \textit{over time} (Section~\ref{sec:time}). 
+Proof refactoring (Section~\ref{sec:refactoring}) and repair (Section~\ref{sec:repair}) are both forms of proof reuse. 
+The difference from standard proof reuse is that, for proof refactoring and repair, the specification about which
+we are reusing proofs ceases to exist.
+The key to supporting both is to build a generic proof reuse
+tool that can handle the additional challenges imposed by that specification ceasing to exist (Section~\ref{sec:time}). 
 \end{quote}
 
 \subsection{Refactoring as Reuse across Equivalences}
