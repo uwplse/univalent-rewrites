@@ -4,12 +4,13 @@
 This section explans four different case studies in using \toolname:
 
 \begin{enumerate}
-\item an industrial proof engineer using \toolname in verifying an implementation of the TLS handshake protocol (automatic, Section~\ref{sec:industry}),
-\item generating dependently typed vector functions and proofs from functions and proofs about lists and their lengths (automatic, Section~\ref{sec:dep}),
-\item supporting a benchmark from a user study of Coq proof engineers (automatic, Section~\ref{sec:replica}), and
-\item porting functions and proofs about unary numbers to functions and proofs about binary numbers (manual, Section~\ref{sec:bin}).
+\item We report on the experiences of an industrial proof engineer who is using \toolname to integrate Coq with a company proof engineering workflow and write proofs about an implementation of the TLS handshake protocol (automatic, Section~\ref{sec:industry}).
+\item We use \toolname to update functions and proofs about lists to functions and proofs about dependently typed vectors of
+a particular length (automatic, Section~\ref{sec:dep}).
+\item We use \toolname to support multiple variants of a repair benchmark from a user study of Coq proof engineers (automatic, Section~\ref{sec:replica}).
+\item We use \toolname to port functions and proofs about unary numbers to functions and proofs about binary numbers (manual, Section~\ref{sec:bin}).
 \end{enumerate}
-For each case study, we explain the configuration used, walk through an example, and describe takeaways.
+%For each case study, we explain the configuration used, walk through an example, and describe takeaways.
 In all, we found the following:
 
 \begin{enumerate}
@@ -31,7 +32,7 @@ Some user workflows were unanticipated and informed changes in the design of \to
 \subsection{Industrial Use}
 \label{sec:industry}
 
-An industrial user at \company\footnote{Name withheld for double-blind review.} has been using \toolname in proving
+An industrial proof engineer at \company\footnote{Name withheld for double-blind review.} has been using \toolname in proving
 correct an implementation of the TLS handshake protocol.
 While this is ongoing work, thus far,
 \toolname has helped \company integrate Coq with their existing verification workflow.
@@ -53,7 +54,7 @@ human-readable programs and specifications.
 \item Finally, the proof engineer uses \toolname again to update those proofs about human-readable programs and specifications back to
 proofs about the original automatically generated programs and specifications.
 \end{enumerate}
-This workflow has allowed for industrial integration with Coq and has helped the user write functions and proofs
+This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
 that would have otherwise been difficult.
 
 % TODO will add better proofs here once Val sends them
@@ -79,34 +80,31 @@ to named records, as shown in the example in Figure~\ref{fig:records}.
 
 We implemented a search procedure for the proof engineer to automatically configure the proof term transformation to an equivalence
 between nested tuples and named records.
-The search procedure triggered automatically when the proof engineer called the \lstinline{Repair} or \lstinline{Repair module} command
-with the tuple and record as arguments.
-It set \A to be the record type and \B to be the tuple.
-There were no nontrivial \lstinline{Iota} since there were no inductive cases.
-For the record \A, it set \lstinline{Eta} to identity, \lstinline{DepConstr} to the single
-constructor corresponding to the record constructor, and \lstinline{DepElim} to the standard record eliminator.
-For the tuple \B, on the other hand, it expanded identity to deal with non-primitive projections,
-in our example:
+The search procedure triggered automatically when the proof engineer called the \lstinline{Repair} command.
+%It set \A to be the record type and \B to be the tuple.
+The configuration it found for the record type was straightforward: identity for \lstinline{Eta},
+the record constructor for \lstinline{DepConstr}, and the record eliminator for \lstinline{DepElim}.
+For the tuple, it set \lstinline{Eta} to expand and project, in our example:
 \begin{lstlisting}
-Definition eta_B (H : Tuple.input) : Tuple.input :=
-  (fst H, (fst (snd H), snd (snd H))).
+(@\codeauto{eta}@) (H : input) : input := (fst H, (fst (snd H), snd (snd H))).
 \end{lstlisting}
-it constructed a nested tuple by recursively applying the pair constructor:
+it set \lstinline{DepConstr} to recursively apply the pair constructor:
 
 \begin{lstlisting}
-Definition dep_constr_0_B (firstBool : bool) (numberI : nat) (secondBool : bool) : Tuple.input :=
+(@\codeauto{dep_constr_0}@) (firstBool : bool) (numberI : nat) (secondBool : bool) : input :=
   (firstBool, (numberI, secondBool)).
 \end{lstlisting}
-and it recursively eliminated over the pair:
+and it set \lstinline{DepElim} to recursively eliminate over the pair:
 
 \begin{lstlisting}
-Definition dep_elim_B (P : Tuple.input -> Type) (f : $\forall$ f n s, P (dep_constr_0_B f n s)) (i : Tuple.input) : P (eta_B i) :=
+(@\codeauto{dep_elim}@) (P : input $\rightarrow$ Type) (f : $\forall$ f n s, P (dep_constr_0 f n s)) (i : input)
+    : P (eta i) :=
   prod_rect
-    (fun p : bool * (nat * bool) => P (eta_b p))
-    (fun (a : bool) (b : nat * bool) =>
-      f a (fst b) (snd b))
+    (fun p : bool * (nat * bool) => P (eta p))
+    (fun (a : bool) (b : nat * bool) => f a (fst b) (snd b))
     i.
 \end{lstlisting}
+There were no nontrivial \lstinline{Iota} since there were no inductive cases.
 This induced an equivalence between the nested tuple and record,
 which \toolname generated and proved automatically.
 
@@ -114,13 +112,13 @@ which \toolname generated and proved automatically.
 Using this configuration, the proof engineer automatically ported this compiler-generated function:
 
 \begin{lstlisting}
-Definition op (r : bool * (nat * bool)) : nat * bool :=
+op (r : bool * (nat * bool)) : nat * bool :=
   (fst (snd r), andb (firstBool r) (secondBool r)).
 \end{lstlisting}
 to this function:
 
 \begin{lstlisting}
-Definition (@\codeauto{op}@) (r : Record.input) : Record.output :=
+(@\codeauto{op}@) (r : (@\texttt{Record}@).input) : (@\texttt{Record}@).output :=
   {|
      numberO := numberI r;
      andBools := andb (fistBool r) (secondBool r)
@@ -129,14 +127,13 @@ Definition (@\codeauto{op}@) (r : Record.input) : Record.output :=
 The proof engineer then wrote this proof about the new specification: % TODO did val write this or did I?
 
 \begin{lstlisting}
-Theorem and_spec_true_true :
-  forall (r : Record.input),
-    firstBool r = true ->
-    secondBool r = true ->
-    andBools (Record.op r) = true.
+Theorem and_spec_true_true : $\forall$ (r : (@\texttt{Record}@).input),
+  firstBool r = true $\rightarrow$
+  secondBool r = true $\rightarrow$
+  andBools ((@\texttt{Record}@).op r) = true.
 Proof.
   destruct r as [f n s].
-  unfold Record.op.
+  unfold (@\texttt{Record}@).op.
   simpl in *.
   apply andb_true_intro.
   intuition.
@@ -146,13 +143,12 @@ and then used \toolname to automatically port this proof back to a proof of the 
 (with a bit of massaging to clean up the tactic output): % TODO induction & preprocess though
 
 \begin{lstlisting}
-Theorem (@\codeauto{and_spec_true_true}@) :
-  forall (r : Tuple.input),
-    fst r = true ->
-    snd (snd r) = true ->
-    andb (Tuple.op r) = true.
+Theorem (@\codeauto{and_spec_true_true}@) : $\forall$ (r : input),
+  fst r = true $\rightarrow$
+  snd (snd r) = true $\rightarrow$
+  andb (op r) = true.
 Proof.
-  destruct r as [ a b].
+  destruct r as [a b].
   apply andb_true_intro.
   intuition.
 Qed.
@@ -162,30 +158,26 @@ Qed.
 
 \paragraph{Configuration \& Flexibility}:
 The proof engineer used \toolname most commonly to update tuples to records,
-but also to repair some non-dependently-typed
-functions and proofs to instead use dependent types.
-In total, this used at least three automatic configurations and no manual configurations.
-One of these configurations was backed by a search procedured that we implemented
-specifically to support this user: the search procedure to
-configure the equivalence between nested tuples and records.
+but also to help write dependently typed functions.
+In total, the proof engineer used at least three automatic configurations and no manual configurations.
+Two of these automatic configurations existed already, while the one for tuples and records was
+added in response to the proof engineers' needs.
 This search procedure took about two weeks for us to implement using techniques from
 the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
 Flexibility could be further improved by exposing an interface to users to allow them to
-write these search procedures themselves.
+write search procedures themselves.
 
 \paragraph{Workflow Integration}:
-The industrial proof engineer was able to use \toolname to integrate Coq with existing proof engineering
-workflows using solver-aided tools at \company.
+The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
+workflow using solver-aided tools at \company.
 The workflow for using \toolname itself, however, was a bit nonstandard,
 and there was little need for tactic proofs about the compiler-generated functions and specifications.
 In the initial days, we worked closely with the proof engineer;
-later, the proof engineer worked independently and reached out occasional by email.
-\toolname was usable enough for this to work.
-However, we found two challenges with workflow integration:
+later, the proof engineer worked independently and reached out occasionally by email.
+\toolname was usable enough for this to work, but we found two challenges with workflow integration:
 the proof engineer sometimes could not distinguish between user errors and bugs in our code,
-and the proof engineer typically waited only about 10 seconds at most for \toolname
-to port a function or proof.
-Both of these observations informed significant changes to \toolname, like better error messages, caching of transformed subterms,
+and the proof engineer typically waited only about 10 seconds at most for \toolname to return.
+Both of these observations informed improvements to \toolname, like better error messages, caching of transformed subterms,
 and the ability to set terms as opaque to \toolname.
 % TODO how long did compiling the file take?
 
