@@ -10,7 +10,7 @@ a particular length (automatic, Section~\ref{sec:dep}).
 \item We use \toolname to support multiple variants of a repair benchmark from a user study of Coq proof engineers (automatic, Section~\ref{sec:replica}).
 \item We use \toolname to port functions and proofs about unary numbers to functions and proofs about binary numbers (manual, Section~\ref{sec:bin}).
 \end{enumerate}
-%For each case study, we explain the configuration used, walk through an example, and describe takeaways.
+For each case study, we explain the configuration used, walk through an example, and describe takeaways.
 In all, we found the following:
 
 \begin{enumerate}
@@ -574,6 +574,7 @@ It was enough to implement this transformation that had previously been its own 
 just by writing a configuration with \lstinline{Iota}. 
 
 \paragraph{Workflow Integration}
+The entire file took under a second for us to compile using \toolname.
 This was another case when we did not need tactic integration, since we
 ultimately wanted compatibility with a faster version of the function.
 We did note that supporting custom eliminators like \lstinline{N.peano_rect} would be a simple way
@@ -582,8 +583,7 @@ The most difficult part was manually expanding proofs about \lstinline{nat}
 to explicitly apply \lstinline{Iota}.
 This is because there is not yet any way for manual configuration to supply custom matching functions,
 and unification was not enough.
-We discuss some ideas for this in Section~\ref{sec:discussion}. % TODO actually do
-The entire file took under a second for us to compile using \toolname.
+We discuss some ideas for this in Section~\ref{sec:discussion}. % TODO actually dos
 
 % TODO what does the tactic decompiler do for this? It's broken. Why?
 
