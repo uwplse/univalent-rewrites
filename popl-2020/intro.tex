@@ -24,46 +24,43 @@ There is \textit{no reason to believe} that verifying a modified program is any
 easier than verifying the original the 
 first time around.
 \end{quote}
-Proof refactoring and repair tools~\cite{wibergh2019, WhitesidePhD, Dietrich2013,
-adams2015, Bourke12, Roe2016, robert2018, pumpkinpatch} give us reason to believe
-that verifying a modified program is sometimes easier than verifying the original the first time
+Tools that can automatically refactor or repair proofs~\cite{wibergh2019, WhitesidePhD, Dietrich2013, adams2015, Bourke12, Roe2016, robert2018, pumpkinpatch}
+give us reason to believe that verifying a modified program is sometimes easier than verifying the original the first time
 around, even when proof engineers do not follow good development processes,
 or when change occurs outside of proof engineers' control~\cite{PGL-045}.
 Still, the challenges of maintaining verified programs remain so difficult that
 sometimes, even experts give up in the face of change~\cite{replica}.
 
-We make progress toward three open challenges in proof refactoring and repair:
+We make progress toward two open challenges in proof repair:
 
 \begin{enumerate}
-\item Few tools~\cite{robert2018, wibergh2019} support both proof refactoring (semantics-preserving changes) and repair (non-semantics-preserving changes)~\cite{PGL-045}.
+%\item Few tools~\cite{robert2018, wibergh2019} support both proof refactoring (semantics-preserving changes) and repair (non-semantics-preserving changes)~\cite{PGL-045}.
 \item Proof repair tools support limited classes of changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
 of non-semantics-preserving changes~\cite{robert2018, wibergh2019}, and these are not informed by real user needs~\cite{replica}.
 \item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018}.
 \end{enumerate}
-Our progress towards each of these challenges leverages a corresponding key insight: % TODO dan comment
+Our progress towards each these challenges leverages three key insights: % TODO dan comment
 
 \begin{enumerate}
-\item Proof refactoring and repair are both forms of proof reuse, with the additional
+\item Proof repair is a form of proof reuse, with the additional
 challenge that the specification about which
 we are reusing proofs ceases to exist.
-The key to supporting both is to build a generic proof reuse
+The key to supporting proof repair is to build a proof reuse
 tool that can handle that additional challenge (Section~\ref{sec:key1}). 
 \item The proof term transformation from the \textsc{Devoid}~\cite{Ringer2019} proof reuse tool can be generalized
-to build such a generic proof reuse tool, and the result is configurable both by the writer of the proof reuse tool and by the 
-proof engineer (Section~\ref{sec:key2}).
+to build such a proof repair tool, and the result can handle many different kinds of changes (Section~\ref{sec:key2}).
 \item The transformed proof terms can then be translated back to tactics (Section~\ref{sec:decompiler}).
 \end{enumerate}
 
 These insights informed our design of 
-\toolname\footnote{This name is for double-blind review.} (Configurable Approach to Repairing and Refactoring Outdated Tactics), a plugin for Coq 8.8.
+\toolname\footnote{Real name withheld for double-blind review.} (Configurable Approach to Repairing and Refactoring Outdated Tactics), a plugin for Coq 8.8.
 \toolname combines a configurable program transformation over proof terms % TODO doesn't quite match current organization
 with search procedures to configure the program transformation,
 and a prototype decompiler from proof terms back to tactics.
-The result is a tool that:
+The result is a tool for proof repair that:
 
 \begin{enumerate}
-\item supports both proof refactoring and repair,
-\item is configurable to different classes of changes, and
+\item supports many different classes of changes, and
 \item produces tactic scripts for better workflow integration.
 \end{enumerate}
 We demonstrate this with four case studies (Section~\ref{sec:search}), which show that \toolname:
@@ -72,7 +69,7 @@ We demonstrate this with four case studies (Section~\ref{sec:search}), which sho
 \item has helped an industrial proof engineer use Coq to write proofs about an implementation
 of the TLS Handshake Protocol,
 \item can simplify dependently-typed programming and proving,
-\item can support variants of a refactoring benchmark from a user study of Coq proof engineers,
+\item can support variants of a repair benchmark from a user study of Coq proof engineers,
 \item and can help port functions and proofs from unary to binary numbers.
 \end{enumerate}
 Our experiences drive ideas (Section~\ref{sec:discussion}) that open the door to better proof engineering tools.
