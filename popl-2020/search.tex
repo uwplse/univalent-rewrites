@@ -457,21 +457,19 @@ Each variant of the \textsc{Replica} benchmark took \toolname less than 5 second
 \subsection{Unary and Binary Numbers}
 \label{sec:bin}
 
-All of the changes that we have seen so far have used automatic search procedures
-to find equivialences between types with the same inductive structure, or \textit{ornaments}.
+All of the case studies so far have dealt with pairs of types with the same inductive structure.
 Some of the oldest problems in the transport literature deal with \textit{changing} inductive
 structure.
-A classic example of this is translating unary natural numbers to binary natural numbers~\cite{magaud2000changing}.
-We have realized this functionality with \toolname using a manual configuration. % TODO change now that redundant with earlier thing
+We have realized a classic example~\cite{magaud2000changing}  of this with \toolname using a manual configuration:
+updating unary to binary natural numbers (Section~\ref{sec:key2}, Figure~\ref{fig:nattobin}).
 
-Our definition of the binary numbers (Figure~\ref{fig:nattobin} in Section~\ref{sec:key2}) comes from the Coq standard library.
-A binary number \lstinline{N} is either zero or a positive binary number. A positive binary number
+In Coq, a binary number \lstinline{N} is either zero or a positive binary number. A positive binary number
 is either 1 (\lstinline{xH}), the result of shifting left and adding 1 (\lstinline{xI}),
 or the result of shifting left and not adding anything (\lstinline{xO}).
-This definition allows for a fast addition function, also found in the Coq standard library.
+This allows for a fast addition function, also found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we use \toolname to derive a slow binary
-addition function that does not refer to \lstinline{nat} at all.
-From that, we are able to port our theorems over unary addition to binary addition,
+addition function that does not refer to \lstinline{nat}.
+From that, we are able to port our proofs over unary addition to binary addition,
 removing all references to \lstinline{nat}, and show that they hold over fast binary addition too.
 
 \subsubsection{Configuration}
@@ -483,38 +481,33 @@ For \lstinline{N}, we used functions from the Coq standard library that
 behaved like the \lstinline{nat} constructors:
 
 \begin{lstlisting}
-dep_constr_0_B : N := 0%N.
-dep_constr_1_B : N -> N := N.succ.
+dep_constr_0 : N := 0%N.
+dep_constr_1 : N $\rightarrow$ N := N.succ.
 \end{lstlisting}
 Similarly, the Coq standard library included precisely the eliminator we wanted, one that behaves
 like the eliminator over unary natural numbers:
 
 \begin{lstlisting}
-Definition dep_elim_B :
-  forall (P : N -> Type),
-    P 0%N ->
-    (forall (n : N), P n -> P (N.succ n)) ->
-    forall (n : N), P n
-:=
-  N.peano_rect.
+dep_elim (P: N $\rightarrow$ Type) (pO: P dep_constr_0) (pS: $\forall$n, P n $\rightarrow$ P (dep_constr_1 n)) (n: N) 
+    : P n :=
+  N.peano_rect P pO pS n.
 \end{lstlisting}
 \lstinline{Iota} was almost written for us.
-The Coq standard library included a lemma that showed that the dependent eliminator preserved the successor case:
+The standard library had a lemma that reduced the successor case:
 
 \begin{lstlisting}
 N.peano_rect_succ :
-  $\forall$ (P : N -> Type) (a : P 0%N) (f : $\forall$ (n : N), P n -> P (N.succ n)) (n : N),
-    N.peano_rect P a f (N.succ n) = f n (N.peano_rect P a f n).
+  $\forall$ P pO pS n, N.peano_rect P pO pS (N.succ n) = pS n (N.peano_rect P pO pS n).
 \end{lstlisting}
-From there, \lstinline{Iota} over the successor case is a simple rewrite, as we saw in Section~\ref{sec:equality}:
+\lstinline{Iota} over the successor case was a simple rewrite by this lemma:
 
 \begin{lstlisting}
-Lemma iota_1_B :
-  $\forall$ (P : N -> Type) (a : P 0%N) (PS : $\forall$ (n : N), P n -> P (N.succ n)) (n : N) (Q : P (N.succ n) -> Type),
-     Q (PS n (N.peano_rect P PO PS n)) ->
-     Q (N.peano_rect P PO PS (N.succ n)).
+Lemma iota_1 :
+  $\forall$ P pO pS n (Q : P (dep_constr_1 n) $\rightarrow$ Type),
+     Q (pS n (dep_elim P pO pS n)) $\rightarrow$
+     Q (dep_elim P pO pS (dep_constr_1 n)).
 Proof.
-  intros. rewrite N.peano_rect_succ. auto.
+  intros. unfold dep_elim, dep_constr_1. rewrite N.peano_rect_succ. auto.
 Defined.
 \end{lstlisting}
 
@@ -529,7 +522,7 @@ This corresponds to a broader pattern---it captures the essence of the change in
 We ported unary addition from \lstinline{nat} to \lstinline{N} fully automatically:
 
 \begin{lstlisting}
-Repair nat N in add as slow_add.
+Repair nat N in add as (@\codeauto{slow_add}@).
 \end{lstlisting}
 The result (tellingly named) has the same slow behavior as the \lstinline{add} function over \lstinline{nat}.
 However, it no longer refers to \lstinline{nat} in any way.
@@ -538,55 +531,53 @@ this has the same behavior as fast binary addition:
 
 \begin{lstlisting}
 Lemma add_fast_add:
-  forall (n m : Bin.nat),
-    slow_add n m = N.add n m.
+  $\forall$ (n m : Bin.nat), slow_add n m = N.add n m.
 Proof.
   induction n using N.peano_rect; intros m; auto. unfold slow_add.
-  rewrite N.peano_rect_succ. (* <- iota_1_B *)
+  rewrite N.peano_rect_succ. (* $\leftarrow$ iota_1 *)
   unfold slow_add in IHn. rewrite IHn.
-  rewrite N.add_succ_l.
-  reflexivity.
+  rewrite N.add_succ_l. reflexivity.
 Qed.
 \end{lstlisting}
 
 We then used \toolname again to transform a proof:
 \begin{lstlisting}
-plus_n_Sm : $\forall$ (n m : nat), S (add n m) = add n (S m).
+add_n_Sm : $\forall$ (n m : nat), S (add n m) = add n (S m).
 \end{lstlisting}
 from \lstinline{add} to \lstinline{slow_add}:
 
 \begin{lstlisting}
-slow_plus_n_Sm : $\forall$ (n m : N), N.succ (slow_add n m) = slow_add n (N.succ m).
+(@\codeauto{slow_add_n_Sm}@) : $\forall$ (n m : N), N.succ (slow_add n m) = slow_add n (N.succ m).
 \end{lstlisting}
 This was not quite as push-button.
 It involved a manual expansion step, turning implicit casts in the inductive case
 into explicit applications of \lstinline{Iota} over \A.
 These applications were formulaic, but tricky to write.
 Once we had that, though, we could run the same \lstinline{Repair} command
-to get \lstinline{slow_plus_n_Sm}.
-
+to get \lstinline{slow_add_n_Sm}.
 Showing that the same theorem held over fast binary addition was then
 straightforward:
 
 \begin{lstlisting}
 Lemma add_n_Sm :
-  forall n m,
-    Bin.succ (N.add n m) = N.add n (Bin.succ m).
+  $\forall$ n m, Bin.succ (N.add n m) = N.add n (Bin.succ m).
 Proof.
-  intros. repeat rewrite <- add_fast_add. apply slow_plus_n_Sm.
+  intros. repeat rewrite $\leftarrow$ add_fast_add. apply slow_plus_n_Sm.
 Qed.
 \end{lstlisting}
 
 \subsubsection{Takeaways}
 
 \paragraph{Configuration \& Flexibility}
-\lstinline{Iota} was the key to supporting this case,
-and it was enough to implement this transformation that had previously been its own tool
+\lstinline{Iota} was the key to supporting this case.
+It was enough to implement this transformation that had previously been its own tool
 just by writing a configuration with \lstinline{Iota}. 
 
 \paragraph{Workflow Integration}
 This was another case when we did not need tactic integration, since we
 ultimately wanted compatibility with a faster version of the function.
+We did note that supporting custom eliminators like \lstinline{N.peano_rect} would be a simple way
+to improve the tactic decompiler.
 The most difficult part was manually expanding proofs about \lstinline{nat}
 to explicitly apply \lstinline{Iota}.
 This is because there is not yet any way for manual configuration to supply custom matching functions,
