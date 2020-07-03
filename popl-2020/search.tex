@@ -303,26 +303,26 @@ with the proofs about those length invariants from \textsc{Devoid}.
 This gave us a proof of this lemma:
 
 \begin{lstlisting}
-Lemma zip_with_is_zip :
-  forall A B n (v1 : { l1 : list A & length l1 = n }) (v2 : { l2 : list B & length l2 = n }),
-    zip_with pair v1 v2 = zip v1 v2.
+Lemma zip_with_is_zip : $\forall$ A B n
+  (v1: $\Sigma$(l1: (@\codediff{list A}@)).(@\codediff{length}@) l1 = n) (v2: $\Sigma$(l2: (@\codediff{list B}@)).(@\codediff{length}@) l2 = n),
+    zip_with pair n v1 v2 = zip n v1 v2.
 \end{lstlisting}
 with functions \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths.
-We then ran \lstinline{Repair module} to transport those functions and proofs using the first
+We then ran \lstinline{Repair module} using the first
 configuration, which proved this lemma:
 
 \begin{lstlisting}
-Lemma zip_with_is_zip :
-  forall A B n (v1 : { l1 : $\Sigma$(n : nat).vector T n & $\pi_l$ l1 = n }) (v2 : { l2 : $\Sigma$(n : nat).vector T n & $\pi_l$ l2 = n }),
+Lemma (@\codeauto{zip_with_is_zip}@) : $\forall$ A B n
+  (v1:$\Sigma$(l1:(@\codediff{$\Sigma$(m: nat).vector A m}@)).(@\codediff{$\pi_l$}@) l1 = n) (v2:$\Sigma$(l2:(@\codediff{$\Sigma$(m: nat).vector B m}@)).(@\codediff{$\pi_l$}@) l2 = n),
     zip_with pair v1 v2 = zip v1 v2.
 \end{lstlisting}
-with functions \lstinline{zip_with} and \lstinline{zip} operating over vectors at given projections.
+with functions \lstinline{zip_with} and \lstinline{zip} updated as well.
 We composed this with \lstinline{Repair module} on the second configuration,
 which proved this lemma:
 
 \begin{lstlisting}
-Lemma zip_with_is_zip :
-  forall A B n (v1 : vector A n) (v2 : vector B n),
+Lemma (@\codeauto{zip_with_is_zip}@) : $\forall$ A B n
+  (v1: (@\codediff{vector A n}@)) (v2: (@\codediff{vector B n}@)),
     zip_with pair v1 v2 = zip v1 v2.
 \end{lstlisting}
 with functions \lstinline{zip_with} and \lstinline{zip} operating directly over vectors.
@@ -330,9 +330,9 @@ with functions \lstinline{zip_with} and \lstinline{zip} operating directly over 
 \subsubsection{Takeaways}
 
 \paragraph{Configuration \& Flexibility}
-Implementing the configuration from \textsc{Devoid} in this framework was straightforward,
-took a couple of days, and simplified the code from \textsc{Devoid} significantly.
-For example, it removed the need for special rules for handling eliminators and constructors
+Implementing the configuration from \textsc{Devoid} in this framework was straightforward and
+took a couple of days.
+It also simplified the transformation from \textsc{Devoid} by removing the need for special rules for handling eliminators and constructors
 by adding and removing arguments, and for special handling of non-primitive projections,
 as that work is done in the configuration.
 Implementing the second configuration was less straightforward,
@@ -344,11 +344,11 @@ proof backward along the second configuration in the opposite direction.
 This simplified the workflow from \textsc{Devoid} and automated steps that had been manual.
 %\toolname implemented some additional automation to generate eliminators that help separate out this additional information
 %for repair. 
-Furthermore, the tactic decompiler successfully generated tactic scripts to write dependently typed
-functions that carry proofs about length invariants. % TODO test again
-However, the decompiler struggled significantly at generating tactic scripts for proofs relating those invariants.
+The tactic decompiler successfully generated tactic scripts to write dependently typed
+functions that carry proofs about length invariants, % TODO test again
+but struggled at generating tactic scripts for proofs relating those invariants.
 This is to some degree unsurprising, since these tactic proofs
-were prohibitively difficult for us to write by hand.
+were prohibitively difficult for us to write by hand thanks to poor motive inference.
 Still, additional effort is needed to improve tactic integration with dependent types.
 % TODO how long did compiling the file take?
 
@@ -367,15 +367,14 @@ Still, additional effort is needed to improve tactic integration with dependent 
 \label{fig:replica}
 \end{figure}
 
-Section~\ref{sec:overview} showed an example of swapping constructors.
-This example was inspired by two benchmarks from the \textsc{Replica} user study of proof engineers~\cite{replica}.
+The constructor swapping example from Section~\ref{sec:overview} was inspired by two benchmarks 
+from the \textsc{Replica} user study of proof engineers~\cite{replica}.
 An isolated change corresponding to part of the benchmark is shown in Figure~\ref{fig:replica}.
-In that change, the proof engineer had a simple language represented by an inductive type \lstinline{Term},
+The proof engineer had a simple language represented by an inductive type \lstinline{Term},
 as well as some definitions and proofs about the language.
-As part of the change, the proof engineer swapped two constructors in the term language.
+The proof engineer swapped two constructors in the term language.
 
-Using the search procedure for the swap configuration, we were able to use \toolname
-to automatically configure the program transformation to move this constructor,
+We were able to use \toolname to automatically configure the program transformation to move this constructor,
 then transform all of the functions and proofs about the language.
 We also succeeded at more difficult variants of this,
 like swapping two constructors with the same type, or renaming all of the constructors,
@@ -384,53 +383,47 @@ In all cases, with just a bit of human guidance, \toolname was able to repair th
 
 \subsubsection{Configuration}
 
-The configuration this used handles swapping and renaming constructors of inductive types,
-inducing an equivalence directly between \A and \B.
+The configuration this used handles swapping and renaming constructors of inductive types.
 This is one of the simplest configurations.
-The only nontrivial part is that \lstinline{DepConstr} over \B swaps constructors, in our example,
-maintaining the original order of the two swapped constructors:
+The only nontrivial part is that \lstinline{DepConstr} over the updated type swaps back the constructors, in our example:
 
 \begin{lstlisting}
-dep_constr_B_1 (H : Z) : Term := Int H.
-dep_constr_B_2 (H H0 : Term) : Term := Eq H H0.
+(@\codeauto{dep_constr_1}@) (H : Z) : Term := Int H.
+(@\codeauto{dep_constr_2}@) (H H0 : Term) : Term := Eq H H0.
 \end{lstlisting}
-so that they align perfectly with the constructors of \A.
+so that they align with the constructors of the original type.
 The eliminator similarly swaps cases:
 
 \begin{lstlisting}
-Definition dep_elim_B P f0 f1 f2 f3 f4 f5 f6 t : P t :=
-  Old.Term_rect P f0 (@\codediff{f2}@) (@\codediff{f1}@) f3 f4 f5 f6 t.
+(@\codeauto{dep_elim}@) P f0 f1 f2 f3 f4 f5 f6 t : P t := Term_rect P f0 (@\codediff{f2}@) (@\codediff{f1}@) f3 f4 f5 f6 t.
 \end{lstlisting}
-where \lstinline{Old.Term_rect} is the eliminator over the old version of \lstinline{Term}.
+where \lstinline{Term_rect} is the eliminator over the old version of \lstinline{Term}.
 
-Despite the configuration being simple, the search procedure beneath it is flexible.
-For example, it does not make any assumptions about the name of the inductive type or constructor,
-so it can handle arbitrary swapping and renaming of constructors at the same time.
-It can also support multiple swapped constructors at the same time.
-When a swap is ambiguous and there are many possible mappings between the constructors of the old
-and new version, \toolname prompts the proof engineer to choose a configuration from a ranked list.
-It also allows the user to provide a custom mapping between constructors if the desired mapping
-does not show up high enough on the ranked list.
-It proves the equivalence from the swap map automatically, even in the case that the user provides
-the swap map directly.
-Then it transports functions and proofs along the equivalence, swapping and renaming cases of functions
-and proofs.
+%The search procedure for this configuration is flexible.
+%It can handle swapping and renaming of constructors at the same time,
+%and it can support multiple swapped constructors at the same time.
+%When there are many possible mappings between the constructors of the old
+%and new version, \toolname prompts the proof engineer to choose a configuration from a ranked list.
+%It allows the user to provide a custom mapping between constructors if the desired mapping
+%does not show up high enough on the ranked list.
+%In all cases, it proves the equivalence from the swap map automatically.
+%The transformation then updates functions, swapping and renaming constructors and cases.
 
 \subsubsection{Example}
 
 We used \toolname to automatically update the functions and proofs in \lstinline{Swap.v} from the \textsc{Replica} benchmark.
-This included functions about \lstinline{Term}, as well as a large record \lstinline{EpsilonLogic} that encoded the semantics of the language
-and a proof of the record:
+This included functions about \lstinline{Term}, as well as a large record \lstinline{EpsilonLogic} that encoded the semantics of the language,
+plus a proof about that record:
 
 \begin{lstlisting}
 Theorem eval_eq_true_or_false :
   $\forall$ (L : EpsilonLogic) env (t1 t2 : Term),
-    L.eval env (Eq t1 t2) = L.vTrue \/ L.eval env (Eq t1 t2) = L.vFalse.
+    L.eval env (Eq t1 t2) = L.vTrue $\vee$ L.eval env (Eq t1 t2) = L.vFalse.
 \end{lstlisting}
-\toolname was able to update all of these. For the inductive proof, it produced
+\toolname automatically updated all of these. For the inductive proof, it produced
 a new inductive proof that used the induction principle with the swapped constructors.
 It also discovered all other 23 type-correct permutations of constructors, all available for selection to 
-prove the appropriate equivalence and use to transport functions and proofs along that equivalence.
+prove the appropriate equivalence and use to update functions and proofs.
 It presented the desired transformation as the first option in the list, so that all we had to do
 was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this change.
 It was also able to handle more advance changes like renaming constructors, swapping multiple constructors at once,
@@ -451,9 +444,9 @@ or even if there should be just one configuration corresponding to that change f
 \paragraph{Workflow Integration}
 The isolated change was simple enough that \toolname would not have been necessary
 for updating the proofs for the initial change---keeping the tactics the same would have also worked.
-This is mostly a property of the particular proofs that we had access to;
+This is a property of the particular proofs that we had access to;
 as we saw in Section~\ref{sec:overview}, even for simple changes, this is not always true.
-In addition, more advanced variants of this benchmark that involved also renaming constructors did necessitate \toolname,
+More advanced variants of this benchmark that involved also renaming constructors did necessitate \toolname,
 and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
 The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
 its dependencies, four variants of the \textsc{Replica} benchmark,
