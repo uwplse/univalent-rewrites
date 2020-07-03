@@ -115,18 +115,16 @@ Furthermore, the transformed functions behave the same way as the input function
 and the transformed proofs talk about the same things as the input proofs.
 
 For example, Figure~\ref{fig:appswap1} shows the input and output reduced to CIC$_{\omega}$
-for our refactored list append function \codeauto{\lstinline{++}} from Section~\ref{sec:overview},
+for our refactored list append function \lstinline{++} from Section~\ref{sec:overview},
 corresponding to the change in \lstinline{list} from Figure~\ref{fig:listswap}.
 Both versions of append behave identically up to the equivalence from Figure~\ref{fig:equivalence}, since:
 
 \begin{lstlisting}
-$\forall$ T (l1 l2 : Old.list T),
-  (@\codeauto{f}@) T (l1 ++ l2) =
-  ((@\codeauto{f}@) T l1) (@\codeauto{++}@) ((@\codeauto{f}@) T l2).
+$\forall$ T (l1 l2 : Old.list T), f T (l1 ++ l2) = (f T l1) ++ (f T l2).
 \end{lstlisting}
 by induction and rewriting, and similarly in the opposite direction.
-Our transformed proof \codeauto{\lstinline{rev_app_distr}} then proves the same thing the same way
-as the original proof up to the same equivalence---and up to the corresponding changes in \codeauto{\lstinline{++}}
+Our transformed proof \lstinline{rev_app_distr} then proves the same thing the same way
+as the original proof up to the same equivalence---and up to the corresponding changes in \lstinline{++}
 and \lstinline{rev}.
 
 \begin{figure}
