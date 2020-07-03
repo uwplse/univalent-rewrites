@@ -89,10 +89,6 @@ there is a \textit{type equivalence}~\cite{univalent2013homotopy} between them, 
 Old.list $\simeq$ New.list
 \end{lstlisting}
 Repair corresponds to proof reuse across these equivalences.
-This can support not just simple changes, but also changes in which the proof engineer adds or removes information.
-In that case, the equivalence that the tool ports functions and proofs along
-is an equivalence between \textit{refinements}.
-It is up to the proof engineer to supply the additional information in order to construct proofs about the refinement.
 
 \begin{figure}
 \begin{minipage}{0.40\textwidth}
@@ -106,6 +102,10 @@ It is up to the proof engineer to supply the additional information in order to 
 \label{fig:listtovect}
 \end{figure}
 
+This can support not just simple changes, but also changes in which the proof engineer adds or removes information.
+In that case, the equivalence that the tool ports functions and proofs along
+is an equivalence between \textit{refinements}.
+It is up to the proof engineer to supply the additional information in order to construct proofs about the refinement.
 Consider an example from \textsc{Devoid}: changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
 \textsc{Devoid} is able to repair proofs about lists to proofs about \textit{vectors of some length}, since:
 
@@ -125,14 +125,14 @@ $\forall$ {A B} (l1 : (@\codediff{$\Sigma$(n : nat).vector A n}@)) (l2 : (@\code
   zip_with pair l1 l2 = zip l1 l2.
 \end{lstlisting}
 recursively updating dependencies \lstinline{zip} and \lstinline{zip_with}.
-It is not enough, however, to help the proof engineer get from that to a proof about vectors \textit{at a particular index}:
+It is not enough, however, to help the proof engineer get from that to a proof about vectors \textit{of a particular length}:
 
 \begin{lstlisting}
 $\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\codediff{vector B n}@)),
   zip_with pair (@\codediff{n}@) l1 l2 = zip (@\codediff{n}@) l1 l2.
 \end{lstlisting}
 
-More desirable is a repair that takes us from lists \textit{at a particular length} to vectors of that length:
+More desirable is a repair that takes us from lists of a particular length to vectors of that length:
 
 \begin{lstlisting}
 { l : list T | length l = n } $\simeq$ vector T n.
