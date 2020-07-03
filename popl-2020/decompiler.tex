@@ -213,13 +213,13 @@ In all other cases, the implementation uses the \lstinline{pose} tactic, a catch
 After decompiling proof terms, there is one final step to present the information to the proof engineer: pretty printing.
 Like the toy decompiler, the implementation of \textbf{Decompile} represents its output language using a predefined grammar of Ltac tactics,
 albeit one that is larger than Qtac.
-It maintains the internal recursive proof structure as it goes, then uses that proof structure to print proofs of subgoals using bullet points.
+It maintains the recursive proof structure as it goes, then uses that proof structure to print proofs of subgoals using bullet points.
 It displays the resulting proof script to the proof engineer, who can then modify it as needed to ensure that it works correctly
 and is maintainable.
 For convenience, it includes scripts that automate the process of printing all of these tactic proofs to a Coq file,
 in case the proof engineer does not want such an interactive workflow.
 \toolname keeps all output proof terms from the proof term transformation in the Coq environment as a fallback in case the decompiler does not succeed.
-Once the proof engineer has this new proof, she can remove the old specifications, functions, and proofs, using the refactored or repaired
+Once the proof engineer has this new proof, she can remove the old specifications, functions, and proofs, using the repaired
 versions from then on.
 
 
