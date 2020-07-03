@@ -8,7 +8,6 @@ changes. We can view both as a form of
 or reusing proofs about one specification to derive proofs about another specification.
 The difference is that in standard proof reuse, both specifications continue to exist, whereas with proof refactoring and repair,
 one of the specifications does not.
-In other words:
 
 \begin{quote}
 \textbf{Insight 1}:
@@ -32,8 +31,7 @@ and proofs behaved exactly the same way.
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
 (@\codeauto{f}@) T (l : Old.list T) : New.list T :=
-  Old.list_rect
-    T
+  Old.list_rect T
     (fun (l : Old.list T) => New.list T)
     New.nil
     (fun (t : T) _ (IHl : New.list T) =>
@@ -53,8 +51,7 @@ Defined.
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
 (@\codeauto{g}@) T (l : New.list T) : Old.list T :=
-  New.list_rect
-    T
+  New.list_rect T
     (fun (l : New.list T) => Old.list T)
     (fun (t : T) _ (IHl : Old.list T) =>
       Old.cons T t IHl)
@@ -118,37 +115,54 @@ Consider an example from \textsc{Devoid}: changing a list to a length-indexed ve
 \begin{lstlisting}
 list T $\simeq$ $\Sigma$ (n : nat) . vector T n.
 \end{lstlisting}
-More desirable, however, is a repair that takes us from lists \textit{at a particular length} to vectors of that length:
+This was enough to automatically refactor a lemma about lists:
+
+\begin{lstlisting}
+$\forall$ {A B} (l1 : list A) (l2 : list B),
+  zip_with pair l1 l2 = zip l1 l2.
+\end{lstlisting}
+to a lemma about vectors of some length:
+
+\begin{lstlisting}
+$\forall$ {A B} (l1 : (@\codediff{$\Sigma$(n : nat).vector A n}@)) (l2 : (@\codediff{$\Sigma$(n : nat).vector B n}@)),
+  zip_with pair l1 l2 = zip l1 l2.
+\end{lstlisting}
+recursively refactoring dependencies \lstinline{zip} and \lstinline{zip_with}.
+It was not enough, however, to help the proof engineer get from that to a proof about vectors \textit{at a particular index}:
+
+\begin{lstlisting}
+$\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\codediff{vector B n}@)),
+  zip_with pair (@\codediff{n}@) l1 l2 = zip (@\codediff{n}@) l1 l2.
+\end{lstlisting}
+
+More desirable is a repair that takes us from lists \textit{at a particular length} to vectors of that length:
 
 \begin{lstlisting}
 { l : list T | length l = n } $\simeq$ vector T n.
 \end{lstlisting}
+\toolname can handle this.
 This is a repair because our old specification \lstinline{list} shows up as part of a refinement with an additional proof obligation
 about its length. Practically, when we change our specifications to refer to \lstinline{vector} instead of \lstinline{list},
 to fix our functions and proofs, we must additionally prove invariants about the lengths of our lists.
 \toolname makes it easy to separate out that proof obligation, and then automates the rest.
-Section~\ref{sec:search} shows this repair on some particular functions and proofs.
 
-\subsection{A Tool for Proof Reuse Over Time}
+\subsection{A Tool for Proof Refactoring and Repair}
 \label{sec:time}
 
 The problem of proof reuse across equivalences is known as \textit{transport}. % TODO cite
 Thus, any tool that can refactor or repair proofs implements transport across the classes
-of equivalences that it supports.
-But we cannot use just any transport method: we must transport functions and proofs \textit{over time}.
-
-That proof refactoring and repair are reuse \textit{over time} dictates that proofs
-must no longer refer in any way to the old specification, since the old specification no longer exists.
-This means that most transport methods % TODO cite
-are not immediately useful for refactoring and repair.
+of equivalences that it supports---and so can handle proof reuse as well.
+But not every proof reuse tool or transport method can support proof refactoring and repair.
+A proof refactoring and repair tool must produce proofs
+that no longer refer in any way to the old specification, since the old specification no longer exists.
 
 The goal of a proof refactoring and repair tool is, in essence, to
 define a transport method over a broad set of changes that
 removes references to the old specification, rather than converting back and forth
 like standard transport methods.
-For example, the refactored proof of \lstinline{rev_app_distr} and the updated application function \lstinline{app}
-from Section~\ref{sec:overview} refers only to \lstinline{New.list} and not to \lstinline{Old.list}.
-It inducts directly over \lstinline{New.list} and never, at any point, converts to an \lstinline{Old.list}.
+For example, the refactored proof of \lstinline{rev_app_distr} and its dependencies
+from Section~\ref{sec:overview} refer only to \lstinline{New.list} and not to \lstinline{Old.list}.
+The proof inducts directly over \lstinline{New.list} and never, at any point, converts to an \lstinline{Old.list}.
 Thus, we need \lstinline{Old.list} around only until we call the \lstinline{Repair} command;
 after that, we can remove the type and all of the functions and proofs about it, and replace them all with
 our functions and proofs about \lstinline{New.list}.
@@ -157,7 +171,7 @@ our functions and proofs about \lstinline{New.list}.
 The proof term transformation implements transport across equivalences, but in a way that removes
 references to the old type.
 The configuration corresponds to a particular equivalence, and tells the proof term transformation how to transform
-constructors, eliminators, identity, and equalities.
+constructors, eliminators, and equalities.
 Section~\ref{sec:search} includes many example configurations as applied to real proof refactoring and repair scenarios.
 
 

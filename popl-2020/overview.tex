@@ -41,7 +41,7 @@ To update the proof script with \toolname, all we need to do is run this command
 Repair Old.list New.list in rev_app_distr.
 \end{lstlisting}
 assuming our old and new list types are in separate modules called \lstinline{Old} and \lstinline{New}.
-This produces a refactored proof script (here and throughout, we use $\codeauto{light blue}$ names to denote
+This produces a refactored proof script (here and throughout, we use $\codeauto{light blue}$ to denote
 functions and proofs that \toolname produces automatically):
 
 \begin{lstlisting}
@@ -64,9 +64,9 @@ If we'd like, we can manually tweak this to something that more closely matches 
 Proof.
   induction x as [a l IHl|].
   intro y. simpl.
-  rewrite (IHl y). rewrite (@\codeauto{app_assoc}@); trivial.
+  rewrite (IHl y). rewrite app_assoc; trivial.
   induction y as [a l IHl|].
-  simpl. rewrite (@\codeauto{app_nil_r}@); auto.
+  simpl. rewrite app_nil_r; auto.
   simpl. auto.
 Qed.
 \end{lstlisting}
@@ -81,7 +81,7 @@ It is not clear which lines to swap since these tactics do not have a semantics 
 Furthermore, just swapping lines is not enough: even for a simple refactoring, we must also swap
 arguments, so that \lstinline{induction x as [| a l IHl]} becomes \lstinline{induction x as [a l IHl|]}.
 Handling even swapping constructors this way would require a specific search procedure that would not generalize to other changes.
-\citep{robert2018} describes the challenges of refactoring tactics directly in detail.
+\citet{robert2018} describes the challenges of refactoring tactics directly in detail.
 
 Instead, \toolname takes advantage of the fact that Coq's \textit{proof term} language Gallina is well structured.
 Coq compiles each proof script to a proof term---\toolname repairs that term.
