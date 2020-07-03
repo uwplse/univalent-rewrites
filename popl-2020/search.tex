@@ -4,18 +4,16 @@
 This section explans four different case studies in using \toolname:
 
 \begin{enumerate}
-\item Refactoring automatically generated proofs for an industrial user (automatic, Section~\ref{sec:industry})
-\item Generating dependently typed vector functions and proofs from functions and proofs about lists and their lengths (automatic, Section~\ref{sec:dep})
-\item Supporting a benchmark from a user study of Coq proof engineers (automatic, Section~\ref{sec:replica})
-\item Porting functions and proofs about unary numbers to functions and proofs about binary numbers (manual, Section~\ref{sec:bin})
+\item an industrial proof engineer using \toolname in verifying an implementation of the TLS handshake protocol (automatic, Section~\ref{sec:industry}),
+\item generating dependently typed vector functions and proofs from functions and proofs about lists and their lengths (automatic, Section~\ref{sec:dep}),
+\item supporting a benchmark from a user study of Coq proof engineers (automatic, Section~\ref{sec:replica}), and
+\item porting functions and proofs about unary numbers to functions and proofs about binary numbers (manual, Section~\ref{sec:bin}).
 \end{enumerate}
 For each case study, we explain the configuration used, walk through an example, and describe takeaways.
 In all, we found the following:
 
 \begin{enumerate}
-\item \toolname handled examples of both proof refactoring and repair. In practice, the line between these was sometimes
-blurred, as was the line with proof reuse.
-\item \toolname was configurable to different classes of changes. Each search procedure for automatic configuration
+\item \toolname was flexible and configurable to different classes of changes. Each search procedure for automatic configuration
 took between two days and two weeks to write, and handled an entire class of equivalences corresponding to a real use case.
 Manual configuration was possible for an interesting use case, but remained challenging.
 \item \toolname had good enough workflow integration to support real users.
@@ -49,10 +47,10 @@ A proof engineer at \company has used \toolname to work with those automatically
 with the following workflow:
 
 \begin{enumerate}
-\item First, the proof engineer uses \toolname to refactor the automatically generated programs and specifications into more
+\item First, the proof engineer uses \toolname to update the automatically generated programs and specifications into more
 human-readable programs and specifications.
 \item Next, the proof engineer writes Coq proofs about the more human-readable programs and specifications.
-\item Finally, the proof engineer uses \toolname again to refactor those proofs about human-readable programs and specifications back to
+\item Finally, the proof engineer uses \toolname again to update those proofs about human-readable programs and specifications back to
 proofs about the original automatically generated programs and specifications.
 \end{enumerate}
 This workflow has allowed for industrial integration with Coq and has helped the user write functions and proofs
@@ -162,14 +160,11 @@ Qed.
 
 \subsubsection{Takeaways}
 
-\paragraph{Refactoring \& Repair}:
-The proof engineer used \toolname for both refactoring and repair.
-Refactorings like the changes from tuples to records were the most common use cases.
-The proof engineer has also used \toolname to repair some non-dependently-typed
-functions and proofs to instead use dependent types.
-
 \paragraph{Configuration \& Flexibility}:
-The proof engineer used at least three automatic configurations and no manual configurations.
+The proof engineer used \toolname most commonly to update tuples to records,
+but also to repair some non-dependently-typed
+functions and proofs to instead use dependent types.
+In total, this used at least three automatic configurations and no manual configurations.
 One of these configurations was backed by a search procedured that we implemented
 specifically to support this user: the search procedure to
 configure the equivalence between nested tuples and records.
@@ -190,8 +185,8 @@ However, we found two challenges with workflow integration:
 the proof engineer sometimes could not distinguish between user errors and bugs in our code,
 and the proof engineer typically waited only about 10 seconds at most for \toolname
 to port a function or proof.
-Both of these observations informed significant changes to \toolname, like better error messages
-and caching of transformed subterms.
+Both of these observations informed significant changes to \toolname, like better error messages, caching of transformed subterms,
+and the ability to set terms as opaque to \toolname.
 % TODO how long did compiling the file take?
 
 \subsection{Vectors from Lists and their Lengths}
@@ -340,14 +335,6 @@ with functions \lstinline{zip_with} and \lstinline{zip} operating directly over 
 
 \subsubsection{Takeaways}
 
-\paragraph{Refactoring \& Repair}
-With the additional information corresponding to the proofs about the indices, this can be viewed
-as a form of proof repair. In the example above, this imposes on the user the additional
-obligation of showing that the length is equal to a particular index.
-\toolname implements some additional automation to generate eliminators that help separate out this additional information
-for repair. The line between repair and reuse is blurry here, since users have used this
-functionality to get functions and proofs over vectors from functions and proofs defined in the list library.
-
 \paragraph{Configuration \& Flexibility}
 Implementing the configuration from \textsc{Devoid} in this framework was straightforward,
 took a couple of days, and simplified the code from \textsc{Devoid} significantly.
@@ -361,8 +348,10 @@ proof backward along the second configuration in the opposite direction.
 
 \paragraph{Workflow Integration}
 This simplified the workflow from \textsc{Devoid} and automated steps that had been manual.
+%\toolname implemented some additional automation to generate eliminators that help separate out this additional information
+%for repair. 
 Furthermore, the tactic decompiler successfully generated tactic scripts to write dependently typed
-functions that carry proofs about length invariants.
+functions that carry proofs about length invariants. % TODO test again
 However, the decompiler struggled significantly at generating tactic scripts for proofs relating those invariants.
 This is to some degree unsurprising, since these tactic proofs
 were prohibitively difficult for us to write by hand.
@@ -435,7 +424,7 @@ and proofs.
 
 \subsubsection{Example}
 
-We used \toolname to automatically refactor the functions and proofs in \lstinline{Swap.v} from the \textsc{Replica} benchmark.
+We used \toolname to automatically update the functions and proofs in \lstinline{Swap.v} from the \textsc{Replica} benchmark.
 This included functions about \lstinline{Term}, as well as a large record \lstinline{EpsilonLogic} that encoded the semantics of the language
 and a proof of the record:
 
@@ -449,35 +438,31 @@ a new inductive proof that used the induction principle with the swapped constru
 It also discovered all other 23 type-correct permutations of constructors, all available for selection to 
 prove the appropriate equivalence and use to transport functions and proofs along that equivalence.
 It presented the desired transformation as the first option in the list, so that all we had to do
-was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this refactoring.
+was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this change.
 It was also able to handle more advance changes like renaming constructors, swapping multiple constructors at once,
 and doing both at the same time.
 
 \subsubsection{Takeaways}
 
-\paragraph{Refactoring \& Repair}
-This was a simple refactoring.
-It was only a single snapshot in the \textsc{Replica} benchmark, which included
-other changes that qualify as repairs, like adding constructors to inductive types.
-We have not yet implemented search procedures for those repairs.
-
 \paragraph{Configuration \& Flexibility}
 Implementing the search procedure for constructor swapping and renaming was very simple and took about three days total.
 The biggest challenge was implementing an interactive interface to choose between mappings when there are multiple possible mappings,
 or to allow the user to write a single custom mapping function and derive the rest of the configuration from there.
-One ongoing challenge is in defining a useful configuration to support other changes from the same benchmark.
-For example, we do not yet know what configuration would be most useful for adding new constructors to inductive types,
+One ongoing challenge is in defining a useful configuration to support other changes from the same benchmark:
+this was only a single snapshot of the benchmark, which included
+other changes like adding constructors to inductive types.
+We do not yet know what configuration would be most useful for adding new constructors to inductive types,
 or even if there should be just one configuration corresponding to that change for a given proof development.
 
 \paragraph{Workflow Integration}
 The isolated change was simple enough that \toolname would not have been necessary
-for refactoring the proofs for the initial change---keeping the tactics the same would have also worked.
+for updating the proofs for the initial change---keeping the tactics the same would have also worked.
 This is mostly a property of the particular proofs that we had access to;
 as we saw in Section~\ref{sec:overview}, even for simple changes, this is not always true.
 In addition, more advanced variants of this benchmark that involved also renaming constructors did necessitate \toolname,
 and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
 The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
-its dependencies, refactoring four variants of the \textsc{Replica} benchmark,
+its dependencies, four variants of the \textsc{Replica} benchmark,
 and testing a large and ambiguous swap of a type \lstinline{Enum} with 30 constructors of identical types,
 took \toolname less than 90 seconds total. % TODO specs, reproduction
 Each variant of the \textsc{Replica} benchmark took \toolname less than 5 seconds. % TODO specs, reproduction
@@ -606,10 +591,6 @@ Qed.
 \end{lstlisting}
 
 \subsubsection{Takeaways}
-
-\paragraph{Refactoring \& Repair}
-The change from \lstinline{nat} to \lstinline{N} using \toolname was a refactoring,
-but allowed for simple compatibility with functions with better performance.
 
 \paragraph{Configuration \& Flexibility}
 \lstinline{Iota} was the key to supporting this case,
