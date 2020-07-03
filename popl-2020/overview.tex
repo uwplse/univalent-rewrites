@@ -1,4 +1,4 @@
-\section{An Example of Proof Refactoring}
+\section{A Simple Example}
 \label{sec:overview}
 
 \begin{figure}
@@ -13,8 +13,8 @@
 \label{fig:listswap}
 \end{figure}
 
-\toolname is a tool for proof refactoring and repair that is available on Github.\footnote{Link withheld for double-blind review.}
-Consider a simple example of using \toolname: refactoring list proofs after swapping the two constructors of a list (Figure~\ref{fig:listswap}).
+\toolname is a tool for proof repair that is available on Github.\footnote{Link withheld for double-blind review.}
+Consider a simple example of using \toolname: fixing broken list proofs after swapping the two constructors of a list (Figure~\ref{fig:listswap}).
 Even such a simple change can quickly cause trouble in existing proofs, like this proof from the Coq standard library:\footnote{Here and throughout, we use induction instead of pattern matching.}
 
 \begin{lstlisting}
@@ -41,7 +41,7 @@ To update the proof script with \toolname, all we need to do is run this command
 Repair Old.list New.list in rev_app_distr.
 \end{lstlisting}
 assuming our old and new list types are in separate modules called \lstinline{Old} and \lstinline{New}.
-This produces a refactored proof script (here and throughout, we use $\codeauto{light blue}$ to denote
+This produces an updated proof script that succeeds (here and throughout, we use $\codeauto{light blue}$ to denote
 functions and proofs that \toolname produces automatically):
 
 \begin{lstlisting}
@@ -57,7 +57,7 @@ Proof.
 Qed.
 \end{lstlisting}
 where the dependencies (\lstinline{rev}, \lstinline{++}, \lstinline{app_assoc}, and \lstinline{app_nil_r}) have
-also been refactored automatically.
+also been updated automatically.
 If we'd like, we can manually tweak this to something that more closely matches the original:
 
 \begin{lstlisting}
@@ -70,18 +70,18 @@ Proof.
   simpl. auto.
 Qed.
 \end{lstlisting}
-We can even refactor the entire list module all at once by running the \lstinline{Repair module}
+We can even repair the entire list module all at once by running the \lstinline{Repair module}
 command; the results of this are in \lstinline{Swap.v}.\footnote{Link withheld for double-blind review.} % TODO
 
 \paragraph{Configure, Transform, Decompile}
-The key to success here is that \toolname does not even attempt to refactor the poorly structured proof script directly.
+The key to success here is that \toolname does not even attempt to update the poorly structured proof script directly.
 Even for the simple proof script above, this would not be straightforward: Grouping tactics by line, there are $6! = 620$
 permutations of this proof script.
 It is not clear which lines to swap since these tactics do not have a semantics beyond the meaning imposed by evaluating them.
-Furthermore, just swapping lines is not enough: even for a simple refactoring, we must also swap
+Furthermore, just swapping lines is not enough: even for such a simple change, we must also swap
 arguments, so that \lstinline{induction x as [| a l IHl]} becomes \lstinline{induction x as [a l IHl|]}.
 Handling even swapping constructors this way would require a specific search procedure that would not generalize to other changes.
-\citet{robert2018} describes the challenges of refactoring tactics directly in detail.
+\citet{robert2018} describes the challenges of repairing tactics directly in detail.
 
 Instead, \toolname takes advantage of the fact that Coq's \textit{proof term} language Gallina is well structured.
 Coq compiles each proof script to a proof term---\toolname repairs that term.
@@ -131,7 +131,7 @@ then configures \textbf{Transform} using that equivalence.
 to instead induct over \lstinline{New.list}, and finally
 \textbf{Decompile} produces the tactic script that we see.
 
-While this is a simple refactoring, this same workflow can get us much more.
+While this is a simple change, this same workflow can get us much more.
 Section~\ref{sec:search} shows how we have used \toolname to support industrial integration with Coq,
 write dependently-typed functions and proofs with little user effort,
 support examples from a benchmark from Coq proof engineers,
