@@ -35,14 +35,14 @@ This theorem statement \lstinline{rev_app_distr} defined over the old version of
 When we change the \lstinline{list} type, we get the \textit{new specification}.
 But the \textit{old proof} or tactic script no longer works with this new specification.
 
-To update the proof script with \toolname, all we need to do is run this command (here and throughout, we use $\codeauto{light blue}$ to denote
-functions and proofs that \toolname produces automatically):
+To update the proof script with \toolname, all we need to do is run this command:
 
 \begin{lstlisting}
 Repair Old.list New.list in rev_app_distr.
 \end{lstlisting}
 assuming our old and new list types are in separate modules called \lstinline{Old} and \lstinline{New}.
-This produces a refactored proof script:
+This produces a refactored proof script (here and throughout, we use $\codeauto{light blue}$ names to denote
+functions and proofs that \toolname produces automatically):
 
 \begin{lstlisting}
 Lemma (@\codeauto{rev_app_distr}@) {A : Type} :
@@ -56,7 +56,7 @@ Proof.
     + reflexivity.
 Qed.
 \end{lstlisting}
-where all of the dependencies---\lstinline{rev}, \lstinline{++}, \lstinline{app_assoc}, and \lstinline{app_nil_r}---have
+where the dependencies (\lstinline{rev}, \lstinline{++}, \lstinline{app_assoc}, and \lstinline{app_nil_r}) have
 also been refactored automatically.
 If we'd like, we can manually tweak this to something that more closely matches the original:
 

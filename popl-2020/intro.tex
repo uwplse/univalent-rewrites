@@ -35,7 +35,7 @@ sometimes, even experts give up in the face of change~\cite{replica}.
 We make progress toward three open challenges in proof refactoring and repair:
 
 \begin{enumerate}
-\item Few tools~\cite{robert2018, wibergh2019} support both proof refactoring (semantics-preserving changes) and repair (non-semantics-preserving changes) at the same time~\cite{PGL-045}.
+\item Few tools~\cite{robert2018, wibergh2019} support both proof refactoring (semantics-preserving changes) and repair (non-semantics-preserving changes)~\cite{PGL-045}.
 \item Proof repair tools support limited classes of changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
 of non-semantics-preserving changes~\cite{robert2018, wibergh2019}, and these are not informed by real user needs~\cite{replica}.
 \item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018}.
@@ -43,12 +43,12 @@ of non-semantics-preserving changes~\cite{robert2018, wibergh2019}, and these ar
 Our progress towards each of these challenges leverages a corresponding key insight: % TODO dan comment
 
 \begin{enumerate}
-\item Proof refactoring and repair are both forms of proof reuse. 
-The difference from standard proof reuse is that, for proof refactoring and repair, the specification about which
+\item Proof refactoring and repair are both forms of proof reuse, with the additional
+challenge that the specification about which
 we are reusing proofs ceases to exist.
 The key to supporting both is to build a generic proof reuse
-tool that can handle the additional challenges imposed by that specification ceasing to exist (Section~\ref{sec:key1}). 
-\item The proof term transformation from the \textsc{DEVOID}~\cite{Ringer2019} proof reuse tool can be generalized
+tool that can handle that additional challenge (Section~\ref{sec:key1}). 
+\item The proof term transformation from the \textsc{Devoid}~\cite{Ringer2019} proof reuse tool can be generalized
 to build such a generic proof reuse tool, and the result is configurable both by the writer of the proof reuse tool and by the 
 proof engineer (Section~\ref{sec:key2}).
 \item The transformed proof terms can then be translated back to tactics (Section~\ref{sec:decompiler}).
@@ -56,8 +56,8 @@ proof engineer (Section~\ref{sec:key2}).
 
 These insights informed our design of 
 \toolname\footnote{This name is for double-blind review.} (Configurable Approach to Repairing and Refactoring Outdated Tactics), a plugin for Coq 8.8.
-\toolname (Section~\ref{sec:overview}) combines a configurable program transformation over proof terms % TODO doesn't quite match current organization
-with search procedures to instantiate the program transformation to a particular change
+\toolname combines a configurable program transformation over proof terms % TODO doesn't quite match current organization
+with search procedures to configure the program transformation,
 and a prototype decompiler from proof terms back to tactics.
 The result is a tool that:
 
@@ -75,6 +75,5 @@ of the TLS Handshake Protocol,
 \item can support variants of a refactoring benchmark from a user study of Coq proof engineers,
 \item and can help port functions and proofs from unary to binary numbers.
 \end{enumerate}
-Our experiences (Section~\ref{sec:discussion}) inform ideas that may help with building a future
-of more accessible proof refactoring, repair, and reuse.
+Our experiences drive ideas (Section~\ref{sec:discussion}) that open the door to better proof engineering tools.
 
