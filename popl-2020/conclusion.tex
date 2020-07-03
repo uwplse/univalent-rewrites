@@ -2,16 +2,16 @@
 \label{sec:discussion}
 
 We showed how to combine a configurable proof term transformation with a tactic decompiler to build \toolname,
-a proof refactoring and repair tool that is flexible and useful for real proof engineering scenarios.
+a proof repair tool that is flexible and useful for real proof engineering scenarios.
 \toolname has already helped an industrial proof engineer integrate Coq with a company proof engineering workflow,
-and has supported refactoring and repair benchmarks common in the proof engineering community.
+and has supported benchmarks common in the proof engineering community.
 
 Moving forward, our goal is to make proofs easier to reuse and maintain regardless of proof engineering expertise.
 We want to reach more users, and we want \toolname to integrate seemlessly with Coq.
 We conclude with a discussion of the three biggest challenges we encountered in scaling up the \toolname proof term 
 transformation (Section~\ref{sec:problems}), and how we believe ideas from the rewrite system and constraint
 solver communities can address those challenges and improve the state of the art in proof engineering (Section~\ref{sec:egraph}).
-Our hope is to inspire research communities to come together and open the door to better tools for proof reuse, refactoring, and repair.
+Our hope is to inspire research communities to come together and open the door to better tools for proof reuse and repair.
 
 \subsection{Three Challenges}
 \label{sec:problems}
@@ -45,7 +45,7 @@ Repair (@\codediff{Tuple.output}@) (@\codediff{Record.output}@)
 (@\codeauto{op}@) : (@\codediff{Record.input}@) $\rightarrow$ (@\texttt{Record.output}@).
 \end{lstlisting}
 \end{minipage}
-\caption{The initial attempt at refactoring \lstinline{op} (left) and the correct attempt (right).}
+\caption{The initial attempt at updating \lstinline{op} (left) and the correct attempt (right).}
 \label{fig:op}
 \end{figure}
 
@@ -57,12 +57,12 @@ op : (r : bool * (nat * bool)) $\rightarrow$ nat * bool.
 \end{lstlisting}
 from the tuples on the left to the records on the right of Figure~\ref{fig:records},
 whether \toolname behaved as expected depended on how the proof engineer interacted with the \lstinline{Repair} command.
-The proof engineer first tried to refactor the output type before the input type (Figure~\ref{fig:op}, left),
+The proof engineer first tried to update the output type before the input type (Figure~\ref{fig:op}, left),
 but later had to switch the order (Figure~\ref{fig:op}, right) to get the function with the expected type.
 
 This is because the argument \lstinline{r : (bool * (nat * bool))} to \lstinline{Tuple.op} can be viewed as 
 having either type \lstinline{bool * Tuple.output} or \lstinline{Tuple.input}.
-Both functions in Figure~\ref{fig:op} are correct and equivalent refactorings of \lstinline{Tuple.op},
+Both functions in Figure~\ref{fig:op} are correct and equivalent repairs of \lstinline{Tuple.op},
 but only one is what the proof engineer expected.
 
 The proof engineer wished for type-directed search.
@@ -155,6 +155,6 @@ type theory or as automation external to the type theory---is ultimately just re
 and so automatic transport is just a rewrite system.
 We implore the communities that work on univalent type theories and proof automation to collaborate with
 the communities that work on constraint solvers and rewrite systems, and together build
-the next generation of automation for proof reuse, refactoring, and repair.
+the next generation of automation for proof reuse and repair.
 
 
