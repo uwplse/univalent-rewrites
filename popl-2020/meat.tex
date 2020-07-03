@@ -114,7 +114,7 @@ Furthermore, the transformed functions behave the same way as the input function
 and the transformed proofs talk about the same things as the input proofs.
 
 For example, Figure~\ref{fig:appswap1} shows the input and output reduced to CIC$_{\omega}$
-for our refactored list append function \lstinline{++} from Section~\ref{sec:overview},
+for the updated list append function \lstinline{++} from Section~\ref{sec:overview},
 corresponding to the change in \lstinline{list} from Figure~\ref{fig:listswap}.
 Both versions of append behave identically up to the equivalence from Figure~\ref{fig:equivalence}, since:
 
@@ -150,7 +150,7 @@ $\lambda$ (T : Type) (l m : list T) .
  } m.
 \end{lstlisting}
 \end{minipage}
-\caption{The list append function before (left) and after (right) refactoring.}
+\caption{The list append function before (left) and after (right) repair.}
 \label{fig:appswap1}
 \end{figure}
 
@@ -225,11 +225,11 @@ DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=
   Elim(l, P) { (@\codediff{p$_{\mathtt{cons}}$}@), (@\codediff{p$_{\mathtt{nil}}$}@) }.
 \end{lstlisting}
 \end{minipage}
-\caption{The dependent constructors and eliminators for old (left) and refactored (right) \lstinline{list}.}
+\caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}.}
 \label{fig:listconfig}
 \end{figure}
 
-For the \lstinline{list} refactoring from Figure~\ref{fig:listswap},
+For the \lstinline{list} change from Figure~\ref{fig:listswap},
 the configuration that \toolname discovers uses the the dependent constructors
 and eliminators in Figure~\ref{fig:listconfig}. The dependent constructors for \lstinline{Old.list}
 are just the normal constructors \lstinline{nil} and \lstinline{cons} with the order unchanged,
@@ -268,18 +268,18 @@ $\lambda$ (T : Type) (l m : list T) .
 \label{fig:appswap2}
 \end{figure}
 
-To refactor the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
+To update the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
 identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (Figure~\ref{fig:appswap2}).
-The transformation then just recursively substitutes in the refactored \lstinline{list} type
+The transformation then just recursively substitutes in the updated \lstinline{list} type
 for the original \lstinline{list} type, which moves \lstinline{DepConstr} and \lstinline{DepElim}
-to construct and eliminate over the refactored type.
+to construct and eliminate over the updated type.
 Finally, this reduces to the term on the right of Figure~\ref{fig:appswap2}.
 Transforming proofs works the same way.
 
 When our types are not both inductive types, the constructors and eliminators can be \textit{dependent}.
-One example of this arises from integrating the refactoring between lists and $\Sigma$\lstinline{(n : nat).vector T n} that
+One example of this arises from integrating the change from lists and $\Sigma$\lstinline{(n : nat).vector T n} that
 \textsc{Devoid} supports into the \toolname framework.
-We can configure the \toolname transformation to perform this same refactoring
+We can configure the \toolname transformation to perform this same repair
 by configuring the dependent constructors to \textit{pack} the index into an existential, for example:
 
 \begin{lstlisting}
@@ -330,7 +330,7 @@ which may be propositional rather than definitional, and so must be represented 
 
 \lstinline{Eta} describes how to $\eta$-expand the identity function in a way that preserves equalities
 coherently with the definitions of \lstinline{DepConstr} and \lstinline{DepElim}.
-For example, for the refactoring from list to \lstinline{$\Sigma$(n : nat).vector T n}, we have:
+For example, for the change from list to \lstinline{$\Sigma$(n : nat).vector T n}, we have:
 
 \begin{lstlisting}
 Eta ($\Sigma$(n : nat).vector T n) :=
@@ -473,7 +473,7 @@ Rather, the correctness criteria simply need to hold in order for the proof term
 
 % TODO may move this into 6, or 8, or something. not sure yet.
 
-The configurable proof term transformation helped us build a flexible proof refactoring and reuse tool.
+The configurable proof term transformation helped us build a flexible proof repair and reuse tool.
 However, it alone was not enough to build a tool that reaches real users.
 This section describes a sample of the implementation challenges that we encountered and how we solved them.
 Section~\ref{sec:discussion} elaborates on the remaining challenges and our plans to address them in the future.
