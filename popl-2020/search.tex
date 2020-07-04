@@ -97,10 +97,9 @@ it set \lstinline{DepConstr} to recursively apply the pair constructor:
 and it set \lstinline{DepElim} to recursively eliminate over the pair:
 
 \begin{lstlisting}
-(@\codeauto{dep_elim}@) (P : input $\rightarrow$ Type) (f : $\forall$ f n s, P (dep_constr_0 f n s)) (i : input)
-    : P (eta i) :=
+(@\codeauto{dep_elim}@) (P: input $\rightarrow$ Type) (f: $\forall$ f n s, P(dep_constr_0 f n s)) (i: input): P(eta i) :=
   prod_rect
-    (fun p : bool * (nat * bool) => P (eta p))
+    (fun (p : bool * (nat * bool)) => P (eta p))
     (fun (a : bool) (b : nat * bool) => f a (fst b) (snd b))
     i.
 \end{lstlisting}
@@ -127,9 +126,7 @@ The proof engineer then wrote this proof about the new specification: % TODO did
 
 \begin{lstlisting}
 Theorem and_spec_true_true : $\forall$ (r : (@\texttt{Record}@).input),
-  firstBool r = true $\rightarrow$
-  secondBool r = true $\rightarrow$
-  andBools ((@\texttt{Record}@).op r) = true.
+  firstBool r = true $\rightarrow$ secondBool r = true $\rightarrow$ andBools ((@\texttt{Record}@).op r) = true.
 Proof.
   destruct r as [f n s].
   unfold (@\texttt{Record}@).op.
@@ -143,9 +140,7 @@ and then used \toolname to automatically port this proof back to a proof of the 
 
 \begin{lstlisting}
 Theorem (@\codeauto{and_spec_true_true}@) : $\forall$ (r : input),
-  fst r = true $\rightarrow$
-  snd (snd r) = true $\rightarrow$
-  andb (op r) = true.
+  fst r = true $\rightarrow$ snd (snd r) = true $\rightarrow$ andb (op r) = true.
 Proof.
   destruct r as [a b].
   apply andb_true_intro.
@@ -155,7 +150,6 @@ Qed.
 
 \subsubsection{Lessons}
 
-\paragraph{Configuration \& Flexibility}
 The proof engineer used \toolname most commonly to update tuples to records,
 but also to help write dependently typed functions.
 In total, the proof engineer used at least three automatic configurations and no manual configurations.
@@ -166,7 +160,6 @@ the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
 Flexibility could be further improved by exposing an interface to users to allow them to
 write search procedures themselves.
 
-\paragraph{Workflow Integration}
 The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
 workflow using solver-aided tools at \company.
 The workflow for using \toolname itself, however, was a bit nonstandard,
