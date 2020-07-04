@@ -34,43 +34,11 @@ and proofs behaved exactly the same way.
 
 \begin{figure}
 \begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-(@\codeauto{f}@) T (l : Old.list T) : New.list T :=
-  Old.list_rect T
-    (fun (l : Old.list T) => New.list T)
-    New.nil
-    (fun (t : T) _ (IHl : New.list T) =>
-      New.cons T t IHl)
-    l.
-
-Lemma (@\codeauto{section}@):
-  $\forall$ T (l : Old.list T), (@\codeauto{g}@) T ((@\codeauto{f}@) T l) = l.
-Proof.
-  intros T l. symmetry. induction l.
-  - reflexivity.
-  - simpl. rewrite <- IHl. reflexivity.
-Defined.
-\end{lstlisting}
+\codeauto{\lstinputlisting[firstline=1, lastline=15]{equivproof.tex}}
 \end{minipage}
-\hfill
+\codeauto{\hfill}
 \begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-(@\codeauto{g}@) T (l : New.list T) : Old.list T :=
-  New.list_rect T
-    (fun (l : New.list T) => Old.list T)
-    (fun (t : T) _ (IHl : Old.list T) =>
-      Old.cons T t IHl)
-    Old.nil
-    l.
-
-Lemma (@\codeauto{retraction}@):
-  $\forall$ T (l : New.list T), (@\codeauto{f}@) T ((@\codeauto{g}@) T l) = l.
-Proof.
-  intros T l. symmetry. induction l.
-  - simpl. rewrite <- IHl. reflexivity.
-  - reflexivity.
-Defined.
-\end{lstlisting}
+\codeauto{\lstinputlisting[firstline=17, lastline=32]{equivproof.tex}}
 \end{minipage}
 \caption{Two functions between \lstinline{Old.list} and \lstinline{New.list} (top) that form an equivalence (bottom).}
 \label{fig:equivalence}
@@ -136,7 +104,7 @@ $\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\coded
 More desirable is a repair that takes us from lists of a particular length to vectors of that length:
 
 \begin{lstlisting}
-{ l : list T | length l = n } $\simeq$ vector T n.
+$\Sigma$(l : list T).length l = n $\simeq$ vector T n.
 \end{lstlisting}
 \toolname can handle both of these changes.
 Practically, when the proof engineer changes specifications to refer to \lstinline{vector} instead of \lstinline{list},

@@ -12,7 +12,7 @@ we can decompile these Gallina terms to Ltac proof scripts for the proof enginee
 
 The \textbf{Decompile} component implements a prototype of this translation.
 This decompiler prototype has shown early promising results.
-For example, it produced the automatically generated tactic proof for \codeauto{\lstinline{rev_app_distr}} 
+For example, it produced the automatically generated tactic proof for \lstinline{rev_app_distr} 
 in Section~\ref{sec:overview}, as well as the tactic proofs of \lstinline{section}
 and \lstinline{retraction} in Section~\ref{fig:equivalence}.
 
@@ -120,7 +120,7 @@ At that point the \textsc{Base} case holds, and we are done.
 While the toy compiler is very simple, only a few simple changes are needed
 to move this from CIC$_{\omega}$ to Coq.
 Furthermore, the result can already handle some of the example proofs \toolname has produced.
-The generated proof term of \codeauto{\lstinline{rev_app_distr}} with swapped list constructors from Section~\ref{sec:overview},
+The generated proof term of \lstinline{rev_app_distr} with swapped list constructors from Section~\ref{sec:overview},
 for example, consists only of induction, rewriting, simplification, and reflexivity.
 The proof term for the base case:
 

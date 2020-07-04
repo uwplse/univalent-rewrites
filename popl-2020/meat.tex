@@ -167,7 +167,7 @@ For example, for the change from list to \lstinline{$\Sigma$(n : nat).vector T n
 
 \begin{lstlisting}
 Eta ($\Sigma$(n : nat).vector T n) :=
-  $\lambda$ (s : $\Sigma$(n : nat).vector T n).$\exists$ (\$pi_l$ s) (\$pi_r$ s).
+  $\lambda$ (s : $\Sigma$(n : nat).vector T n).$\exists$ ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
 which corresponds to the strategic packing in the \textsc{Devoid} implementation to deal with
 non-primitive projections not handled by the transformation. Thanks to this, we can forego the assumption from the \textsc{Devoid} transformation

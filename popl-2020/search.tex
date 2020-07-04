@@ -85,22 +85,22 @@ The search procedure triggered automatically when the proof engineer called the 
 The configuration it found for the record type was straightforward: identity for \lstinline{Eta},
 the record constructor for \lstinline{DepConstr}, the record eliminator for \lstinline{DepElim}, and reflexive \lstinline{Iota}.
 For the tuple, it set \lstinline{Eta} to expand and project, in our example:
-\begin{lstlisting}
-(@\codeauto{eta}@) (H : input) : input := (fst H, (fst (snd H), snd (snd H))).
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+eta (H : input) : input := (fst H, (fst (snd H), snd (snd H))).
 \end{lstlisting}
 it set \lstinline{DepConstr} to recursively apply the pair constructor:
 
-\begin{lstlisting}
-(@\codeauto{dep_constr_0}@) (firstBool : bool) (numberI : nat) (secondBool : bool) : input :=
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+dep_constr_0 (firstBool : bool) (numberI : nat) (secondBool : bool) : input := (@\vspace{-0.04cm}@)
   (firstBool, (numberI, secondBool)).
 \end{lstlisting}
 and it set \lstinline{DepElim} to recursively eliminate over the pair:
 
-\begin{lstlisting}
-(@\codeauto{dep_elim}@) (P: input $\rightarrow$ Type) (f: $\forall$ f n s, P(dep_constr_0 f n s)) (i: input): P(eta i) :=
-  prod_rect
-    (fun (p : bool * (nat * bool)) => P (eta p))
-    (fun (a : bool) (b : nat * bool) => f a (fst b) (snd b))
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+dep_elim (P: input $\rightarrow$ Type) (f: $\forall$ f n s, P(dep_constr_0 f n s)) (i: input): P(eta i) :=(@\vspace{-0.04cm}@)
+  prod_rect (@\vspace{-0.04cm}@)
+    (fun (p : bool * (nat * bool)) => P (eta p)) (@\vspace{-0.04cm}@)
+    (fun (a : bool) (b : nat * bool) => f a (fst b) (snd b)) (@\vspace{-0.04cm}@)
     i.
 \end{lstlisting}
 This induced an equivalence between the nested tuple and record,
@@ -115,11 +115,11 @@ op (r : bool * (nat * bool)) : nat * bool :=
 \end{lstlisting}
 to this function:
 
-\begin{lstlisting}
-(@\codeauto{op}@) (r : (@\texttt{Record}@).input) : (@\texttt{Record}@).output :=
-  {|
-     numberO := numberI r;
-     andBools := andb (fistBool r) (secondBool r)
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+op (r : (@\texttt{Record}@).input) : (@\texttt{Record}@).output := (@\vspace{-0.04cm}@)
+  {| (@\vspace{-0.04cm}@)
+     numberO := numberI r; (@\vspace{-0.04cm}@)
+     andBools := andb (fistBool r) (secondBool r) (@\vspace{-0.04cm}@)
   |}.
 \end{lstlisting}
 The proof engineer then wrote this proof about the new specification: % TODO did val write this or did I?
@@ -138,13 +138,13 @@ Qed.
 and then used \toolname to automatically port this proof back to a proof of the original function
 (with a bit of massaging to clean up the tactic output): % TODO induction & preprocess though
 
-\begin{lstlisting}
-Theorem (@\codeauto{and_spec_true_true}@) : $\forall$ (r : input),
-  fst r = true $\rightarrow$ snd (snd r) = true $\rightarrow$ andb (op r) = true.
-Proof.
-  destruct r as [a b].
-  apply andb_true_intro.
-  intuition.
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+Theorem and_spec_true_true : $\forall$ (r : input),(@\vspace{-0.04cm}@)
+  fst r = true $\rightarrow$ snd (snd r) = true $\rightarrow$ andb (op r) = true.(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  destruct r as [a b].(@\vspace{-0.04cm}@)
+  apply andb_true_intro.(@\vspace{-0.04cm}@)
+  intuition.(@\vspace{-0.04cm}@)
 Qed.
 \end{lstlisting}
 
@@ -198,7 +198,7 @@ The first fits the proof term transformation from \textsc{Devoid} into the \tool
 it ports functions and proofs from the input type to the ornamented type at \textit{some} index,
 like $\Sigma$\lstinline{(n : nat).vector T n}.
 The second configuration goes beyond the functionality from \textsc{Devoid}, and provides
-the missing link to get proofs aat a \textit{particular} index, like \lstinline{vector T n}.
+the missing link to get proofs at a \textit{particular} index, like \lstinline{vector T n}.
 \textsc{Devoid} had left this step to the user.
 
 The search procedure for the first configuration is based heavily on the search procedure from \textsc{Devoid}.
@@ -212,27 +212,27 @@ the list constructors for \lstinline{DepConstr}, the list eliminator for \lstinl
 and trivial \lstinline{Iota}.
 For \lstinline{vector}, it set \lstinline{Eta} to expand the input:
 
-\begin{lstlisting}
-(@\codeauto{eta}@) (T : Type) (s : $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n := $\exists$ ($\pi_l$ s) ($\pi_r$ s).
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+eta (T : Type) (s : $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n := $\exists$ ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
 it set \lstinline{DepConstr} to pack constructors: % TODO shrink this now that some of it is in the other section
 
-\begin{lstlisting}
-(@\codeauto{dep_constr_0}@) (T : Type) : $\Sigma$(n : nat).vector T n :=
-  $\exists$ 0 (Vector.nil A).
-(@\codeauto{dep_constr_1}@) (T : Type) (t : T) (s : $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n :=
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+dep_constr_0 (T : Type) : $\Sigma$(n : nat).vector T n :=(@\vspace{-0.04cm}@)
+  $\exists$ 0 (Vector.nil A).(@\vspace{-0.04cm}@)
+dep_constr_1 (T : Type) (t : T) (s : $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n :=(@\vspace{-0.04cm}@)
   $\exists$ (S ($\pi_l$ s)) (Vector.cons ($\pi_l$ s) t ($\pi_r$ s)).
 \end{lstlisting}
 and it set \lstinline{DepElim} to eliminate its projections:
 
-\begin{lstlisting}
-(@\codeauto{dep_elim}@) (T : Type) (P : $\Sigma$(n : nat).vector T n $\rightarrow$ Type) (pnil : P (dep_constr_0 T))
-    (pcons : $\forall$ t s, P (eta T s) $\rightarrow$ P (dep_constr_1 T t s)) (s : $\Sigma$(n : nat).vector T n)
-    : P (eta T s) :=
-  vector_rect T
-    (fun (n : nat) (v : vector T n) => P ($\exists$ n v))
-    pnil
-    (fun (t : T) (n : nat) (v : vector T n) => pcons t ($\exists$ n v))
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+dep_elim (T : Type) (P : $\Sigma$(n : nat).vector T n $\rightarrow$ Type) (pnil : P (dep_constr_0 T))(@\vspace{-0.04cm}@)
+    (pcons : $\forall$ t s, P (eta T s) $\rightarrow$ P (dep_constr_1 T t s)) (s : $\Sigma$(n : nat).vector T n)(@\vspace{-0.04cm}@)
+    : P (eta T s) :=(@\vspace{-0.04cm}@)
+  vector_rect T(@\vspace{-0.04cm}@)
+    (fun (n : nat) (v : vector T n) => P ($\exists$ n v))(@\vspace{-0.04cm}@)
+    pnil(@\vspace{-0.04cm}@)
+    (fun (t : T) (n : nat) (v : vector T n) => pcons t ($\exists$ n v))(@\vspace{-0.04cm}@)
     ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
 This configuration was enough to capture all of the search and lifting functionality from \textsc{Devoid}. %for both search and lifting,
@@ -258,8 +258,8 @@ For example, it views \lstinline{vector T n} as implicitly representing $\Sigma$
 This is seen in \lstinline{eta}, here: 
 % TODO both should take the same number of arguments, even if eta_A takes fewer. also does this belong in iota?
 
-\begin{lstlisting}
-(@\codeauto{eta}@) (T : Type) (n m : nat) (H : n = m) (v : vector T m) : vector T n :=
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+eta (T : Type) (n m : nat) (H : n = m) (v : vector T m) : vector T n :=(@\vspace{-0.04cm}@)
   eq_rect m (vector T) v n H.
 \end{lstlisting}
 which is the identity function generalized over any equal index.
@@ -295,18 +295,18 @@ with functions \lstinline{zip_with} and \lstinline{zip} operating over lists at 
 We then ran \lstinline{Repair module} using the first
 configuration, which proved this lemma:
 
-\begin{lstlisting}
-Lemma (@\codeauto{zip_with_is_zip}@) : $\forall$ A B n
-  (v1:$\Sigma$(l1:(@\codediff{$\Sigma$(m: nat).vector A m}@)).(@\codediff{$\pi_l$}@) l1 = n) (v2:$\Sigma$(l2:(@\codediff{$\Sigma$(m: nat).vector B m}@)).(@\codediff{$\pi_l$}@) l2 = n),
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
+  (v1:$\Sigma$(l1:(@\codediff{$\Sigma$(m: nat).vector A m}@)).(@\codediff{$\pi_l$}@) l1 = n) (v2:$\Sigma$(l2:(@\codediff{$\Sigma$(m: nat).vector B m}@)).(@\codediff{$\pi_l$}@) l2 = n),(@\vspace{-0.04cm}@)
     zip_with pair v1 v2 = zip v1 v2.
 \end{lstlisting}
 with functions \lstinline{zip_with} and \lstinline{zip} updated as well.
 We composed this with \lstinline{Repair module} on the second configuration,
 which proved this lemma:
 
-\begin{lstlisting}
-Lemma (@\codeauto{zip_with_is_zip}@) : $\forall$ A B n
-  (v1: (@\codediff{vector A n}@)) (v2: (@\codediff{vector B n}@)),
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
+  (v1: (@\codediff{vector A n}@)) (v2: (@\codediff{vector B n}@)),(@\vspace{-0.04cm}@)
     zip_with pair v1 v2 = zip v1 v2.
 \end{lstlisting}
 with functions \lstinline{zip_with} and \lstinline{zip} operating directly over vectors.
@@ -373,15 +373,15 @@ The configuration this used handles swapping and renaming constructors of induct
 This is one of the simplest configurations.
 The only nontrivial part is that \lstinline{DepConstr} over the updated type swaps back the constructors, in our example:
 
-\begin{lstlisting}
-(@\codeauto{dep_constr_1}@) (H : Z) : Term := Int H.
-(@\codeauto{dep_constr_2}@) (H H0 : Term) : Term := Eq H H0.
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+dep_constr_0 (H : Z) : Term := Int H.(@\vspace{-0.04cm}@)
+dep_constr_1 (H H0 : Term) : Term := Eq H H0.
 \end{lstlisting}
 so that they align with the constructors of the original type.
 The eliminator similarly swaps cases:
 
-\begin{lstlisting}
-(@\codeauto{dep_elim}@) P f0 f1 f2 f3 f4 f5 f6 t : P t := Term_rect P f0 (@\codediff{f2}@) (@\codediff{f1}@) f3 f4 f5 f6 t.
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+dep_elim P f0 f1 f2 f3 f4 f5 f6 t : P t := Term_rect P f0 (@\codediff{f2}@) (@\codediff{f1}@) f3 f4 f5 f6 t.
 \end{lstlisting}
 where \lstinline{Term_rect} is the eliminator over the old version of \lstinline{Term}.
 
@@ -504,7 +504,7 @@ This corresponds to a broader pattern---it captures the essence of the change in
 We ported unary addition from \lstinline{nat} to \lstinline{N} fully automatically:
 
 \begin{lstlisting}
-Repair nat N in add as (@\codeauto{slow_add}@).
+Repair nat N in add as slow_add.
 \end{lstlisting}
 The result (tellingly named) has the same slow behavior as the \lstinline{add} function over \lstinline{nat}.
 However, it no longer refers to \lstinline{nat} in any way.
@@ -528,8 +528,8 @@ add_n_Sm : $\forall$ (n m : nat), S (add n m) = add n (S m).
 \end{lstlisting}
 from \lstinline{add} to \lstinline{slow_add}:
 
-\begin{lstlisting}
-(@\codeauto{slow_add_n_Sm}@) : $\forall$ (n m : N), N.succ (slow_add n m) = slow_add n (N.succ m).
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+slow_add_n_Sm : $\forall$ (n m : N), N.succ (slow_add n m) = slow_add n (N.succ m).
 \end{lstlisting}
 This was not quite as push-button.
 It involved a manual expansion step, turning implicit casts in the inductive case
