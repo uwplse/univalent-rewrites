@@ -35,8 +35,8 @@ We hope to solve all three of these challenges elegantly and efficiently using a
 data structure for managing equivalences from the constraint solver and rewrite system communities
 called \textit{e-graphs}~\cite{egraph1}.
 E-graphs are built specifically to deal with multiple equivalences,
-they remove the burden of ad-hoc reasoning about termination,
-and they make it simple for anyone to extend a system with new
+remove the burden of ad-hoc reasoning about termination,
+and make it simple for anyone to extend a system with new
 rewrite rules, even those that call out
 to external procedures~\cite{egraph5}.
 The one hurdle is to adapt them to use a univalent definition of equality.
@@ -47,7 +47,7 @@ Two particularly helpful features would be support for common search procedures 
 We hope to use user input to guide this process, as analyzing Ltac directly is unlikely to be fruitful.
 Some improvements could come from better tactics themselves---like better handling of explicitly passed 
 motives in the \lstinline{induction} tactic, or a more structured tactic language.
-We believe that the future of seemless and powerful proof repair for all is within reach,
+We believe that the future of seemless and powerful proof repair and reuse for all is within reach,
 and we hope you will join us in bringing it to life.
 
 
