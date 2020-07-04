@@ -1,16 +1,97 @@
 \section{Related Work}
 
+% TODO check survey paper for more stuff/better stuff
+% TODO also remove any content that is too similar with survey paper
+
+introduce three topics and say a lot more is in the survey paper~\cite{PGL-045}
+
+\paragraph{Proof Repair}
+
+both proof refactoring and repair, and the overlap, and some talk about the distinction if at all or just point to survey paper~\cite{wibergh2019, WhitesidePhD, Dietrich2013, adams2015, Bourke12, Roe2016, robert2018, pumpkinpatch}
+
+Proof repair can be viewed as a form of \textit{program repair}~\cite{Monperrus:2018:ASR:3177787.3105906, Gazzola:2018:ASR:3180155.3182526}
+specific to the domain of proof assistants.
+Proof assistants are a good fit for program repair: A recent paper~\cite{Qi:2015:APP:2771783.2771791} 
+recommends that program repair tools draw on extra information
+such as specifications or example patches. In proof assistants like Coq, specifications and examples 
+are rich and widely available: specifications as a result of dependent types,
+and examples as a result of constructivism.
+
 \paragraph{Proof Reuse}
 
 esp. theorem reuse by proof term transformation, DEVOID, univalent parametricity, transport. \cite{magaud2000changing} have a transformation.
 leo congruence tactic and how it relates to Bas' tactic, and how that can be used for automatic transport.
+parametricity citations. and anyone who has done stuff with propositional iota.
+relation to repair.
 
-\paragraph{Proof Evolution}
+\paragraph{Proof Design}
 
-including good design, tactic-heavy style, planning for change
+intro into why it's relevant.
 
-both proof refactoring and repair, and the overlap, and some talk about the distinction if at all or just point to survey paper~\cite{wibergh2019, WhitesidePhD, Dietrich2013, adams2015, Bourke12, Roe2016, robert2018, pumpkinpatch}
+Many ITPs like Coq come with default tactics which can
+help make proofs robust, like hint databases~\cite{coq-intro} and implementations of decision procedures~\cite{Pugh1991}. 
+Some styles of proof development rely heavily on automation~\cite{Chlipala:2013:CPD:2584504}.
+At the extreme end of this is the use of powerful general-purpose tactics 
+called hammers~\cite{Blanchette2016b, Blanchette2013, Kaliszyk2014, Czajka2018}.
+The benefit of an automation-heavy style is that this localizes the burden of change to the automation itself as opposed 
+to the many proofs that use the automation.
+On the other hand, heavy automation can produce terms that are large and slow to type check,
+and tactics can be difficult to debug when they fail.
+These are complementary and so on.
+But more work will be needed for \toolname to support developments in this style.
 
-\paragraph{Program Evolution}
+more stuff \& relation to repair
 
-including a discussion about program repair
+%Proof engineers can also design robust specifications and proof
+%terms directly.
+%For example, as in software engineering, in proof engineering, writing interfaces to abstract implementation details %from core functionality
+%can make developments resilient to changes. Using this approach, if an implementation detail changes,
+%%then proofs that depend on that detail do not need to change. In Coq, language
+%features that allow for writing interfaces include modules~\cite{Chrzaszcz2003},
+%type classes~\cite{Sozeau2008}, and canonical structures~\cite{Saibi:PhD}. % TODO revisit
+
+%Planning for Change~\cite{Woos:2016:PCF:2854065.2854081} presents a methodology for writing robust proofs,
+%informed by a large engineering effort verifying the Raft consensus protocol.
+%he methodology is a set of recommendations, some of which draw on software engineering design principles.
+%For example, the authors recommend using information hiding techniques similar to those used in software engineering to hide definitions.
+%That way, the burden of change is localized to interface changes, and changes in only implementation do not cause
+%breaking changes in dependencies.
+%Other recommendations tackle challenges that are unique to proof engineering. For example, the authors
+%advocate for the use of custom induction principles to capture common patterns in inductive proofs.
+
+%The proofs of the seL4 microkernel~\cite{Klein:2014:CFV:2584468.2560537} have evolved alongside the implementation for
+%a period of over eight years
+%The proof development makes use of two layers of specifications: an \textit{abstract specification} which describes only behavior, 
+%and an \textit{executable specification} which includes implementation details. These two layers are connected by
+%a refinement proof, which states that security properties that hold over the abstract specification
+%also hold over the concrete specification.
+%Using this approach, the authors found that both making low-level changes and adding new simple features were not very costly,
+%though more complex changes that interacted with other parts of the code significantly were still costly.
+
+%Design and proof repair are complementary: Design is proactive, while proof repair is reactive.
+%Proof repair can help with changes that occur outside of the programmer's control,
+%such as changes in dependencies; the \pumpkin\ paper includes examples
+%of such changes in real Coq developments~\cite{ringer2018adapting}.
+%Proof repair can also help with changes that are difficult to protect against with design;
+%the seL4 paper, for example, notes that there were some classes of changes that were still difficult
+%even with informed design~\cite{Klein:2014:CFV:2584468.2560537}.
+%Ultimately, \pumpkin\ is meant to be complementary to informed design principles.
+
+%The downsides of relying on traditional automation to make proofs resilient to changes 
+%point to considerations to keep in mind as proof repair continues to evolve. For example,
+%the terms generated by tactics can be large, and thus slow to type-check. 
+%Tactics can also be difficult to debug when they fail.
+%To address these, a proof repair tool should produce small terms, and it should be easy to debug.
+%Currently, \pumpkin\ optimizes for the former, but does little of the latter.
+
+%Ideally, a proof repair tool ought to integrate with automation,
+%since this is the level at which proof engineers typically write proofs in many ITPs.
+%The \pumpkin-git tool includes hint database machinery that points to one example of how to accomplish this.
+%It may also be possible to integrate hammers into proof repair tools, enabling these tools to make use
+%of the history of unrelated proof developments to derive patches. % TODO might be some work on this already, discuss
+
+%The papers that describe design principles for robust proofs may include examples and benchmarks
+%that are useful for proof repair tooling. Experiences maintaining large-scale proof developments
+%like seL4 may also highlight specific classes of changes that are particularly hard for design principles
+%to protect against; perhaps proof repair is well-suited to handle some of these changes.
+
