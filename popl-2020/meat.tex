@@ -108,7 +108,7 @@ DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=
 \end{figure}
 
 For the \lstinline{list} change from Figure~\ref{fig:listswap},
-the configuration that \toolname discovers uses the the dependent constructors
+the configuration that \toolname discovers uses the dependent constructors
 and eliminators in Figure~\ref{fig:listconfig}. The dependent constructors for \lstinline{Old.list}
 are just the normal constructors \lstinline{nil} and \lstinline{cons} with the order unchanged,
 while the dependent constructors for \lstinline{New.list} swap \lstinline{nil} and \lstinline{cons}
@@ -158,6 +158,7 @@ which use configuration parts with the same name.
 These together describe identity and equality as they relate to \lstinline{DepConstr} and \lstinline{DepElim}.
 More formally, they define $\eta$-expansion and $\iota$-reduction over \lstinline{DepConstr} and \lstinline{DepElim},
 which may be propositional rather than definitional, and so must be represented explicitly in the transformation.
+% TODO cite something here
 
 \lstinline{Eta} describes how to $\eta$-expand the body of the identity function in a way that preserves equalities
 coherently with the definitions of \lstinline{DepConstr} and \lstinline{DepElim}.
@@ -189,9 +190,8 @@ of \lstinline{DepElim} on the corresponding case. For example, with unary natura
 and using the standard eliminator over the natural numbers, the $\iota$ rules are definitional, since:
 
 \begin{lstlisting}
-nat.refold_elim_S:
-  $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
-    DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
+$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
+  DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
 goes through by reflexivity.
 However, this is no longer true for binary numbers \lstinline{N} as defined in the Coq standard library (Figure~\ref{fig:nattobin}).
@@ -200,9 +200,8 @@ between them (see Section~\ref{sec:bin}), we run into trouble reasoning about ap
 since the corresponding $\iota$ rule:
 
 \begin{lstlisting}
-N.refold_elim_S:
-  $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
-    DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
+$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
+  DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
 no longer holds by reflexivity.
 
@@ -210,11 +209,14 @@ The result of this is that proofs about \lstinline{nat} that hold by reflexivity
 do not necessarily hold by reflexivity over \lstinline{N}. For example, in Coq,
 while \lstinline{S (n + m) = S n + m} holds by reflexivity over \lstinline{nat},
 when we define \lstinline{+} with our new dependent eliminator over \lstinline{N},
-this no longer holds by reflexivity.
+the corresponding theorem over \lstinline{N} does not hold by reflexivity.
 To transform proofs about \lstinline{nat} to proofs about \lstinline{N}, we must transform \textit{definitional} $\iota$-reduction over \lstinline{nat}
 to explicit \textit{propositional} $\iota$-reduction over \lstinline{N}.
+
 For our choice of equivalence in Section~\ref{sec:bin} between \lstinline{nat} and \lstinline{N}, the \lstinline{Iota} rules are trivial
-for the base case and are exactly the proofs of theorems above for the succesor case.
+for the base case and are exactly rewrites along the proofs of theorems above for the successor case.
+The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N},
+that way the dependent eliminators behave the same way over \lstinline{nat} and \lstinline{N}.
 
 Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ from one another.
 The structures of \lstinline{DepElim} over \A and \B are always the same, so if \A and \B have the same 
@@ -253,15 +255,14 @@ To preserve equivalence, we need that \lstinline{DepElim} and \lstinline{DepCons
 formed by one function that eliminates \A and constructs \B, and another function that eliminates \B and constructs \A:
 
 \begin{lstlisting}
-f : A -> B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
-g : B -> A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
+f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
+g : B $\rightarrow$ A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
 \end{lstlisting}
-Each search procedure that \textbf{Configure} implements discovers these functions and produces a proof in Coq that these functions form an equivalence.
 In addition, we need that:
 
 \begin{enumerate} % TODO make more formal, and check if we need to say it induces particular equivalence
 \item $\forall$ \lstinline{j}, \lstinline{DepConstr(j, A)} is equal to \lstinline{DepConstr(j, B)} up to transport along that equivalence, and
-\item $\forall$ \lstinline{(a : A) (b : B) (P : A -> Type) (Q : B -> Type)}, if \lstinline{a} is equal to \lstinline{b} and \lstinline{P} is equal to \lstinline{Q} up to transport along that equivalence,
+\item $\forall$ \lstinline{(a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type)}, if \lstinline{a} is equal to \lstinline{b} and \lstinline{P} is equal to \lstinline{Q} up to transport along that equivalence,
 then \lstinline{DepElim(a, P)} is equal to \lstinline{DepElim(b, Q)} up to transport along that equivalence.
 \end{enumerate}
 The intuition for this is based on insights from \textsc{Devoid},
@@ -299,7 +300,9 @@ induction and rewriting).
 The intuition here is that it should be enough to preserve the reduction behavior
 of the eliminators and constructors, since again those are the only ways we can construct or eliminate our types.
 
-It can be difficult to prove the correctness criteria for the configuration---proving equality of the dependent eliminators
+Each search procedure that \textbf{Configure} implements discovers the functions \lstinline{f} and \lstinline{g}, and also
+produces proofs \lstinline{section} and \lstinline{retraction} in Coq that these functions form an equivalence.
+Otherwise, it can be difficult to prove the correctness criteria for the configuration---proving equality of the dependent eliminators
 up to transport, for example, requires either a special framework~\cite{tabareau2017equivalences}
 or a univalent type theory~\cite{univalent2013homotopy}.
 Thankfully, the user does not need to prove the correctness criteria for a configuration in order to use \toolname.
@@ -365,7 +368,7 @@ Rather, the correctness criteria simply need to hold in order for the proof term
 \label{fig:final}
 \end{figure}
 
-Figure~\ref{fig:final} shows the proof term transformation that forms the core of \toolname.
+Figure~\ref{fig:final} shows the proof term transformation $\Gamma \vdash t \Uparrow t'$ that forms the core of \toolname.
 Like the transformation from \textsc{Devoid}, this transformation is parameterized over
 two equivalent types \A and \B (\textsc{Equivalence}) and assumes fully expanded terms.
 In addition, it is parameterized over the configuration (\lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}),
@@ -466,7 +469,7 @@ stating and proving that two terms are in equal up to transport is in general no
 without additional axioms, though it is in some cases realizable with an external tool~\cite{tabareau2017equivalences}.
 \toolname does not yet generate these proofs as we were focused on building a usable tool with axiomatic freedom and few dependencies.
 Coq ensures that all terms that plugins produce are well-typed; for now, as with \textsc{Devoid}, the proof engineer must vet the transformed
-specifications herself.
+specifications herself to ensure that they specify the expected behavior.
 
 \subsection{The Tool}
 \label{sec:implementation}
