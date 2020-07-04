@@ -2,159 +2,53 @@
 \label{sec:discussion}
 
 We showed how to combine a configurable proof term transformation with a tactic decompiler to build \toolname,
-a proof repair tool that is flexible and useful for real proof engineering scenarios.
-\toolname has already helped an industrial proof engineer integrate Coq with a company proof engineering workflow,
+a proof repair and reuse tool that is flexible and useful for real proof engineering scenarios.
+\toolname has helped an industrial proof engineer integrate Coq with a company workflow,
 and has supported benchmarks common in the proof engineering community.
 
-Moving forward, our goal is to make proofs easier to reuse and maintain regardless of proof engineering expertise.
+Moving forward, our goal is to make proofs easier to repair and reuse regardless of proof engineering expertise.
 We want to reach more users, and we want \toolname to integrate seemlessly with Coq.
-We conclude with a discussion of the three biggest challenges we encountered in scaling up the \toolname proof term 
-transformation (Section~\ref{sec:problems}), and how we believe ideas from the rewrite system and constraint
-solver communities can address those challenges and improve the state of the art in proof engineering (Section~\ref{sec:egraph}).
-Our hope is to inspire research communities to come together and open the door to better tools for proof reuse and repair.
+We conclude with a discussion of some of the challenges that remain.
 
-\subsection{Three Challenges}
-\label{sec:problems}
+% encountered in scaling up the \toolname proof term 
+%transformation (Section~\ref{sec:problems}), and how we believe ideas from the rewrite system and constraint
+%solver communities can address those challenges and improve the state of the art in proof engineering (Section~\ref{sec:egraph}).
+%Our hope is to inspire research communities to come together and open the door to better tools for proof reuse and repair.
 
-\paragraph{Multiple Equivalences}
+\paragraph{Future Work}
 
-Deciding when to run the transformation rules from the proof term transformation in Section~\ref{sec:key2} is left to the implementation.
-\toolname automates the most basic case of this: changing \textit{every} occurrence of the old type \A to the equivalent new type \B.
-This can lead to confusing or undesired behavior.
-The ideal would be a type-directed search procedure that decides when to apply a given rule in the proof term transformation.
+We encountered three challenges in scaling up the \toolname transformation:
 
-\begin{figure}
-\begin{minipage}{0.54\textwidth}
-\begin{lstlisting}
-Repair (@\codediff{Tuple.output}@) (@\codediff{Record.output}@) 
-  in Tuple.op as op_1.
-Repair (@\codediff{Tuple.input}@) (@\codediff{Record.input}@)
-  in op_1 as op.
-
-(@\codeauto{op}@) : ((@\codediff{bool * Record.output}@)) $\rightarrow$ (@\texttt{Record.output}@).
-\end{lstlisting}
-\end{minipage}
-\hfill
-\begin{minipage}{0.44\textwidth}
-\begin{lstlisting}
-Repair (@\codediff{Tuple.input}@) (@\codediff{Record.input}@)
-  in Tuple.op as op_1.
-Repair (@\codediff{Tuple.output}@) (@\codediff{Record.output}@)
-  in op_1 as op.
-
-(@\codeauto{op}@) : (@\codediff{Record.input}@) $\rightarrow$ (@\texttt{Record.output}@).
-\end{lstlisting}
-\end{minipage}
-\caption{The initial attempt at updating \lstinline{op} (left) and the correct attempt (right).}
-\label{fig:op}
-\end{figure}
-
-This challenge came up with our industrial proof engineer from Section~\ref{sec:industry}. % TODO once we fix that section up, move the old example here
-When the proof engineer used \toolname to port a function:
-
-\begin{lstlisting}
-op : (r : bool * (nat * bool)) $\rightarrow$ nat * bool.
-\end{lstlisting}
-from the tuples on the left to the records on the right of Figure~\ref{fig:records},
-whether \toolname behaved as expected depended on how the proof engineer interacted with the \lstinline{Repair} command.
-The proof engineer first tried to update the output type before the input type (Figure~\ref{fig:op}, left),
-but later had to switch the order (Figure~\ref{fig:op}, right) to get the function with the expected type.
-
-This is because the argument \lstinline{r : (bool * (nat * bool))} to \lstinline{Tuple.op} can be viewed as 
-having either type \lstinline{bool * Tuple.output} or \lstinline{Tuple.input}.
-Both functions in Figure~\ref{fig:op} are correct and equivalent repairs of \lstinline{Tuple.op},
-but only one is what the proof engineer expected.
-
-The proof engineer wished for type-directed search.
-That way, the proof engineer could write:
-
-\begin{lstlisting}
-Repair Tuple.op as op : (@\texttt{Record.input}@) $\rightarrow$ (@\texttt{Record.input}@).
-\end{lstlisting}
-and have \toolname apply the proof term transformation along the correct equivalences
-to produce \lstinline{op} with the desired type.
-This would make for a much better workflow.
-
-\paragraph{Nontermination}
-
-Naively applying the proof term transformation from Section~\ref{sec:key2} can result in nontermination,
-especially when the output type refers to the input type.
-Consider the second equivalence that we used in Section~\ref{sec:dep}: % TODO make sure we mention this equivalence in that section
-
-\begin{lstlisting}
-$\forall$ n, $\Sigma$(s : $\Sigma$(n : nat).vector T n).$\pi_l$ s = n $\simeq$ vector T n
-\end{lstlisting}
-\toolname lifts the term:
-
-\begin{lstlisting}
-vector T 0
-\end{lstlisting}
-backwards along this equivalence, to the term:
-
-\begin{lstlisting}
-$\Sigma$(s : $\Sigma$(n : nat).vector T n).$\pi_l$ s = 0
-\end{lstlisting}
-and then stops.
-However, it could just as well keep going:
-
-\begin{lstlisting}
-$\Sigma$(s : $\Sigma$(n : nat).$\Sigma$(r : $\Sigma$(m : nat).vector T m).$\pi_l$ r = n).$\pi_l$ s = 0
-\end{lstlisting}
-and so on, forever.
-
-To cope with this, \toolname includes termination checks, and does not attempt to run a transformation rule
-if it determines that doing so would result in divergent behavior.
-However, these termination checks are ad-hoc and do not capture every potentially nonterminating use case.
-This can both clutter the code and result in unreliable behavior.
-
-\paragraph{Custom Rewrite Rules}
-
-\toolname with manual configuration is not always smart enough to match the appropriate rule in the proof term
+\begin{enumerate}
+\item \textbf{Multiple Equivalences}: Deciding when to run the transformation rules is left to the implementation.
+\toolname automates the most basic case of this: changing \textit{every} occurrence of \A to \B.
+This can lead to confusing or undesired behavior, especially when there are multiple matching equivalences for a subterm.
+The ideal would be a type-directed search procedure.
+\item \textbf{Nontermination}: Naively applying the transformation can result in nontermination when the output type refers to the input type.
+\toolname includes termination checks, but these termination checks are ad-hoc and do not capture every potentially nonterminating use case.
+\item \textbf{Custom Rewrite Rules}: \toolname with manual configuration is not always smart enough to match the appropriate rule in the proof term
 transformation without the proof engineer manually expanding the input term.
 Proof engineers would benefit from the ability to add custom rewrite rules to \toolname
 and expand the input terms automatically.
-
-For example, to support the change from unary \lstinline{nat} to binary \lstinline{N}
-from Section~\ref{sec:bin}, we had to manually expand \lstinline{Nat.add_n_Sm}
-to explicitly apply \lstinline{Iota} over \lstinline{Nat}.
-\toolname was unable to expand the term automatically with Coq's unification alone.
-It would help the proof engineer to be able to extend \toolname with custom rewrite
-rules that expand applications of \lstinline{Iota} automatically, but are faster and less brittle than unification.
-The search procedures in \textbf{Configure} all include custom rewrite rules, but
-without modifying \toolname, there is currently no way for the proof engineer to do the same.
-
-\subsection{Univalent E-Graphs}
-\label{sec:egraph}
-
-We believe that the key to solving all three of these challenges elegantly and efficiently is to use
-a graph data structure for managing equivalences called \textit{e-graphs}~\cite{egraph1}.
-E-graphs allow for clean and efficient management of equivalences in a search procedure or rewrite system.
-They form the backbone of the congruence closure algorithm in the SMT solver Z3~\cite{egraph4},
-and of the rewrite systems underneath some modern program optimizers~\cite{egraph2, egraph3}.
-
-The proof term transformation underneath \toolname is itself a rewrite system along equivalences,
-and so e-graphs are a perfect fit.
-E-graphs are built specifically to deal with the first challenge:
-choosing between multiple equivalences or matching rewrite rules,
-as in Figure~\ref{fig:op}.
-They remove the burden of the second challenge: ad-hoc reasoning about termination.
-And they make it simple for anyone to extend your rewrite system with new
+\end{enumerate}
+We hope to solve all three of these challenges elegantly and efficiently using a
+data structure for managing equivalences from the constraint solver and rewrite system communities
+called \textit{e-graphs}~\cite{egraph1}.
+E-graphs are built specifically to deal with multiple equivalences,
+they remove the burden of ad-hoc reasoning about termination,
+and they make it simple for anyone to extend a system with new
 rewrite rules, even those that call out
-to external procedures~\cite{egraph5}, making them a good fit for the third challenge, too.
+to external procedures~\cite{egraph5}.
+The one hurdle is to adapt them to use a univalent definition of equality.
+In cubical type theory, this adaptation is simple~\cite{egraph6}; we hope to repurpose this insight.
 
-The one hurdle is that the notion of equality that \toolname uses---equality up to transport---is heterogenous and reasons 
-about dependent types. Our e-graphs must be \textit{univalent}: we must adapt the simply-typed notion of equality typically
-used in these e-graphs to instead be equality up to transport.
-In cubical type theory, this adaptation is simple and allows for a powerful \lstinline{congruence} tactic~\cite{egraph6}.
+Beyond that, we believe that the biggest gains will come from continuing to improve the prototype decompiler.
+Two particularly helpful features would be support for common search procedures and support for custom tactics.
+We hope to use user input to guide this process, as analyzing Ltac directly is unlikely to be fruitful.
+Some improvements could come from better tactics themselves---like better handling of explicitly passed 
+motives in the \lstinline{induction} tactic, or a more structured tactic language.
+We believe that the future of seemless and powerful proof repair for all is within reach,
+and we hope you will join us in bringing it to life.
 
-With univalent e-graphs, we believe that we can build a type-directed search algorithm for 
-\toolname that is elegant, efficient, and extensible.
-We believe that this would generalize beyond \toolname to \textit{any} tool
-for automatic transport across equivalences, since transport---whether implemented as a function internal to the
-type theory or as automation external to the type theory---is ultimately just rewriting across type equivalences,
-and so automatic transport is just a rewrite system.
-We implore the communities that work on univalent type theories and proof automation to collaborate with
-the communities that work on constraint solvers and rewrite systems, and together build
-the next generation of automation for proof reuse and repair.
 
 
