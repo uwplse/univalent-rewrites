@@ -10,7 +10,7 @@ a particular length (automatic, Section~\ref{sec:dep}).
 \item We use \toolname to support multiple variants of a repair benchmark from a user study of Coq proof engineers (automatic, Section~\ref{sec:replica}).
 \item We use \toolname to port functions and proofs about unary numbers to functions and proofs about binary numbers (manual, Section~\ref{sec:bin}).
 \end{enumerate}
-For each case study, we explain the configuration used, walk through an example, and describe takeaways.
+For each case study, we explain the configuration used, walk through an example, and describe lessons learned.
 In all, we found the following:
 
 \begin{enumerate}
@@ -153,7 +153,7 @@ Proof.
 Qed.
 \end{lstlisting}
 
-\subsubsection{Takeaways}
+\subsubsection{Lessons}
 
 \paragraph{Configuration \& Flexibility}
 The proof engineer used \toolname most commonly to update tuples to records,
@@ -202,20 +202,11 @@ and someone on the \lstinline{coq-club} message board contacted us expressing in
 
 We used two configurations to ease development with dependent types using algebraic ornaments.
 The first fits the proof term transformation from \textsc{Devoid} into the \toolname framework:
-it sets \A to the unornamented type and \B to the ornamented type at \textit{some} index---\textsc{Devoid}
-calls the resulting type \textit{packed}. For example, a packed vector is a vector of \textit{some length}:
-
-\begin{lstlisting}
-$\Sigma$(n : nat).vector T n
-\end{lstlisting}
+it ports functions and proofs from the input type to the ornamented type at \textit{some} index,
+like $\Sigma$\lstinline{(n : nat).vector T n}.
 The second configuration goes beyond the functionality from \textsc{Devoid}, and provides
-the missing link to get proofs about \B at a \textit{particular} index:
-
-\begin{lstlisting}
-vector T n
-\end{lstlisting}
-This produces something \textit{unpacked},
-a step that \textsc{Devoid} had left to the user.
+the missing link to get proofs aat a \textit{particular} index, like \lstinline{vector T n}.
+\textsc{Devoid} had left this step to the user.
 
 The search procedure for the first configuration is based heavily on the search procedure from \textsc{Devoid}.
 In the case of lists and vectors, it used the equivalence:
@@ -255,8 +246,8 @@ This configuration was enough to capture all of the search and lifting functiona
 %save for the optional proof that these induce an equivalence, which \toolname borrows from \textsc{Devoid}.
 
 To get from lists to vectors \textit{at a particular length}, we implemented one additional configuration.
-This configuration corresponds to the equivalence between packed types at a particular projection
-and unpacked types, in our example:
+This configuration corresponds to the equivalence between sigma types at a particular projection
+and the same type escaping the sigma type, in our example:
 
 \begin{lstlisting}
 $\Sigma$(s : $\Sigma$(m : nat).vector T m).$\pi_l$ s = n $\simeq$ vector T n
@@ -292,8 +283,8 @@ and \lstinline{Iota} does not change.
 The expanded example from the \textsc{Devoid} paper is in \lstinline{Example.v}.
 The \textsc{Devoid} example ported a list \lstinline{zip} function,
 a \lstinline{zip_with} function, and a proof \lstinline{zip_with_is_zip} relating the two
-functions from lists to packed vectors.
-It then manually ported those proofs to proofs over unpacked vectors at a particular index.
+functions from lists to vectors of some length.
+It then manually ported those proofs to proofs over vectors at a particular length.
 The updated \toolname example automates this last step.
 
 The workflow for this was a bit different than it was with \textsc{Devoid}.
@@ -327,28 +318,30 @@ Lemma (@\codeauto{zip_with_is_zip}@) : $\forall$ A B n
 \end{lstlisting}
 with functions \lstinline{zip_with} and \lstinline{zip} operating directly over vectors.
 
-\subsubsection{Takeaways}
+\subsubsection{Lessons}
 
-\paragraph{Configuration \& Flexibility}
+%\paragraph{Configuration \& Flexibility}
 Implementing the configuration from \textsc{Devoid} in this framework was straightforward and
 took a couple of days.
-It also simplified the transformation from \textsc{Devoid} by removing the need for special rules for handling eliminators and constructors
-by adding and removing arguments, and for special handling of non-primitive projections,
-as that work is done in the configuration.
+It also simplified the transformation from \textsc{Devoid} %by removing the need for special rules for handling eliminators and constructors
+%by adding and removing arguments, and for special handling of non-primitive projections,
+%as that work is done in the configuration.
+significantly by moving all of the interesting into the search procedure for the configuration.
 Implementing the second configuration was less straightforward,
 especially when it came to understanding the behaviors of equalities.
 There are still some open challenges in correctly supporting \lstinline{Iota} to port any arbitrary
 proof backward along the second configuration in the opposite direction.
 
-\paragraph{Workflow Integration}
-This simplified the workflow from \textsc{Devoid} and automated steps that had been manual.
+%\paragraph{Workflow Integration}
+The result of implementing these two configurations was a simplifed workflow from \textsc{Devoid} and automated steps 
+that had previously been manual.
 %\toolname implemented some additional automation to generate eliminators that help separate out this additional information
 %for repair. 
 The tactic decompiler successfully generated tactic scripts to write dependently typed
-functions that carry proofs about length invariants, % TODO test again
-but struggled at generating tactic scripts for proofs relating those invariants.
-This is to some degree unsurprising, since these tactic proofs
-were prohibitively difficult for us to write by hand thanks to poor motive inference.
+functions that carry proofs about length invariants,
+but struggled at generating tactic scripts for proofs relating those invariants due to poor motive inference with the \lstinline{induction} tactic.
+This is to some degree unsurprising, since these proofs
+were very difficult for us to write by hand.
 Still, additional effort is needed to improve tactic integration with dependent types.
 % TODO how long did compiling the file take?
 
@@ -429,23 +422,19 @@ was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it 
 It was also able to handle more advance changes like renaming constructors, swapping multiple constructors at once,
 and doing both at the same time.
 
-\subsubsection{Takeaways}
+\subsubsection{Lessons}
 
-\paragraph{Configuration \& Flexibility}
-Implementing the search procedure for constructor swapping and renaming was very simple and took about three days total.
+Implementing the search procedure was simple and took about three days total.
 The biggest challenge was implementing an interactive interface to choose between mappings when there are multiple possible mappings,
 or to allow the user to write a single custom mapping function and derive the rest of the configuration from there.
-One ongoing challenge is in defining a useful configuration to support other changes from the same benchmark:
-this was only a single snapshot of the benchmark, which included
+This was only a single snapshot of the benchmark, which included
 other changes like adding constructors to inductive types.
-We do not yet know what configuration would be most useful for adding new constructors to inductive types,
-or even if there should be just one configuration corresponding to that change for a given proof development.
+One ongoing challenge is defining and discovering useful configurations to support adding new constructors.
 
-\paragraph{Workflow Integration}
 The isolated change was simple enough that \toolname would not have been necessary
 for updating the proofs for the initial change---keeping the tactics the same would have also worked.
-This is a property of the particular proofs that we had access to;
-as we saw in Section~\ref{sec:overview}, even for simple changes, this is not always true.
+%This is a property of the particular proofs that we had access to;
+As we saw in Section~\ref{sec:overview}, even for simple changes, this is not always true.
 More advanced variants of this benchmark that involved also renaming constructors did necessitate \toolname,
 and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
 The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
@@ -566,16 +555,14 @@ Proof.
 Qed.
 \end{lstlisting}
 
-\subsubsection{Takeaways}
+\subsubsection{Lessons}
 
-\paragraph{Configuration \& Flexibility}
 \lstinline{Iota} was the key to supporting this case.
 It was enough to implement this transformation that had previously been its own tool
 just by writing a configuration with \lstinline{Iota}. 
 
-\paragraph{Workflow Integration}
 The entire file took under a second for us to compile using \toolname.
-This was another case when we did not need tactic integration, since we
+We did not need tactic integration, since we
 ultimately wanted compatibility with a faster version of the function.
 We did note that supporting custom eliminators like \lstinline{N.peano_rect} would be a simple way
 to improve the tactic decompiler.
