@@ -327,7 +327,7 @@ Rather, the correctness criteria simply need to hold in order for the proof term
   { \Gamma \vdash \mathrm{Eta}(A) \Uparrow \mathrm{Eta}(B) }
 
 \inferrule[Iota]
-  { \Gamma \vdash c_A \Uparrow c_B \\ \Gamma \vdash q_A \Uparrow q_B \\ \Gamma \vdash e_A \Uparrow e_B }
+  { \Gamma \vdash q_A \Uparrow q_B \\ \Gamma \vdash t_A \Uparrow t_B }
   { \Gamma \vdash \mathrm{Iota}(j,\ A,\ q_A,\ t_A) \Uparrow \mathrm{Iota}(j,\ B,\ q_B,\ t_B) }
 
 \inferrule[Equivalence]
