@@ -10,11 +10,14 @@ we can decompile these Gallina terms to Ltac proof scripts for the proof enginee
 \textbf{Insight 3}: The transformed proof terms can then be translated back to tactics.
 \end{quote}
 
-The \textbf{Decompile} component implements a prototype of this translation.
-This decompiler prototype has shown early promising results.
-For example, it produced the automatically generated tactic proof for \lstinline{rev_app_distr} 
-in Section~\ref{sec:overview}, as well as the tactic proofs of \lstinline{section}
-and \lstinline{retraction} in Section~\ref{fig:equivalence}.
+The \textbf{Decompile} component implements a prototype of this translation:
+it accepts a proof term and generates a candidate proof script that attempts to prove the same theorem.
+Of course, this problem is not very well defined: there is a proof script that always 
+works (applying the entire proof term with the \lstinline{apply} tactic), but is often unreadable.
+This is the baseline for success of the decompiler, and the decompiler defaults to this behavior.
+From there, the goal of the decompiler is to improve on that baseline as much as possible,
+or else produce a candidate proof script that is close enough that the proof engineer can step through it
+and manually massage it into something that both works and is maintainable.
 
 The output language for the implementation of \textbf{Decompile} is Ltac, the proof script language for Coq.
 Ltac can be confusing to reason about, since Ltac tactics can refer to Gallina terms, and the semantics of Ltac depends both on the
@@ -97,16 +100,9 @@ The implementation reasons about Ltac and so does not make these assumptions.
 \end{figure}
 
 The semantics for the toy decompiler are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
-This decompiler works like the real decompiler: it accepts a proof term and generates a candidate proof script that attempts to prove the same theorem.
-As with the real decompiler, the baseline for success of the toy decompiler is the naive proof script
-that applies the entire proof term with the \lstinline{apply} tactic.
-Such a proof script will always work, but will often be unreadable.
-The decompiler defaults to this baseline behavior (\textsc{Base}).
-
-Otherwise, the goal of the decompiler is to improve on that baseline as much as possible,
-or else produce a candidate proof script that is close enough that the proof engineer can manually massage it into something that
-both works and is maintainable.
-It does this by recursing over the proof term and constructing a proof script using a predefined set of tactics.
+As with the real decompiler, the toy decompiler defaults to the naive proof script
+that applies the entire proof term with the \lstinline{apply} tactic (\textsc{Base}).
+Otherwise, it improves on that behavior by recursing over the proof term and constructing a proof script using a predefined set of tactics.
 
 For the toy decompiler, this is fairly straightforward: Lambda terms become introduction of hypotheses (\textsc{Intro}), since they introduce new bindings
 in the environment of the body. Applications of \lstinline{eq_sym} become symmetry of equality (\textsc{Symmetry}).
@@ -140,6 +136,8 @@ decompiles to this proof script:
   + (@\codesime{reflexivity.}@)
 \end{lstlisting}
 where corresponding terms and tactics are highlighted with the same color, and nothing else is highlighted for clarity.
+Of course, this script is fairly low-level and close to the proof term, but it is already something that the proof engineer
+can step through piece by piece to understand and maintain the proof.
 There are very few differences from the toy decompiler needed to produce this,
 for example handling of rewrites in both directions (\lstinline{eq_ind_r} as opposed to \lstinline{eq_ind}),
 simplifying to handle motive inference for rewrites,
