@@ -3,27 +3,18 @@
 % TODO check survey paper for more stuff/better stuff
 % TODO also remove any content that is too similar with survey paper
 
-We discuss related work in proof repair, proof reuse, and proof design.
+We discuss related work in proof repair, proof refactoring, proof reuse, and proof design.
 More can be found in a recent survey of proof engineering~\cite{PGL-045}.
 
 \paragraph{Proof Repair}
 
 \toolname is not the first tool to automatically repair broken proofs.
-\textsc{Pumpkin Patch}~\cite{pumpkinpatch}
-Chick~\cite{robert2018}.
-talks about how hard refactoring Ltac is though.
-RefactorAgda~\cite{wibergh2019}.
-sentence about us.
-
-some changes \toolname supports are simple refactorings, like renaming constructors.
-proof refactoring~\cite{WhitesidePhD} is closely related, mostly syntactic, etc.
-some have seen industrial use.
-Levity~\cite{Bourke12}.
-some have tactic support.
-POLAR~\cite{Dietrich2013}.
-CoqPIE~\cite{Roe2016}.
-Tactician~\cite{adams2015} focuses on going between tactics and tacticals, like the semicolon change we want to support.
-but \toolname can support a lot more.
+\textsc{Pumpkin Patch}~\cite{pumpkinpatch} is a tool for repairing broken proofs in Coq.
+The search procedures in \textbf{Configure} are based partly on ideas from \textsc{Pumpkin Patch}, which includes
+similar search procedures for discovering patches to fix broken proofs.
+Unlike \toolname, however, \textsc{Pumpkin Patch} does not apply the patches that it finds,
+nor does it handle changes in structure or include any support for tactics.
+\toolname addresses all three of these limitations.
 
 Proof repair can be viewed as a form of \textit{program repair}~\cite{Monperrus:2018:ASR:3177787.3105906, Gazzola:2018:ASR:3180155.3182526}
 specific to the domain of proof assistants.
@@ -33,11 +24,33 @@ such as specifications or example patches. In proof assistants like Coq, specifi
 are rich and widely available: specifications as a result of dependent types,
 and examples as a result of constructivism.
 
+\paragraph{Proof Refactoring}
+
+Proof repair is closely related to proof refactoring~\cite{WhitesidePhD}, and a number of the changes
+that \toolname supports like changing constructor names can be viewed as refactorings.
+The proof refactoring tool Levity~\cite{Bourke12} has, like \toolname, seen industrial use.
+Unlike \toolname, it focuses on a specific refactoring task, whereas \toolname is configurable to many different kinds of changes.
+
+Both Chick~\cite{robert2018} and RefactorAgda~\cite{wibergh2019} are proof refactoring tools that
+also support a few changes that can be viewed as repairs~\cite{PGL-045}.
+Chick operates over a Gallina-like language, while RefactorAgda is implemented in Agda.
+Unlike \toolname, the changes these tools support are still primarily syntactic.
+In addition, neither of these tools have tactic support.
+
+A few proof refactoring tools operate directly over tactics.
+POLAR~\cite{Dietrich2013} refactors proof scripts in languages based on Isabelle/Isar~\cite{Wenzel2007isar}.
+CoqPIE~\cite{Roe2016} is an IDE with support for simple refactorings of Ltac scripts like renaming hypotheses.
+Tactician~\cite{adams2015} is a proof script refactoring tool that focuses on switching between tactics and tacticals,
+for example by adding semicolons to group tactics.
+This approach is not tractable for handling more complex changes;
+\citet{robert2018} discusses the challenges in detail.
+
 \paragraph{Proof Reuse}
 
 esp. theorem reuse by proof term transformation, DEVOID, univalent parametricity, transport. \cite{magaud2000changing} have a transformation.
 leo congruence tactic and how it relates to Bas' tactic, and how that can be used for automatic transport.
-parametricity citations. and anyone who has done stuff with propositional iota.
+parametricity citations. and anyone who has done stuff with propositional iota (I think there is something about this in
+the most recent univalent parametricity paper).
 relation to repair.
 
 \paragraph{Proof Design}
