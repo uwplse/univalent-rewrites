@@ -8,7 +8,22 @@ More can be found in a recent survey of proof engineering~\cite{PGL-045}.
 
 \paragraph{Proof Repair}
 
-both proof refactoring and repair, and the overlap, and some talk about the distinction if at all or just point to survey paper~\cite{wibergh2019, WhitesidePhD, Dietrich2013, adams2015, Bourke12, Roe2016, robert2018, pumpkinpatch}
+\toolname is not the first tool to automatically repair broken proofs.
+\textsc{Pumpkin Patch}~\cite{pumpkinpatch}
+Chick~\cite{robert2018}.
+talks about how hard refactoring Ltac is though.
+RefactorAgda~\cite{wibergh2019}.
+sentence about us.
+
+some changes \toolname supports are simple refactorings, like renaming constructors.
+proof refactoring~\cite{WhitesidePhD} is closely related, mostly syntactic, etc.
+some have seen industrial use.
+Levity~\cite{Bourke12}.
+some have tactic support.
+POLAR~\cite{Dietrich2013}.
+CoqPIE~\cite{Roe2016}.
+Tactician~\cite{adams2015} focuses on going between tactics and tacticals, like the semicolon change we want to support.
+but \toolname can support a lot more.
 
 Proof repair can be viewed as a form of \textit{program repair}~\cite{Monperrus:2018:ASR:3177787.3105906, Gazzola:2018:ASR:3180155.3182526}
 specific to the domain of proof assistants.
