@@ -3,7 +3,7 @@
 % TODO check survey paper for more stuff/better stuff
 % TODO also remove any content that is too similar with survey paper
 
-We discuss related work in proof repair, proof refactoring, proof design, and proof reuse.
+We discuss related work in proof repair, proof refactoring, proof reuse, and proof design.
 More can be found in a recent survey of proof engineering~\cite{PGL-045}.
 
 \paragraph{Proof Repair}
@@ -45,30 +45,6 @@ for example by adding semicolons to group tactics.
 This approach is not tractable for handling more complex changes;
 \citet{robert2018} discusses the challenges in detail.
 
-\paragraph{Proof Design}
-
-Much of the work on proof engineering focuses on designing proofs
-in a way that is resilient to change, rather than fixing proofs that are already broken.
-This can take the form of design principles, for example using 
-information hiding techniques~\cite{Woos:2016:PCF:2854065.2854081, Klein:2014:CFV:2584468.2560537}
-or any of the various structures~\cite{Chrzaszcz2003, Sozeau2008, Saibi:PhD} for encoding interfaces in Coq,
-thereby localizing the burden of change to the interface.
-Design and repair are complementary: design requires foresight, whereas repair can be applied retroactively.
-Proof repair can help with changes that occur outside of the proof engineer's control,
-or with changes that are difficult to protect against even with informed design.
-
-Another approach to this is to use heavy proof automation, for example through
-program-specific proof automation~\cite{Chlipala:2013:CPD:2584504},
-hint databases~\cite{coq-intro}, implementations of decision procedures~\cite{Pugh1991},
-and hammers~\cite{Blanchette2016b, Blanchette2013, Kaliszyk2014, Czajka2018}.
-The benefit of an automation-heavy style is that this localizes the burden of change to the automation itself.
-On the other hand, heavy automation can produce terms that are large and slow to type check,
-and tactics can be difficult to debug when they fail.
-The degree to which proof engineers rely on automation varies, as seen in the data from the
-\textsc{REPLica} user study of Coq proof engineers~\cite{replica}.
-While these approaches are also complementary, more work will be needed for \toolname to better support 
-proof developments in this style.
-
 \paragraph{Proof Reuse}
 
 Proof repair is a form of proof reuse with the additional constraint that one specification ceases to exist.
@@ -107,9 +83,31 @@ The framework achieve this using type classes~\cite{Sozeau2008}; this does not a
 Both \toolname and the univalent parametricity framework could benefit from implement type-directed search using e-graphs~\cite{egraph1}.
 Of particular interest are the univalent e-graphs developed for congruence closure in Cubical Agda~\cite{egraph6},
 which prove the crucial thereom necessary to use e-graphs not derivable in other dependent type theories~\cite{egraph7},
-and which should allow for efficient and elegant automatic transport across equivalences, building better tools for a new era of
-proof engineering.
+and which should allow for efficient and elegant automatic transport across equivalences.
 
+\paragraph{Proof Design}
+
+Much of the work on proof engineering focuses on designing proofs
+in a way that is resilient to change, rather than fixing proofs that are already broken.
+This can take the form of design principles, for example using 
+information hiding techniques~\cite{Woos:2016:PCF:2854065.2854081, Klein:2014:CFV:2584468.2560537}
+or any of the various structures~\cite{Chrzaszcz2003, Sozeau2008, Saibi:PhD} for encoding interfaces in Coq,
+thereby localizing the burden of change to the interface.
+Design and repair are complementary: design requires foresight, whereas repair can be applied retroactively.
+Proof repair can help with changes that occur outside of the proof engineer's control,
+or with changes that are difficult to protect against even with informed design.
+
+Another approach to this is to use heavy proof automation, for example through
+program-specific proof automation~\cite{Chlipala:2013:CPD:2584504},
+hint databases~\cite{coq-intro}, implementations of decision procedures~\cite{Pugh1991},
+and hammers~\cite{Blanchette2016b, Blanchette2013, Kaliszyk2014, Czajka2018}.
+The benefit of an automation-heavy style is that this localizes the burden of change to the automation itself.
+On the other hand, heavy automation can produce terms that are large and slow to type check,
+and tactics can be difficult to debug when they fail.
+The degree to which proof engineers rely on automation varies, as seen in the data from the
+\textsc{REPLica} user study of Coq proof engineers~\cite{replica}.
+While these approaches are also complementary, more work will be needed for \toolname to better support 
+proof developments in this style.
 
 
 
