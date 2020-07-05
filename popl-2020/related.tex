@@ -47,11 +47,43 @@ This approach is not tractable for handling more complex changes;
 
 \paragraph{Proof Reuse}
 
-esp. theorem reuse by proof term transformation, DEVOID, univalent parametricity, transport. \cite{magaud2000changing} have a transformation.
-leo congruence tactic and how it relates to Bas' tactic, and how that can be used for automatic transport.
-parametricity citations. and anyone who has done stuff with propositional iota (I think there is something about this in
-the most recent univalent parametricity paper).
-relation to repair.
+Proof repair is a form of proof reuse with the additional constraint that one specification ceases to exist.
+A few proof reuse tools work by proof term transformation and so can handle this additional constraint.
+The namesake of this paper is based on the name of a paper describing proof reuse tool~\cite{Johnsen2004}
+that generalizes theorems in Isabelle/HOL.
+\toolname's proof term transformation generalizes the proof term transformation from \textsc{Devoid}~\cite{Ringer2019},
+which transforms proofs along the specific class of changes called algebraic ornaments~\cite{mcbride}.
+\citet{magaud2000changing} implements a proof term transformation for translating proof terms between
+unary and binary natural numbers. 
+The latter two of these tools fit into configurations for \toolname,
+and none implements tactic support in Coq like \toolname does.
+The expansion algorithm from \citet{magaud2000changing} may further help improve \toolname
+by automating some of the manual steps in manual configuration.
+
+The \toolname proof term transformation implements transport across equivalences.
+Transport is realizable as a function in univalent type theories~\cite{univalent2013homotopy}.
+The univalent parametricity framework~\cite{tabareau2017equivalences} realizes univalent transport for certain types
+in a non-univalent type theory, only sometimes relying on additional axioms beyond the core type theory of Coq.
+While powerful, neither of these approaches to transport remove references to the old type, making them poorly suited for repair.
+
+Recent work~\cite{tabareau2019marriage} extends the univalent parametricity framework with a \lstinline{replace_goal} tactic,
+which implements a white-box proof term transformation using hints proven by the proof engineer.
+This approach may be well suited for proof repair.
+However, it relies on proof obligations from the proof engineer that establish what is effectively the correctness criteria
+for the configuration in \toolname, while \toolname needs only that it holds metatheoretically.
+In addition, it does not include search procedures like \toolname to discover new equivalences from types,
+and it does not include tactic support like \toolname.
+Finally, it does not implement any support for porting definitional equalities to propositional equalities,
+instead relying on the original black-box functionality of the univalent parametricity framework to handle those cases;
+the \lstinline{Iota} rule addresses this problem in \toolname and is based on lessons learned from reading that article.
+The most fruitful progress may come from integrating these tools together to take advantage of the benefits that both offer.
+
+The univalent parametricity framework implements type-directed search, a feature that \toolname does not yet support.
+The framework achieve this using type classes~\cite{Sozeau2008}; this does not always scale well~\cite{tabareau2019marriage}.
+Both \toolname and the univalent parametricity framework could benefit from implement type-directed search using e-graphs~\cite{egraph1}.
+Of particular interest are the univalent e-graphs developed for congruence closure in Cubical Agda~\cite{egraph6},
+which prove the crucial thereom necessary to use e-graphs not derivable in other dependent type theories~\cite{egraph7},
+and which should allow for efficient and elegant automatic transport across equivalences.
 
 \paragraph{Proof Design}
 
