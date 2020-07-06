@@ -162,8 +162,8 @@ The toy decompiler reasons about tactics one subterm at a time, and produces tac
 This does not always match the thought processes of proof engineers.
 To produce a more natural set of tactics, \textbf{Decompile} operates in two passes: first it runs something that looks a lot
 like the toy decompiler, and then it modifies those tactics to produce a more natural proof script.
-For example, the first pass, like the toy decompiler, produces a single \lstinline{intro} per hypothesis in a lambda abstraction;
-the second pass combines each sequence of \lstinline{intro} tactics into an \lstinline{intros} tactic.
+For example, the second pass combines each sequence of \lstinline{intro} tactics into an \lstinline{intros} tactic,
+and combines repetitive tactics in multiple cases using the \lstinline{;} tactical.
 
 The prototype decompiler still has no special reasoning for decision procedures and custom tactics, which are common
 in some proof engineering styles.
