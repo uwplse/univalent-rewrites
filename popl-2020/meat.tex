@@ -10,9 +10,9 @@ We were able to generalize the \textsc{Devoid} algorithm to do this.
 
 \begin{quote}
 \textbf{Insight 2}:
-The proof term transformation from an existing proof reuse tool can be generalized (Section~\ref{sec:generic})
-to build such a proof repair tool (Section~\ref{sec:implementation}), and the result can handle 
-many different kinds of changes (Section~\ref{sec:configurable}).
+The proof term transformation from an existing proof reuse tool can be generalized
+to build such a proof repair tool, and the result can handle 
+many different kinds of changes.
 \end{quote}
 
 \begin{figure}
@@ -26,6 +26,11 @@ Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldo
 \caption{Syntax for CIC$_\omega$, from \citet{Timany2015FirstST}.}
 \label{fig:syntax}
 \end{figure}
+
+This section starts by introducing the configuration (Section~\ref{sec:configurable}),
+then introduces the proof term transformation that builds on that (Section~\ref{sec:generic}).
+It then gives intuition for what it means for a configuration to be correct (Section~\ref{sec:art}),
+and finally describes the additional work needed to go from this transformation to the implementation (Section~\ref{sec:implementation}). 
 
 \paragraph{Conventions}
 All terms that we introduce in this section are in CIC$_{\omega}$ with primitive eliminators,
@@ -226,84 +231,6 @@ For the case of \lstinline{nat} and \lstinline{N},
 the need for explicit $\iota$ was noted as far back as \citet{magaud2000changing}.
 What \lstinline{Iota} does in the configuration is encode this more generally.
 
-\subsubsection{Specifying Correct Configuration}
-\label{sec:art}
-
-Of course, both when designing a search procedure for an automatic configuration and when
-configuring \toolname manually, choosing correct and useful configuration is important,
-and it is not always straightforward. This section specifies what it means for these
-to be correct and gives some intuition to why.
-Section~\ref{sec:search} shows some useful example configurations.
-
-The configuration ((\lstinline{DepConstr}, \lstinline{DepElim}), (\lstinline{Eta}, \lstinline{Iota})) instantiates
-the proof term transformation to a particular equivalence between \A and \B.
-Choosing an equivalence is a bit of an art:
-there can be infinitely many equivalences that correpond to a 
-given change in specification, only some of which are useful.
-Beyond that, even once we have chosen an equivalence, we could define many possible configurations that correspond
-to the equivalence, some of which will produce functions and proofs that are more useful or efficient than others.
-
-Thankfully, once the art is done, we at least understand what it means for it to be \textit{correct art}.
-The correctness criteria for the configuration relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}
-in a way that preserves equivalence (Section~\ref{sec:equivalence}) coherently with equality (Section~\ref{sec:equality}).
-
-To preserve equivalence, we need that \lstinline{DepElim} and \lstinline{DepConstr} together induce an equivalence between \A and \B,
-formed by one function that eliminates \A and constructs \B, and another function that eliminates \B and constructs \A:
-
-\begin{lstlisting}
-f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
-g : B $\rightarrow$ A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
-\end{lstlisting}
-In addition, we need that:
-
-\begin{enumerate} % TODO make more formal, and check if we need to say it induces particular equivalence
-\item $\forall$ \lstinline{j}, \lstinline{DepConstr(j, A)} is equal to \lstinline{DepConstr(j, B)} up to transport along that equivalence, and
-\item $\forall$ \lstinline{(a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type)}, if \lstinline{a} is equal to \lstinline{b} and \lstinline{P} is equal to \lstinline{Q} up to transport along that equivalence,
-then \lstinline{DepElim(a, P)} is equal to \lstinline{DepElim(b, Q)} up to transport along that equivalence.
-\end{enumerate}
-The intuition for this is based on insights from \textsc{Devoid},
-and is proven on an example from \textsc{Devoid} in the univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
-Essentially, that these are equal up to transport along the equivalence means that replacing dependent constructors (respectively eliminators) of \A
-with dependent constructions (respectively eliminators) of \B will preserve equality up to transport for those particular subterms.
-Furthermore, since CIC$_{\omega}$ is a constructive logic, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
-and the \textit{only} way to match over an \A (respectively \B) is to apply its eliminator.
-Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and eliminators.
-So, as long as we are able to identify and expand all implicit applications of \lstinline{DepConstr} and \lstinline{DepElim},
-\textsc{Dep-Constr} and \textsc{Dep-Elim} preserve correctness of the transformation and cover all constructions and eliminations of \A and \B.
-
-To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules
-over \lstinline{DepConstr} and \lstinline{DepElim}.
-For \lstinline{Eta}, we need it to have the same definitional behavior as the
-eliminator, in other words:
-
-\begin{lstlisting}
-DepElim(a, P) { f$_0$, ..., f$_n$ } : P (Eta(A) a)
-\end{lstlisting}
-and similarly for \B. % TODO do we need anything for DepConstr?
-
-Each \lstinline{Iota} needs to prove and rewrite along the simplification or refolding behavior that corresponds to a case of the dependent eliminator, in other words: % TODO do we need eta here?
-
-\begin{lstlisting}
-Iota(A) :
-  $\forall$ P $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),
-    Q (DepElim((@\codediff{DepConstr(j, A) $\vec{x}$}@), P) $\vec{f}$ $\rightarrow$ 
-    Q ((@\codediff{$\vec{f}$[j]}@) ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)
-\end{lstlisting}
-where each \lstinline{IH}$_i$ is each recursive occurrence of \A in the eliminator case,
-and similarly for \B.
-Together, these induce proofs of \lstinline{section} and \lstinline{retraction} (used in conjunction with
-induction and rewriting).
-The intuition here is that it should be enough to preserve the reduction behavior
-of the eliminators and constructors, since again those are the only ways we can construct or eliminate our types.
-
-Each search procedure that \textbf{Configure} implements discovers the functions \lstinline{f} and \lstinline{g}, and also
-produces proofs \lstinline{section} and \lstinline{retraction} in Coq that these functions form an equivalence.
-Otherwise, it can be difficult to prove the correctness criteria for the configuration---proving equality of the dependent eliminators
-up to transport, for example, requires either a special framework~\cite{tabareau2017equivalences}
-or a univalent type theory~\cite{univalent2013homotopy}.
-Thankfully, the user does not need to prove the correctness criteria for a configuration in order to use \toolname.
-Rather, the correctness criteria simply need to hold in order for the proof term transformation to work correctly.
-
 \subsection{The Proof Term Transformation}
 \label{sec:generic}
 
@@ -370,11 +297,13 @@ two equivalent types \A and \B (\textsc{Equivalence}) and assumes fully expanded
 In addition, it is parameterized over the configuration (\lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}),
 which appear in the proof term transformation as metavariables.
 
-The goal of the proof term transformation is to preserve that equivalence in some way, while no longer referring to the old specification.
-That is, for equivalent types \A and \B, the transformation takes as input functions and proofs
-that refer to \A and returns functions and proofs that refer to \B.
-Furthermore, the transformed functions behave the same way as the input functions,
-and the transformed proofs talk about the same things as the input proofs.
+The goal of the proof term transformation is to preserve equality up to transport along that equivalence,
+while no longer referring to the old specification.
+This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
+with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
+The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
+to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
+From there, rest of the transformation is straightforward.
 
 \begin{figure}
 \begin{minipage}{0.48\textwidth}
@@ -434,15 +363,13 @@ $\lambda$ (T : Type) (l m : list T) .
 \label{fig:appswap2}
 \end{figure}
 
-To update the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
+For example, to update the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
 identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (Figure~\ref{fig:appswap2}).
 The transformation then just recursively substitutes in the updated \lstinline{list} type
 for the original \lstinline{list} type, which moves \lstinline{DepConstr} and \lstinline{DepElim}
 to construct and eliminate over the updated type.
 Finally, this reduces to the term on the right of Figure~\ref{fig:appswap1}.
-Transforming proofs works the same way.
-
-Both versions of append behave identically up to the equivalence from Figure~\ref{fig:equivalence}, since:
+Both versions of append behave equally up to transport along the equivalence from Figure~\ref{fig:equivalence}, since:
 
 \begin{lstlisting}
 $\forall$ T (l1 l2 : Old.list T), f T (l1 ++ l2) = (f T l1) ++ (f T l2).
@@ -452,20 +379,90 @@ Our transformed proof \lstinline{rev_app_distr} then proves the same thing the s
 as the original proof up to the same equivalence---and up to the corresponding changes in \lstinline{++}
 and \lstinline{rev}.
 
-More formally, the output of the proof term transformation ought to be equal to the input of the program transformation
-\textit{up to transport} along the equivalence between \A and \B that the configuration instantiates it to.
-This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
-with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
-The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
-to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
-From there, rest of the transformation is straightforward.
-
-Note that this correctness criterion is metatheoretical:
+Note that this goal for correctness is metatheoretical:
 stating and proving that two terms are in equal up to transport is in general not possible in a language like Coq
 without additional axioms, though it is in some cases realizable with an external tool~\cite{tabareau2017equivalences}.
 \toolname does not yet generate these proofs as we were focused on building a usable tool with axiomatic freedom and few dependencies.
 Coq ensures that all terms that plugins produce are well-typed; for now, as with \textsc{Devoid}, the proof engineer must vet the transformed
 specifications herself to ensure that they specify the expected behavior.
+
+\subsection{Specifying Correct Configuration}
+\label{sec:art}
+
+Of course, both when designing a search procedure for an automatic configuration and when
+configuring \toolname manually, choosing correct and useful configuration is important,
+and it is not always straightforward. This section specifies what it means for these
+to be correct and gives some intuition to why.
+Section~\ref{sec:search} shows some useful example configurations.
+
+The configuration ((\lstinline{DepConstr}, \lstinline{DepElim}), (\lstinline{Eta}, \lstinline{Iota})) instantiates
+the proof term transformation to a particular equivalence between \A and \B.
+Choosing an equivalence is a bit of an art:
+there can be infinitely many equivalences that correpond to a 
+given change in specification, only some of which are useful.
+Beyond that, even once we have chosen an equivalence, we could define many possible configurations that correspond
+to the equivalence, some of which will produce functions and proofs that are more useful or efficient than others.
+
+Thankfully, once the art is done, we at least understand what it means for it to be \textit{correct art}.
+The correctness criteria for the configuration relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}
+in a way that preserves equivalence (Section~\ref{sec:equivalence}) coherently with equality (Section~\ref{sec:equality}).
+
+To preserve equivalence, we need that \lstinline{DepElim} and \lstinline{DepConstr} together induce an equivalence between \A and \B,
+formed by one function that eliminates \A and constructs \B, and another function that eliminates \B and constructs \A:
+
+\begin{lstlisting}
+f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
+g : B $\rightarrow$ A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
+\end{lstlisting}
+In addition, we need that:
+
+\begin{enumerate} % TODO make more formal, and check if we need to say it induces particular equivalence
+\item $\forall$ \lstinline{j}, \lstinline{DepConstr(j, A)} is equal to \lstinline{DepConstr(j, B)} up to transport along that equivalence, and
+\item $\forall$ \lstinline{(a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type)}, if \lstinline{a} is equal to \lstinline{b} and \lstinline{P} is equal to \lstinline{Q} up to transport along that equivalence,
+then \lstinline{DepElim(a, P)} is equal to \lstinline{DepElim(b, Q)} up to transport along that equivalence.
+\end{enumerate}
+The intuition for this is based on insights from \textsc{Devoid},
+and is proven on an example from \textsc{Devoid} in the univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
+Essentially, that these are equal up to transport along the equivalence means that replacing dependent constructors (respectively eliminators) of \A
+with dependent constructions (respectively eliminators) of \B will preserve equality up to transport for those particular subterms.
+Furthermore, since CIC$_{\omega}$ is a constructive logic, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
+and the \textit{only} way to match over an \A (respectively \B) is to apply its eliminator.
+Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and eliminators.
+So, as long as we are able to identify and expand all implicit applications of \lstinline{DepConstr} and \lstinline{DepElim},
+\textsc{Dep-Constr} and \textsc{Dep-Elim} preserve correctness of the transformation and cover all constructions and eliminations of \A and \B.
+
+To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules
+over \lstinline{DepConstr} and \lstinline{DepElim}.
+For \lstinline{Eta}, we need it to have the same definitional behavior as the
+eliminator, in other words:
+
+\begin{lstlisting}
+DepElim(a, P) { f$_0$, ..., f$_n$ } : P (Eta(A) a)
+\end{lstlisting}
+and similarly for \B. % TODO do we need anything for DepConstr?
+
+Each \lstinline{Iota} needs to prove and rewrite along the simplification or refolding behavior that corresponds to a case of the dependent eliminator, in other words: % TODO do we need eta here?
+
+\begin{lstlisting}
+Iota(A) :
+  $\forall$ P $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),
+    Q (DepElim((@\codediff{DepConstr(j, A) $\vec{x}$}@), P) $\vec{f}$ $\rightarrow$ 
+    Q ((@\codediff{$\vec{f}$[j]}@) ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)
+\end{lstlisting}
+where each \lstinline{IH}$_i$ is each recursive occurrence of \A in the eliminator case,
+and similarly for \B.
+Together, these induce proofs of \lstinline{section} and \lstinline{retraction} (by induction).
+The intuition here is that it should be enough to preserve the reduction behavior
+of the eliminators and constructors, since again those are the only ways we can construct or eliminate our types.
+
+Each search procedure that \textbf{Configure} implements discovers the functions \lstinline{f} and \lstinline{g}, and also
+produces proofs \lstinline{section} and \lstinline{retraction} in Coq that these functions form an equivalence.
+It can be difficult to prove the entire correctness criteria for the configuration---proving equality of the dependent eliminators
+up to transport, for example, requires either a special framework~\cite{tabareau2017equivalences}
+or a univalent type theory~\cite{univalent2013homotopy}.
+Thankfully, the user does not need to prove the correctness criteria for a configuration in order to use \toolname.
+Rather, the correctness criteria simply need to hold in order for the proof term transformation to work.
+
 
 \subsection{The Tool}
 \label{sec:implementation}
@@ -480,8 +477,7 @@ Section~\ref{sec:discussion} elaborates on the remaining challenges and our plan
 Like \textsc{Devoid}, we also had to handle language differences to scale from CIC$_{\omega}$ to Coq.
 We use the same \lstinline{Preprocess} command that \textsc{Devoid} uses to turn pattern matching and fixpoints into applications of eliminators.
 We generalize the work from \textsc{Devoid} to handle Coq's non-primitive projections into our \lstinline{Eta} rule.
-We move the work of refolding constants into the configuration for each search procedure, so that it does not
-cloud the proof term transformation itself.
+We move the work of refolding constants into the configuration for each search procedure.
 
 \paragraph{Matching Against Preconditions}
 
