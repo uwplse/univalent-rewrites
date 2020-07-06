@@ -7,16 +7,16 @@ We improve user experience thanks the realization that, since Coq's proof term l
 we can decompile these Gallina terms to Ltac proof scripts for the proof engineer to maintain.
 
 \begin{quote}
-\textbf{Insight 3}: The transformed proof terms can then be translated back to tactics.
+\textbf{Insight 3}: The transformed proof terms can then be translated back to tactic scripts.
 \end{quote}
 
 The \textbf{Decompile} component implements a prototype of this translation:
-it accepts a proof term and generates a candidate proof script that attempts to prove the same theorem.
-Of course, this problem is not very well defined: there is a proof script that always 
-works (applying the entire proof term with the \lstinline{apply} tactic), but is often unreadable.
+it accepts a proof term and generates a candidate proof script that attempts to prove the same theorem the same way.
+Of course, this problem is not very well defined: there is always a proof script that 
+works (applying the entire proof term with the \lstinline{apply} tactic), but it is often unreadable.
 This is the baseline for success of the decompiler, and the decompiler defaults to this behavior.
 From there, the goal of the decompiler is to improve on that baseline as much as possible,
-or else produce a candidate proof script that is close enough that the proof engineer can step through it
+or else produce a candidate proof script that is close enough to correct that the proof engineer can step through it
 and manually massage it into something that both works and is maintainable.
 
 The output language for the implementation of \textbf{Decompile} is Ltac, the proof script language for Coq.
@@ -24,7 +24,7 @@ Ltac can be confusing to reason about, since Ltac tactics can refer to Gallina t
 semantics of Gallina and on the implementation of proof search procedures written in OCaml.
 To give a sense of how the decompiler works without the clutter of these proof search details, we start by defining a toy
 decompiler from CIC$_{\omega}$ to a simple subset of Ltac containing just a few predefined tactics (Section~\ref{sec:first}).
-We then explain how we scale that up to the actual implementation (Section~\ref{sec:second}).
+We then explain how we scale that up to the actual implementation (Section~\ref{sec:second}), and where we plan to go from there.
 
 \subsection{A Toy Decompiler}
 \label{sec:first}
@@ -34,7 +34,8 @@ We then explain how we scale that up to the actual implementation (Section~\ref{
 \begin{grammar}
 <v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
 
-<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right | <p> . <p>
+<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | \\
+induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right | <p> . <p>
 \end{grammar}
 \caption{Qtac syntax.}
 \label{fig:ltacsyntax1}
@@ -48,7 +49,6 @@ application of a term to prove the goal (\lstinline{apply}), induction over term
 case splitting of conjunctions (\lstinline{split}),
 constructors of disjunctions (\lstinline{left} and \lstinline{right}), and
 composition (\lstinline{.}).
-
 Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always take a motive explicitly, rather than relying on a unification engine.
 Smilarly, \lstinline{apply} applies only the function without inferring any arguments, and leaves those arguments to proof obligations.
 The implementation reasons about Ltac and so does not make these assumptions.
@@ -99,14 +99,14 @@ The implementation reasons about Ltac and so does not make these assumptions.
 \label{fig:someantics}
 \end{figure}
 
-The semantics for the toy decompiler are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
+The semantics for the toy decompiler $\Gamma \vdash t \Rightarrow p$ are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
 As with the real decompiler, the toy decompiler defaults to the naive proof script
 that applies the entire proof term with the \lstinline{apply} tactic (\textsc{Base}).
 Otherwise, it improves on that behavior by recursing over the proof term and constructing a proof script using a predefined set of tactics.
 
-For the toy decompiler, this is fairly straightforward: Lambda terms become introduction of hypotheses (\textsc{Intro}), since they introduce new bindings
+For the toy decompiler, this is straightforward: Lambda terms become introduction of hypotheses (\textsc{Intro}), since they introduce new bindings
 in the environment of the body. Applications of \lstinline{eq_sym} become symmetry of equality (\textsc{Symmetry}).
-Constructors of conjunction and disjunction become map to the respective tactics (\textsc{Split}, \textsc{Left}, and \textsc{Right}).
+Constructors of conjunction and disjunction map to the respective tactics (\textsc{Split}, \textsc{Left}, and \textsc{Right}).
 Applications of equality eliminators compose symmetry (to orient the rewrite direction with the goal) with rewrites (\textsc{Rewrite}),
 and all other applications of eliminators become induction (\textsc{Induction}).
 The remaining applications become apply tactics (\textsc{Apply}).
@@ -137,7 +137,7 @@ decompiles to this proof script:
 \end{lstlisting}
 where corresponding terms and tactics are highlighted with the same color, and nothing else is highlighted for clarity.
 Of course, this script is fairly low-level and close to the proof term, but it is already something that the proof engineer
-can step through piece by piece to understand and maintain the proof.
+can step through piece by piece to understand, modify, and maintain.
 There are very few differences from the toy decompiler needed to produce this,
 for example handling of rewrites in both directions (\lstinline{eq_ind_r} as opposed to \lstinline{eq_ind}),
 simplifying to handle motive inference for rewrites,
@@ -171,16 +171,17 @@ This second pass will be the natural integration point for these.
 Our current plan is to take additional input in this pass, either directly from the proof engineer
 or by feeding in the original proof script from before \textbf{Transform}.
 We can then iteratively replace tactics with custom tactics and decision procedures, and check the result see if it works.
+Even better would be generalizing the behavior of the proof script into more flexible custom tactics.
 We also plan to support tacticals like \lstinline{;} and \lstinline{try}.
-For now, massaging the output to use these is left to the proof engineer.
+For now, massaging the output if desired is left to the proof engineer.
 
 \paragraph{Induction and Rewriting}
-The toy decopmiler includes simpler and more predictable versions of \lstinline{rewrite} and \lstinline{induction}
-than those found in Coq. The implementation of \textbf{Decompile} includes additional logic to reason about these tactics.
-For example, it assumes that there is only one \lstinline{rewrite} direction. Coq has two rewrite directions,
+The toy decompiler includes more predictable versions of \lstinline{rewrite} and \lstinline{induction}
+than those found in Coq. \textbf{Decompile} includes additional logic to reason about these tactics.
+For example, Qtac assumes that there is only one \lstinline{rewrite} direction. Ltac has two rewrite directions,
 and so the decompiler infers the right direction based on the motive used.
 
-It also assumes that both tactics take the inductive motive explicitly.
+Qtac also assumes that both tactics take the inductive motive explicitly.
 In Coq, however, both tactics infer the motive automatically.
 Consequentially, Coq will sometimes infer the wrong motive without manipulation of goals and hypotheses,
 or will fail to infer a motive at all.
@@ -198,7 +199,7 @@ may help with cases for which Coq cannot infer the correct motive.
 Changing from Qtac to Ltac is not the only challenge in writing the decompiler---we also scale from CIC$_{\omega}$ to Coq.
 This introduces let bindings, which are generated by tactics like \lstinline{rewrite in}, \lstinline{apply in}, and \lstinline{pose}.
 \textbf{Decompile} implements support for \lstinline{rewrite in} and \lstinline{apply in} similarly to how it implements support for
-\lstinline{rewrite} and \lstinline{apply}, but with two differences:
+\lstinline{rewrite} and \lstinline{apply}, but with three differences:
 
 \begin{enumerate}
 \item it ensures that the unmanipulated hypothesis does not occur in body of the let expression,
@@ -209,11 +210,10 @@ In all other cases, the implementation uses the \lstinline{pose} tactic, a catch
 
 \paragraph{Pretty Printing}
 After decompiling proof terms, there is one final step to present the information to the proof engineer: pretty printing.
-Like the toy decompiler, the implementation of \textbf{Decompile} represents its output language using a predefined grammar of Ltac tactics,
+Like the toy decompiler, \textbf{Decompile} represents its output language using a predefined grammar of Ltac tactics,
 albeit one that is larger than Qtac.
-It maintains the recursive proof structure as it goes, then uses that proof structure to print proofs of subgoals using bullet points.
-It displays the resulting proof script to the proof engineer, who can then modify it as needed to ensure that it works correctly
-and is maintainable.
+It maintains the recursive proof structure as it goes, then uses that structure to print proofs of subgoals using bullet points.
+It displays the resulting proof script to the proof engineer, who can then modify it as needed.
 For convenience, it includes scripts that automate the process of printing all of these tactic proofs to a Coq file,
 in case the proof engineer does not want such an interactive workflow.
 \toolname keeps all output proof terms from the proof term transformation in the Coq environment as a fallback in case the decompiler does not succeed.

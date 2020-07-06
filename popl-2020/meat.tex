@@ -463,7 +463,6 @@ or a univalent type theory~\cite{univalent2013homotopy}.
 Thankfully, the user does not need to prove the correctness criteria for a configuration in order to use \toolname.
 Rather, the correctness criteria simply need to hold in order for the proof term transformation to work.
 
-
 \subsection{The Tool}
 \label{sec:implementation}
 
@@ -509,7 +508,7 @@ In some cases, repeatedly running a matching transformation rule would result in
 For example, if our type \B is a refinement of our type \A, then we can always run \textsc{Equivalence}
 over and over again, forever.
 \textsc{Devoid} ruled out this case by simply prohibiting the case where \B refers to \A, but we found it sometimes
-useful in practice to support that case.
+useful to support this case.
 To support this, we include some simple termination checks in our code.
 
 More generally, even when termination is guaranteed, whether to run a matching transformation rule
@@ -520,24 +519,24 @@ but have a different meaning.
 We helped the proof engineer do this by interacting with \toolname using a particular workflow.
 We plan to support this automatically using type-directed search in the future.
 
-\paragraph{Reaching Real Users}
+\paragraph{Reaching Real Proof Engineers}
 Many of our design decisions in implementing \toolname were informed by our partnership with
 an industrial user.
 For example, we found that our industrial user rarely had the patience to wait more than ten seconds
 for \toolname to port a function or proof.
 In response, we implemented very aggressive caching (with an option to disable the cache), even caching intermediate subterms that
-we encounter in the course of running our program transformation.
-We also added the option to set certain terms or even entire modules as opaque to \toolname, to prevent
-unecessary $\delta$-reduction of constants.
-We included many other optimizations, including lazy $\eta$-expansion of terms like \textsc{Devoid}.
+we encounter in the course of running our proof term transformation.
+We also added the option to set certain terms or modules as opaque to \toolname, to prevent
+unecessary $\delta$-reduction.
+We also implemented many optimizations from \textsc{Devoid}.
 
-User experiences also informed features that we exposed to users.
+User experiences also informed features that we exposed.
 For example, all of our search procedures for configurations generate proofs that the discovered
-equivalence actually is an equivalence, using functionality that expands on the same functionality from \textsc{Devoid}.
+equivalence actually is an equivalence.
 We also implemented special search procedures to generate custom eliminators to make it easier to reason about
 types that we found common for certain search procedures.
-For example, \toolname generates a custom eliminator automatically to reason about \{\lstinline{l : list T & length l = n}\}
-and other similar types by breaking it into parts and reasoning seperately about the two projections.
+For example, \toolname generates a custom eliminator automatically to reason about types like $\Sigma$\lstinline{(l : list T).length l = n}
+by breaking them into parts and reasoning seperately about the two projections.
 These features along with our tactic decompiler helped with integration into proof engineering workflows.
 
 %First we need that \lstinline{DepElim} over $A$ into \lstinline{DepConstr} over $B$ and \lstinline{DepElim} over $B$ into
