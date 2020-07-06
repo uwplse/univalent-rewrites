@@ -110,8 +110,14 @@ to fix her functions and proofs, she must additionally prove invariants about th
 \subsection{A Tool for Proof Repair}
 \label{sec:time}
 
-The problem of proof reuse across equivalences is known as \textit{transport}. % TODO cite
-Thus, any tool that can repair proofs implements transport across the classes
+The problem of proof reuse across equivalences is known as \textit{transport}.
+A transport method takes an input term $t$ and produces an output term $t'$ that is equal up to transport
+along some equivalence $A \simeq B$. Informally, this means that if $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
+if $t$ is a proof, then $t'$ talks about the same things modulo the equivalence.
+Formally, the details of this in a univalent type theory can be found in \citet{univalent2013homotopy}, and the meaning in Coq
+without univalence is explained in \citet{tabareau2017equivalences}.
+
+Any tool like \toolname that can repair proofs implements transport across the classes
 of equivalences that it supports---and so can handle proof reuse as well.
 But not every proof reuse tool or transport method can support proof repair.
 A proof repair tool must produce proofs
