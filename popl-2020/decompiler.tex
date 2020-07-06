@@ -162,8 +162,7 @@ and how we imagine the decompiler continuing to evolve from there.
 \paragraph{Second Pass}
 The toy decompiler reasons about tactics one subterm at a time, and produces tactics only from a predefined set of tactics.
 This does not always match the thought processes of proof engineers.
-To produce a more natural set of tactics, \textbf{Decompile} operates in two passes: first it runs something that looks a lot
-like the toy decompiler, and then it modifies those tactics to produce a more natural proof script.
+To produce a more natural set of tactics, \textbf{Decompile} operates in two passes: first it runs something similar to the toy decompiler, and then it modifies those tactics to produce a more natural proof script.
 For example, the second pass combines each sequence of \lstinline{intro} tactics into an \lstinline{intros} tactic,
 and combines repetitive tactics in multiple cases using the \lstinline{;} tactical.
 

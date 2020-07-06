@@ -3,9 +3,8 @@
 
 At the heart of \toolname is a configurable proof term transformation for transporting
 proofs across equivalences. This is based on the proof term transformation from 
-\textsc{Devoid}~\cite{Ringer2019}, which solved this problem for particular class of equivalences.
-The goal of \toolname is to implement something like \textsc{Devoid}, but over
-a much broader set of changes, and with better workflow integration.
+\textsc{Devoid}~\cite{Ringer2019}, which solved this problem for a particular class of equivalences.
+The goal of \toolname is to do the same thing over a much broader set of changes, and with better workflow integration.
 We were able to generalize the \textsc{Devoid} algorithm to do this.
 
 \begin{quote}
@@ -291,7 +290,7 @@ What \lstinline{Iota} does in the configuration is encode this more generally.
   {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t : T').b'}
 \end{mathpar}
 \vspace{-0.2cm}
-\caption{Proof term transformation.}
+\caption{Proof term transformation for transporting terms across an equivalence $A \simeq B$ described by configuration \lstinline{((DepConstr, DepElim), (Eta, Iota))}.}
 \label{fig:final}
 \end{figure}
 
