@@ -71,7 +71,8 @@ This can support not just simple changes, but also changes in which the proof en
 In that case, the equivalence that the tool ports functions and proofs along
 is an equivalence between \textit{refinements}.
 It is up to the proof engineer to supply the additional information in order to construct proofs about the refinement.
-Consider an example from \textsc{Devoid}: changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
+Consider an example from a proof reuse tool called \textsc{Devoid}~\cite{Ringer2019}:
+changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
 \textsc{Devoid} is able to repair proofs about lists to proofs about \textit{vectors of some length}, since:
 
 \begin{lstlisting}
