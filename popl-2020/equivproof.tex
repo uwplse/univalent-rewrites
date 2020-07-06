@@ -1,31 +1,31 @@
-f T (l : Old.list T) : New.list T :=
-  Old.list_rect T
-    (fun (l : Old.list T) => New.list T)
-    New.nil
-    (fun (t : T) _ (IHl : New.list T) =>
-      New.cons T t IHl)
-    l.
-
-Lemma section:
-  $\forall$ T (l : Old.list T), g T (f T l) = l.
-Proof.
-  intros T l. symmetry. induction l.
-  - reflexivity.
-  - simpl. rewrite $\leftarrow$ IHl. reflexivity.
+f T (l : Old.list T) : New.list T :=(@\vspace{-0.04cm}@)
+  Old.list_rect T(@\vspace{-0.04cm}@)
+    (fun (l : Old.list T) => New.list T)(@\vspace{-0.04cm}@)
+    New.nil(@\vspace{-0.04cm}@)
+    (fun (t : T) _ (IHl : New.list T) =>(@\vspace{-0.04cm}@)
+      New.cons T t IHl)(@\vspace{-0.04cm}@)
+    l.(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+Lemma section:(@\vspace{-0.04cm}@)
+  $\forall$ T (l : Old.list T), g T (f T l) = l.(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  intros T l. symmetry. induction l.(@\vspace{-0.04cm}@)
+  - reflexivity.(@\vspace{-0.04cm}@)
+  - simpl. rewrite $\leftarrow$ IHl. reflexivity.(@\vspace{-0.04cm}@)
 Defined.
 
-g T (l : New.list T) : Old.list T :=
-  New.list_rect T
-    (fun (l : New.list T) => Old.list T)
-    (fun (t : T) _ (IHl : Old.list T) =>
-      Old.cons T t IHl)
-    Old.nil
-    l.
-
-Lemma retraction:
-  $\forall$ T (l : New.list T), f T (g T l) = l.
-Proof.
-  intros T l. symmetry. induction l.
-  - simpl. rewrite $\leftarrow$ IHl. reflexivity.
-  - reflexivity.
+g T (l : New.list T) : Old.list T :=(@\vspace{-0.04cm}@)
+  New.list_rect T(@\vspace{-0.04cm}@)
+    (fun (l : New.list T) => Old.list T)(@\vspace{-0.04cm}@)
+    (fun (t : T) _ (IHl : Old.list T) =>(@\vspace{-0.04cm}@)
+      Old.cons T t IHl)(@\vspace{-0.04cm}@)
+    Old.nil(@\vspace{-0.04cm}@)
+    l.(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+Lemma retraction:(@\vspace{-0.04cm}@)
+  $\forall$ T (l : New.list T), f T (g T l) = l.(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  intros T l. symmetry. induction l.(@\vspace{-0.04cm}@)
+  - simpl. rewrite $\leftarrow$ IHl. reflexivity.(@\vspace{-0.04cm}@)
+  - reflexivity.(@\vspace{-0.04cm}@)
 Defined.

@@ -15,6 +15,11 @@ to build such a proof repair tool, and the result can handle
 many different kinds of changes.
 \end{quote}
 
+This section starts by introducing the configuration (Section~\ref{sec:configurable}),
+then introduces the proof term transformation that builds on that (Section~\ref{sec:generic}).
+It then gives intuition for what it means for a configuration to be correct (Section~\ref{sec:art}),
+and finally describes the additional work needed to go from this transformation to the implementation (Section~\ref{sec:implementation}). 
+
 \begin{figure}
 \small
 \begin{grammar}
@@ -23,14 +28,10 @@ many different kinds of changes.
 <t> ::= <v> | <s> | $\Pi$ (<v> : <t>) . <t> | $\lambda$ (<v> : <t>) . <t> | <t> <t> | \\ 
 Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\}
 \end{grammar}
+\vspace{-0.2cm}
 \caption{Syntax for CIC$_\omega$, from \citet{Timany2015FirstST}.}
 \label{fig:syntax}
 \end{figure}
-
-This section starts by introducing the configuration (Section~\ref{sec:configurable}),
-then introduces the proof term transformation that builds on that (Section~\ref{sec:generic}).
-It then gives intuition for what it means for a configuration to be correct (Section~\ref{sec:art}),
-and finally describes the additional work needed to go from this transformation to the implementation (Section~\ref{sec:implementation}). 
 
 \paragraph{Conventions}
 All terms that we introduce in this section are in CIC$_{\omega}$ with primitive eliminators,
@@ -87,27 +88,28 @@ the other subterms without changing the order or number of arguments.
 \begin{figure}
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-DepConstr(0, list T) : list T :=
-  Constr((@\codediff{0}@), list T).
-DepConstr(1, list T) t l : list T :=
-  Constr ((@\codediff{1}@), list T) t l.
-
-DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=
+DepConstr(0, list T) : list T :=(@\vspace{-0.04cm}@)
+  Constr((@\codediff{0}@), list T).(@\vspace{-0.04cm}@)
+DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
+  Constr ((@\codediff{1}@), list T) t l.(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
   Elim(l, P) { (@\codediff{p$_{\mathtt{nil}}$}@), (@\codediff{p$_{\mathtt{cons}}$}@) }.
 \end{lstlisting}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-DepConstr(0, list T) : list T :=
-  Constr((@\codediff{1}@), list T).
-DepConstr(1, list T) t l : list T :=
-  Constr((@\codediff{0}@), list T) t l.
-
-DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=
+DepConstr(0, list T) : list T :=(@\vspace{-0.04cm}@)
+  Constr((@\codediff{1}@), list T).(@\vspace{-0.04cm}@)
+DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
+  Constr((@\codediff{0}@), list T) t l.(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
   Elim(l, P) { (@\codediff{p$_{\mathtt{cons}}$}@), (@\codediff{p$_{\mathtt{nil}}$}@) }.
 \end{lstlisting}
 \end{minipage}
+\vspace{-0.2cm}
 \caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}.}
 \label{fig:listconfig}
 \end{figure}
@@ -129,16 +131,16 @@ transformation to perform this same repair.
 It does this by configuring the dependent constructors to pack the index into an existential, for example:
 
 \begin{lstlisting}
-DepConstr(0, $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n :=
+DepConstr(0, $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n :=(@\vspace{-0.04cm}@)
   $\exists$ (Constr(0, nat)) (Constr(0, vector T)).
 \end{lstlisting}
 and by configuring the eliminator to eliminate over the projections:
 
 \begin{lstlisting}
-DepElim(s, P) { f$_0$ f$_1$ } : P ($\exists$ ($\pi_l$ s) ($\pi_r$ s)) :=
-  Elim($\pi_r$ s, $\lambda$ (n : nat) (v : vector T n) . P ($\exists$ n v)) {
-    f$_0$
-    ($\lambda$ (t : T) (n : nat) (v : vector T n) . f$_1$ t ($\exists$ n v))
+DepElim(s, P) { f$_0$ f$_1$ } : P ($\exists$ ($\pi_l$ s) ($\pi_r$ s)) :=(@\vspace{-0.04cm}@)
+  Elim($\pi_r$ s, $\lambda$ (n : nat) (v : vector T n) . P ($\exists$ n v)) {(@\vspace{-0.04cm}@)
+    f$_0$(@\vspace{-0.04cm}@)
+    ($\lambda$ (t : T) (n : nat) (v : vector T n) . f$_1$ t ($\exists$ n v))(@\vspace{-0.04cm}@)
   }. 
 \end{lstlisting}
 
@@ -186,6 +188,7 @@ that our language has primitive projections (definitional $\eta$ for $\Sigma$ ty
 \begin{minipage}{0.48\textwidth}
    \lstinputlisting[firstline=10, lastline=17]{nattobin.tex}
 \end{minipage}
+\vspace{-0.2cm}
 \caption{Unary (left) and binary (right) natural numbers.}
 \label{fig:nattobin}
 \end{figure}
@@ -287,6 +290,7 @@ What \lstinline{Iota} does in the configuration is encode this more generally.
   { \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
   {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t : T').b'}
 \end{mathpar}
+\vspace{-0.2cm}
 \caption{Proof term transformation.}
 \label{fig:final}
 \end{figure}
@@ -320,12 +324,12 @@ $\lambda$ (T : Type) (l m : list T) .
 \hfill
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-$\lambda$ (T : Type) (l m : list T) .
- Elim (l, $\lambda$(l: list T).list T $\rightarrow$ list T))
- {
-   ($\lambda$ t _ IHl m.
-      Constr((@\codediff{0}@), list T) t (IHl m)),
-   (@\codediff{($\lambda$ m . m)}@)
+$\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
+ Elim (l, $\lambda$(l: list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
+ {(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
+      Constr((@\codediff{0}@), list T) t (IHl m)),(@\vspace{-0.04cm}@)
+   (@\codediff{($\lambda$ m . m)}@)(@\vspace{-0.04cm}@)
  } m.
 \end{lstlisting}
 \end{minipage}
@@ -336,29 +340,30 @@ $\lambda$ (T : Type) (l m : list T) .
 \begin{figure}
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-$\lambda$ (T : Type) (l m : list T) .
- Elim
-   (l, $\lambda$(l: list T).list T $\rightarrow$ list T))
- {
-   ($\lambda$ m . m)
-   ($\lambda$ t _ IHl m.
-      Constr(1, list T) t (IHl m))
+$\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
+ Elim(@\vspace{-0.04cm}@)
+   (l, $\lambda$(l: list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
+ {(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
+      Constr(1, list T) t (IHl m))(@\vspace{-0.04cm}@)
  } m.
 \end{lstlisting}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-$\lambda$ (T : Type) (l m : list T) .
- (@\codediff{DepElim}@)
-   (l, $\lambda$(l: list T).list T $\rightarrow$ list T))
- {
-   ($\lambda$ m . m)
-   ($\lambda$ t _ IHl m.
-      (@\codediff{DepConstr}@)(1, list T) t (IHl m))
+$\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
+ (@\codediff{DepElim}@)(@\vspace{-0.04cm}@)
+   (l, $\lambda$(l: list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
+ {(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
+      (@\codediff{DepConstr}@)(1, list T) t (IHl m))(@\vspace{-0.04cm}@)
  } m.
 \end{lstlisting}
 \end{minipage}
+\vspace{-0.2cm}
 \caption{The original list append function (left) and the same function rewritten to use \lstinline{DepConstr} (right).}
 \label{fig:appswap2}
 \end{figure}
@@ -411,7 +416,7 @@ To preserve equivalence, we need that \lstinline{DepElim} and \lstinline{DepCons
 formed by one function that eliminates \A and constructs \B, and another function that eliminates \B and constructs \A:
 
 \begin{lstlisting}
-f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
+f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }(@\vspace{-0.04cm}@)
 g : B $\rightarrow$ A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
 \end{lstlisting}
 In addition, we need that:
@@ -444,9 +449,9 @@ and similarly for \B. % TODO do we need anything for DepConstr?
 Each \lstinline{Iota} needs to prove and rewrite along the simplification or refolding behavior that corresponds to a case of the dependent eliminator, in other words: % TODO do we need eta here?
 
 \begin{lstlisting}
-Iota(A) :
-  $\forall$ P $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),
-    Q (DepElim((@\codediff{DepConstr(j, A) $\vec{x}$}@), P) $\vec{f}$ $\rightarrow$ 
+Iota(A) :(@\vspace{-0.04cm}@)
+  $\forall$ P $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+    Q (DepElim((@\codediff{DepConstr(j, A) $\vec{x}$}@), P) $\vec{f}$ $\rightarrow$ (@\vspace{-0.04cm}@)
     Q ((@\codediff{$\vec{f}$[j]}@) ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)
 \end{lstlisting}
 where each \lstinline{IH}$_i$ is each recursive occurrence of \A in the eliminator case,

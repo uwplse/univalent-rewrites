@@ -1,4 +1,4 @@
-\section{Motivation: A Simple Example}
+\section{A Simple Motivating Example}
 \label{sec:overview}
 
 \begin{figure}
@@ -9,23 +9,24 @@
 \begin{minipage}{0.46\textwidth}
    \lstinputlisting[firstline=5, lastline=7]{listswap.tex}
 \end{minipage}
+\vspace{-0.02cm}
 \caption{The updated \lstinline{list} (right) is the old \lstinline{list} (left) with its two constructors swapped (\codediff{orange}).}
 \label{fig:listswap}
 \end{figure}
 
 \toolname is a tool for proof repair that is available on Github.\footnote{Link withheld for double-blind review.}
 Consider a simple example of using \toolname: fixing broken list proofs after swapping the two constructors of a list (Figure~\ref{fig:listswap}).
-Even such a simple change can quickly cause trouble in existing proofs, like this proof from the Coq standard library:\footnote{We use induction instead of pattern matching.}
+Even such a simple change can cause trouble in existing proofs, like this proof from the Coq standard library:\footnote{We use induction instead of pattern matching.}
 
 \begin{lstlisting}
-Lemma rev_app_distr {A : Type} : $\forall$ (x y : list A), rev (x ++ y) = rev y ++ rev x.
-Proof.
-  induction x as [| a l IHl].
-  induction y as [| a l IHl].
-  simpl. auto.
-  simpl. rewrite app_nil_r; auto.
-  intro y. simpl.
-  rewrite (IHl y). rewrite app_assoc; trivial.
+Lemma rev_app_distr {A : Type} : $\forall$ (x y : list A), rev (x ++ y) = rev y ++ rev x.(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  induction x as [| a l IHl].(@\vspace{-0.04cm}@)
+  induction y as [| a l IHl].(@\vspace{-0.04cm}@)
+  simpl. auto.(@\vspace{-0.04cm}@)
+  simpl. rewrite app_nil_r; auto.(@\vspace{-0.04cm}@)
+  intro y. simpl.(@\vspace{-0.04cm}@)
+  rewrite (IHl y). rewrite app_assoc; trivial.(@\vspace{-0.04cm}@)
 Qed.
 \end{lstlisting}
 This theorem says that appending two lists and reversing the result behaves the same way as appending
@@ -38,20 +39,20 @@ To update it to a \textit{new proof} with \toolname, all we need to do is run th
 \begin{lstlisting}
 Repair Old.list New.list in rev_app_distr.
 \end{lstlisting}
-assuming our old and new list types are in separate modules called \lstinline{Old} and \lstinline{New}.
+assuming our old and new list types are in separate modules \lstinline{Old} and \lstinline{New}.
 This produces an updated proof script that succeeds (Figure~\ref{fig:auto}),
 where the dependencies (\lstinline{rev}, \lstinline{++}, \lstinline{app_assoc}, and \lstinline{app_nil_r}) have
 also been updated automatically.
 If we'd like, we can manually tweak this to something that more closely matches the original:
 
 \begin{lstlisting}
-Proof.
-  induction x as [a l IHl|].
-  intro y. simpl.
-  rewrite (IHl y). rewrite app_assoc; trivial.
-  induction y as [a l IHl|].
-  simpl. rewrite app_nil_r; auto.
-  simpl. auto.
+Proof.(@\vspace{-0.04cm}@)
+  induction x as [a l IHl|].(@\vspace{-0.04cm}@)
+  intro y. simpl.(@\vspace{-0.04cm}@)
+  rewrite (IHl y). rewrite app_assoc; trivial.(@\vspace{-0.04cm}@)
+  induction y as [a l IHl|].(@\vspace{-0.04cm}@)
+  simpl. rewrite app_nil_r; auto.(@\vspace{-0.04cm}@)
+  simpl. auto.(@\vspace{-0.04cm}@)
 Qed.
 \end{lstlisting}
 We can even repair the entire list module all at once by running the \lstinline{Repair module}
@@ -59,16 +60,17 @@ command; the results of this are in \lstinline{Swap.v}.\footnote{Link withheld f
 
 \begin{figure}
 \codeauto{\lstinputlisting{overviewproof.tex}}
+\vspace{-0.2cm}
 \caption{The automatically (denoted by $\codeauto{light blue}$) repaired proof of \lstinline{rev_app_distr} that \toolname produces.}
 \label{fig:auto}
-\end{figure}
+\end{figure} % TODO revisit all generated tactic proofs with final decompiler
 
 The key to success here is that \toolname does not even attempt to update the poorly structured proof script directly.
 Even for the simple proof script above, this would not be straightforward: Grouping tactics by line, there are $6! = 620$
 permutations of this proof script.
-It is not clear which lines to swap since these tactics do not have a semantics beyond the meaning imposed by evaluating them.
+It is not clear which lines to swap since these tactics do not have a semantics beyond the meaning imposed by evaluation.
 Furthermore, just swapping lines is not enough: even for such a simple change, we must also swap
-arguments, so that \lstinline{induction x as [| a l IHl]} becomes \lstinline{induction x as [a l IHl|]}.
+arguments, so \lstinline{induction x as [| a l IHl]} becomes \lstinline{induction x as [a l IHl|]}.
 Handling even swapping constructors this way would require a specific search procedure that would not generalize to other changes.
 \citet{robert2018} describes the challenges of repairing tactics directly in detail.
 

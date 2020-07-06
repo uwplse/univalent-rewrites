@@ -37,6 +37,7 @@ We then explain how we scale that up to the actual implementation (Section~\ref{
 <p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | \\
 induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right | <p> . <p>
 \end{grammar}
+\vspace{-0.2cm}
 \caption{Qtac syntax.}
 \label{fig:ltacsyntax1}
 \end{figure}
@@ -95,13 +96,14 @@ The implementation reasons about Ltac and so does not make these assumptions.
   { \\ }
   { \Gamma \vdash t \Rightarrow \mathrm{apply}\ t }
 \end{mathpar}
+\vspace{-0.2cm}
 \caption{Qtac decompiler semantics.}
 \label{fig:someantics}
 \end{figure}
 
 The semantics for the toy decompiler $\Gamma \vdash t \Rightarrow p$ are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
-As with the real decompiler, the toy decompiler defaults to the naive proof script
-that applies the entire proof term with the \lstinline{apply} tactic (\textsc{Base}).
+As with the real decompiler, the toy decompiler defaults to the proof script
+that applies the entire proof term with \lstinline{apply} (\textsc{Base}).
 Otherwise, it improves on that behavior by recursing over the proof term and constructing a proof script using a predefined set of tactics.
 
 For the toy decompiler, this is straightforward: Lambda terms become introduction of hypotheses (\textsc{Intro}), since they introduce new bindings
@@ -121,18 +123,18 @@ for example, consists only of induction, rewriting, simplification, and reflexiv
 The proof term for the base case:
 
 \begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>
-  (@\codesima{list_rect}@) _ _
-    (fun (@\codesima{a l IHl}@) =>
-      (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))
-    (@\codesime{eq_refl}@)
+fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _(@\vspace{-0.04cm}@)
+    (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
+      (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
     (@\codesima{y0}@)
 \end{lstlisting}
 decompiles to this proof script:
 
 \begin{lstlisting}
-- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l IHl|]}.@)
-  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{reflexivity.}@)
+- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{reflexivity.}@)(@\vspace{-0.04cm}@)
   + (@\codesime{reflexivity.}@)
 \end{lstlisting}
 where corresponding terms and tactics are highlighted with the same color, and nothing else is highlighted for clarity.
