@@ -9,7 +9,7 @@
 \begin{minipage}{0.46\textwidth}
    \lstinputlisting[firstline=5, lastline=7]{listswap.tex}
 \end{minipage}
-\vspace{-0.02cm}
+\vspace{-0.2cm}
 \caption{The updated \lstinline{list} (right) is the old \lstinline{list} (left) with its two constructors swapped (\codediff{orange}).}
 \label{fig:listswap}
 \end{figure}
@@ -31,19 +31,20 @@ Qed.
 \end{lstlisting}
 This theorem says that appending two lists and reversing the result behaves the same way as appending
 the reverse of the second list onto the reverse of the first list.
-This theorem statement \lstinline{rev_app_distr} defined over the old version of \lstinline{list} is our \textit{old specification}.
-When we change the \lstinline{list} type, we get the \textit{new specification}.
-But the \textit{old proof} or tactic script no longer works with this new specification.
-To update it to a \textit{new proof} with \toolname, all we need to do is run this command:
+When we change the \lstinline{list} type, our proof no longer works.
+%This theorem statement \lstinline{rev_app_distr} defined over the old version of \lstinline{list} is our \textit{old specification}.
+%When we change the \lstinline{list} type, we get the \textit{new specification}.
+%But the \textit{old proof} or tactic script no longer works with this new specification.
+To repair this proof with \toolname, we just run this command:
 
 \begin{lstlisting}
 Repair Old.list New.list in rev_app_distr.
 \end{lstlisting}
-assuming our old and new list types are in separate modules \lstinline{Old} and \lstinline{New}.
+assuming our old and new list types from Figure~\ref{fig:listswap} are in separate modules \lstinline{Old} and \lstinline{New}.
 This produces an updated proof script that succeeds (Figure~\ref{fig:auto}),
 where the dependencies (\lstinline{rev}, \lstinline{++}, \lstinline{app_assoc}, and \lstinline{app_nil_r}) have
 also been updated automatically.
-If we'd like, we can manually tweak this to something that more closely matches the original:
+If we'd like, we can manually modify this to something that more closely matches the style of the original proof script:
 
 \begin{lstlisting}
 Proof.(@\vspace{-0.04cm}@)
@@ -56,7 +57,7 @@ Proof.(@\vspace{-0.04cm}@)
 Qed.
 \end{lstlisting}
 We can even repair the entire list module all at once by running the \lstinline{Repair module}
-command; the results of this are in \lstinline{Swap.v}.\footnote{Link withheld for double-blind review.} % TODO
+command; the results of this are in \lstinline{Swap.v}.\footnote{Links to repository withheld for double-blind review.} % TODO
 
 \begin{figure}
 \codeauto{\lstinputlisting{overviewproof.tex}}
