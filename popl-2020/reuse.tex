@@ -1,9 +1,6 @@
-\section{Proof Repair}
+\section{Problem Definition: Proof Repair}
 \label{sec:key1}
 
-%Proof refactoring and proof repair are similar problems: both refer to adapting proofs in response to changes
-%in specifications. Refactoring refers to semantics-preserving changes, and repair refers to non-semantics-preserving
-%changes.
 \toolname is a tool for \textit{proof repair}.
 Proof repair is the problem of updating a broken proof in response to a change in a program or specification~\cite{PGL-045, pumpkinpatch}.
 We can view this as a form of 
@@ -25,8 +22,7 @@ tool that can handle that additional challenge (Section~\ref{sec:time}).
 \subsection{Repair as Reuse across Equivalences}
 \label{sec:repair}
 
-Proof repair can be viewed as a form of proof reuse. 
-In the \lstinline{list} example from Section~\ref{sec:overview}, for example, \toolname
+In the \lstinline{list} example from Section~\ref{sec:overview}, \toolname
 reused the old proof of \lstinline{rev_app_distr} defined over \lstinline{Old.list}
 to generate the new proof of \lstinline{rev_app_distr} defined over \lstinline{New.list}.
 Since this change was simple, this required no additional information from the user, and the resulting functions
@@ -132,11 +128,48 @@ Thus, we need \lstinline{Old.list} around only until we call the \lstinline{Repa
 after that, we can remove the type and all of the functions and proofs about it, and replace them all with
 our functions and proofs about \lstinline{New.list}.
 
-\toolname accomplishes this using a configurable proof term transformation (Section~\ref{sec:key2}).
-The proof term transformation implements transport across equivalences, but in a way that removes
-references to the old type.
-The configuration corresponds to a particular equivalence, and tells the proof term transformation how to transform
-constructors, eliminators, and equalities.
-Section~\ref{sec:search} includes many example configurations as applied to real proof reuse and repair scenarios.
+\begin{figure}
+\begin{minipage}{0.49\textwidth}
+\includegraphics[width=\linewidth]{workflowa.png}
+\end{minipage}
+\hfill
+\begin{minipage}{0.49\textwidth}
+\includegraphics[width=\linewidth]{workflowb.png}
+\end{minipage}
+\caption{The two possible workflows for \toolname, using either automatic (left) or manual (right) configuration.}
+\label{fig:system}
+\end{figure}
+
+\toolname accomplishes this using a configurable proof term transformation.
+The proof term transformation implements transport across equivalences,
+but in a way that replaces references to the old specification (in Section~\ref{sec:overview}, the theorem that refers to \lstinline{Old.list})
+with references to the new specification (in Section~\ref{sec:overview}, the theorem that refers to \lstinline{New.list}).
+The configuration instantiates the proof term transformation to a particular equivalence corresponding to the old and new 
+specifications (in Section~\ref{sec:overview}, \lstinline{Old.list} and \lstinline{New.list}).
+Figure~\ref{fig:system} shows how this comes together when the user invokes \toolname:
+
+\begin{enumerate}
+\item \toolname configures itself, either:
+\begin{enumerate}
+\item automatically (left), using \textbf{Configure} to discover the configuration, or
+\item manually (right), by taking the configuration as an argument.
+\end{enumerate}
+\item The configured \textbf{Transform} transforms the old proof term into the new proof term.
+\item \textbf{Decompile} produces a new proof script from the new proof term.
+\end{enumerate}
+
+The example in Section~\ref{sec:overview} uses automatic configuration. When we run the \lstinline{Repair} command:
+
+\begin{lstlisting}
+Repair Old.list New.list in rev_app_distr.
+\end{lstlisting}
+\textbf{Configure} invokes a special search procedure that automatically discovers that \lstinline{New.list}
+is just \lstinline{Old.list} with a single moved constructor.
+The search procedure proves an equivalence between \lstinline{Old.list} and \lstinline{New.list},
+then configures \textbf{Transform} using that equivalence.
+\textbf{Transform} then ports the proof term that inducted over \lstinline{Old.list}
+to instead induct over \lstinline{New.list}, and finally
+\textbf{Decompile} produces the tactic script that we see.
+Section~\ref{sec:search} includes many more examples as applied to real proof reuse and repair scenarios.
 
 
