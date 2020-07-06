@@ -18,11 +18,11 @@ nor does it handle changes in structure or include any support for tactics beyon
 
 Proof repair can be viewed as a form of \textit{program repair}~\cite{Monperrus:2018:ASR:3177787.3105906, Gazzola:2018:ASR:3180155.3182526}
 specific to the domain of proof assistants.
-Proof assistants are a good fit for program repair: A recent paper~\cite{Qi:2015:APP:2771783.2771791} 
+Proof assistants like Coq are a good fit for program repair: A recent paper~\cite{Qi:2015:APP:2771783.2771791} 
 recommends that program repair tools draw on extra information
-such as specifications or example patches. In proof assistants like Coq, specifications and examples 
-are rich and widely available: specifications as a result of dependent types,
-and examples as a result of constructivism.
+such as specifications or example patches. In Coq, specifications and examples 
+are rich and widely available: specifications thanks to dependent types,
+and examples thanks to constructivism.
 
 \paragraph{Proof Refactoring}
 
@@ -30,12 +30,11 @@ Proof repair is closely related to proof refactoring~\cite{WhitesidePhD}, and a 
 that \toolname supports like changing constructor names can be viewed as refactorings.
 The proof refactoring tool Levity~\cite{Bourke12} has, like \toolname, seen industrial use.
 Unlike \toolname, it focuses on a specific refactoring task, whereas \toolname is configurable to many different kinds of changes.
-
-Both Chick~\cite{robert2018} and RefactorAgda~\cite{wibergh2019} are proof refactoring tools that
+Chick~\cite{robert2018} and RefactorAgda~\cite{wibergh2019} are proof refactoring tools that
 also support a few changes that can be viewed as repairs~\cite{PGL-045}.
-Chick operates over a Gallina-like language, while RefactorAgda is implemented in Agda.
-Unlike \toolname, the changes these tools support are still primarily syntactic.
-In addition, neither of these tools have tactic support.
+%Chick operates over a Gallina-like language, while RefactorAgda is implemented in Agda.
+Unlike \toolname, the changes these tools support are still primarily syntactic,
+and neither of these tools have tactic support.
 
 A few proof refactoring tools operate directly over tactics.
 POLAR~\cite{Dietrich2013} refactors proof scripts in languages based on Isabelle/Isar~\cite{Wenzel2007isar}.
@@ -66,13 +65,13 @@ The univalent parametricity framework~\cite{tabareau2017equivalences} realizes u
 in a non-univalent type theory, only sometimes relying on additional axioms beyond the core type theory of Coq.
 While powerful, neither of these approaches to transport remove references to the old type, making them poorly suited for repair.
 
-Recent work~\cite{tabareau2019marriage} extends the univalent parametricity framework with a \lstinline{replace_goal} tactic,
-which implements a white-box proof term transformation using hints proven by the proof engineer.
+Recent work~\cite{tabareau2019marriage} extends the univalent parametricity framework with 
+a white-box proof term transformation using hints proven by the proof engineer.
 This approach may be well suited for proof repair.
 However, it relies on proof obligations from the proof engineer that establish what is effectively the correctness criteria
 for the configuration in \toolname, while \toolname needs only that it holds metatheoretically.
 In addition, it does not include search procedures like \toolname to discover new equivalences from types,
-and it does not include tactic support like \toolname.
+and it does not include tactic script generation like \toolname.
 Finally, it does not implement any support for porting definitional equalities to propositional equalities,
 instead relying on the original black-box functionality of the univalent parametricity framework to handle those cases;
 the \lstinline{Iota} rule addresses this problem in \toolname and is based on lessons learned from reading that article.
@@ -99,7 +98,7 @@ or with changes that are difficult to protect against even with informed design.
 
 Another approach to this is to use heavy proof automation, for example through
 program-specific proof automation~\cite{Chlipala:2013:CPD:2584504},
-hint databases~\cite{coq-intro}, implementations of decision procedures~\cite{Pugh1991},
+implementations of decision procedures~\cite{Pugh1991},
 and hammers~\cite{Blanchette2016b, Blanchette2013, Kaliszyk2014, Czajka2018}.
 The benefit of an automation-heavy style is that this localizes the burden of change to the automation itself.
 On the other hand, heavy automation can produce terms that are large and slow to type check,
