@@ -116,27 +116,21 @@ to fix her functions and proofs, she must additionally prove invariants about th
 
 The problem of proof reuse across equivalences is known as \textit{transport}.
 A transport method takes an input term $t$ and produces an output term $t'$ that is equal up to transport
-along some equivalence $A \simeq B$. Informally, this means that if $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
+along some equivalence $A \simeq B$ (denoted $t \equiv_{A \simeq B} t'$). Informally, this means that if $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
 if $t$ is a proof, then $t'$ talks about the same things modulo the equivalence.
-Formally, the details of this in a univalent type theory can be found in \citet{univalent2013homotopy}, and the meaning in Coq
-without univalence is explained in \citet{tabareau2017equivalences}.
+The formal details of this in a univalent type theory can be found in \citet{univalent2013homotopy}, and in Coq
+without univalence in \citet{tabareau2017equivalences}.
 
-Any tool like \toolname that can repair proofs implements transport across the classes
-of equivalences that it supports---and so can handle proof reuse as well.
-But not every proof reuse tool or transport method can support proof repair.
-A proof repair tool must produce proofs
-that no longer refer in any way to the old specification, since the old specification no longer exists.
-
-The goal of a proof repair tool is, in essence, to
-define a transport method over a broad set of changes that
-removes references to the old specification, rather than converting back and forth
-like standard transport methods.
+The goal of a proof repair tool like \toolname is, in essence, to define a transport method that
+removes references to the old specification, rather than converting back and forth like standard transport methods.
+That way, the proof repair tool can produce proofs that no longer refer in any way to the old specification,
+since the old specification no longer exists.
 For example, the updated proof of \lstinline{rev_app_distr} and its dependencies
 from Section~\ref{sec:overview} refer only to \lstinline{New.list} and not to \lstinline{Old.list}.
-The proof inducts directly over \lstinline{New.list} and never, at any point, converts to an \lstinline{Old.list}.
+The proof inducts directly over \lstinline{New.list} and never, at any point, converts to \lstinline{Old.list}.
 Thus, we need \lstinline{Old.list} around only until we call the \lstinline{Repair} command;
-after that, we can remove the type and all of the functions and proofs about it, and replace them all with
-our functions and proofs about \lstinline{New.list}.
+after that, we can remove the old type and all of the functions and proofs about it. %, and replace them all with
+%our functions and proofs about \lstinline{New.list}.
 
 \begin{figure}
 \begin{minipage}{0.49\textwidth}

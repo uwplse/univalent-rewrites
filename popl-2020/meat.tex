@@ -303,6 +303,7 @@ which appear in the proof term transformation as metavariables.
 
 The goal of the proof term transformation is to preserve equality up to transport along that equivalence,
 while no longer referring to the old specification.
+That is, we need that $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
 This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
 with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
 The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
@@ -421,10 +422,9 @@ g : B $\rightarrow$ A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr
 \end{lstlisting}
 In addition, we need that:
 
-\begin{enumerate} % TODO make more formal, and check if we need to say it induces particular equivalence
-\item $\forall$ \lstinline{j}, \lstinline{DepConstr(j, A)} is equal to \lstinline{DepConstr(j, B)} up to transport along that equivalence, and
-\item $\forall$ \lstinline{(a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type)}, if \lstinline{a} is equal to \lstinline{b} and \lstinline{P} is equal to \lstinline{Q} up to transport along that equivalence,
-then \lstinline{DepElim(a, P)} is equal to \lstinline{DepElim(b, Q)} up to transport along that equivalence.
+\begin{enumerate}
+\item $\forall$ \lstinline{j}, \lstinline{DepConstr(j, A)} $\equiv_{A \simeq B}$ \lstinline{DepConstr(j, B)}, and
+\item $\forall$ \lstinline{(a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type)},\\ \lstinline{a} $\equiv_{A \simeq B}$ \lstinline{b} $\rightarrow$ \lstinline{P} $\equiv_{A \simeq B}$ \lstinline{Q} $\rightarrow$ \lstinline{DepElim(a, P)} $\equiv_{A \simeq B}$ \lstinline{DepElim(b, Q)}.
 \end{enumerate}
 The intuition for this is based on insights from \textsc{Devoid},
 and is proven on an example from \textsc{Devoid} in the univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
