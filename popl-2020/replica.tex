@@ -1,17 +1,17 @@
-Inductive Term : Set :=
-| Var : Identifier -> Term
-| (@\codediff{Int}@) : Z -> Term
-| (@\codediff{Eq}@) : Term -> Term -> Term
-| Plus : Term -> Term -> Term
-| Times : Term -> Term -> Term
-| Minus : Term -> Term -> Term
-| Choose : Identifier -> Term -> Term.
+Inductive Term : Set :=(@\vspace{-0.04cm}@)
+| Var : Identifier $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| (@\codediff{Int}@) : Z $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| (@\codediff{Eq}@) : Term $\rightarrow$ Term $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| Plus : Term $\rightarrow$ Term $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| Times : Term $\rightarrow$ Term $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| Minus : Term $\rightarrow$ Term $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| Choose : Identifier $\rightarrow$ Term $\rightarrow$ Term.
 
-Inductive Term : Set :=
-| Var : Identifier -> Term
-| (@\codediff{Eq}@) : Term -> Term -> Term
-| (@\codediff{Int}@) : Z -> Term
-| Plus : Term -> Term -> Term
-| Times : Term -> Term -> Term
-| Minus : Term -> Term -> Term
-| Choose : Identifier -> Term -> Term.
+Inductive Term : Set :=(@\vspace{-0.04cm}@)
+| Var : Identifier $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| (@\codediff{Eq}@) : Term $\rightarrow$ Term $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| (@\codediff{Int}@) : Z $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| Plus : Term $\rightarrow$ Term $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| Times : Term $\rightarrow$ Term $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| Minus : Term $\rightarrow$ Term $\rightarrow$ Term(@\vspace{-0.04cm}@)
+| Choose : Identifier $\rightarrow$ Term $\rightarrow$ Term.

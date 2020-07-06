@@ -213,7 +213,7 @@ After decompiling proof terms, there is one final step to present the informatio
 Like the toy decompiler, \textbf{Decompile} represents its output language using a predefined grammar of Ltac tactics,
 albeit one that is larger than Qtac.
 It maintains the recursive proof structure as it goes, then uses that structure to print proofs of subgoals using bullet points.
-It displays the resulting proof script to the proof engineer, who can then modify it as needed.
+It displays the resulting proof script to the proof engineer, who can modify it as needed.
 For convenience, it includes scripts that automate the process of printing all of these tactic proofs to a Coq file,
 in case the proof engineer does not want such an interactive workflow.
 \toolname keeps all output proof terms from the proof term transformation in the Coq environment as a fallback in case the decompiler does not succeed.

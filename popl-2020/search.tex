@@ -48,11 +48,11 @@ A proof engineer at \company has used \toolname to work with those automatically
 with the following workflow:
 
 \begin{enumerate}
-\item First, the proof engineer uses \toolname to update the automatically generated programs and specifications into more
-human-readable programs and specifications.
-\item Next, the proof engineer writes Coq proofs about the more human-readable programs and specifications.
-\item Finally, the proof engineer uses \toolname again to update those proofs about human-readable programs and specifications back to
-proofs about the original automatically generated programs and specifications.
+\item use \toolname to update the automatically generated functions and specifications into more
+human-readable functions and specifications, then
+\item write Coq proofs about the more human-readable functions and specifications, then finally
+\item use \toolname again to update those proofs about human-readable functions and specifications back to
+proofs about the original automatically generated functions and specifications.
 \end{enumerate}
 This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
 that would have otherwise been difficult.
@@ -91,7 +91,7 @@ eta (H : input) : input := (fst H, (fst (snd H), snd (snd H))).
 it set \lstinline{DepConstr} to recursively apply the pair constructor:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_constr_0 (firstBool : bool) (numberI : nat) (secondBool : bool) : input := (@\vspace{-0.04cm}@)
+dep_constr_0 (firstBool : bool) (numberI : nat) (secondBool : bool) : input :=(@\vspace{-0.04cm}@)
   (firstBool, (numberI, secondBool)).
 \end{lstlisting}
 and it set \lstinline{DepElim} to recursively eliminate over the pair:
@@ -110,7 +110,7 @@ which \toolname generated and proved automatically.
 Using this configuration, the proof engineer automatically ported this compiler-generated function:
 
 \begin{lstlisting}
-op (r : bool * (nat * bool)) : nat * bool :=
+op (r : bool * (nat * bool)) : nat * bool :=(@\vspace{-0.04cm}@)
   (fst (snd r), andb (firstBool r) (secondBool r)).
 \end{lstlisting}
 to this function:
@@ -125,14 +125,14 @@ op (r : (@\texttt{Record}@).input) : (@\texttt{Record}@).output := (@\vspace{-0.
 The proof engineer then wrote this proof about the new specification: % TODO did val write this or did I?
 
 \begin{lstlisting}
-Theorem and_spec_true_true : $\forall$ (r : (@\texttt{Record}@).input),
-  firstBool r = true $\rightarrow$ secondBool r = true $\rightarrow$ andBools ((@\texttt{Record}@).op r) = true.
-Proof.
-  destruct r as [f n s].
-  unfold (@\texttt{Record}@).op.
-  simpl in *.
-  apply andb_true_intro.
-  intuition.
+Theorem and_spec_true_true : $\forall$ (r : (@\texttt{Record}@).input),(@\vspace{-0.04cm}@)
+  firstBool r = true $\rightarrow$ secondBool r = true $\rightarrow$ andBools ((@\texttt{Record}@).op r) = true.(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  destruct r as [f n s].(@\vspace{-0.04cm}@)
+  unfold (@\texttt{Record}@).op.(@\vspace{-0.04cm}@)
+  simpl in *.(@\vspace{-0.04cm}@)
+  apply andb_true_intro.(@\vspace{-0.04cm}@)
+  intuition.(@\vspace{-0.04cm}@)
 Qed.
 \end{lstlisting}
 and then used \toolname to automatically port this proof back to a proof of the original function
@@ -154,9 +154,9 @@ The proof engineer used \toolname most commonly to update tuples to records,
 but also to help write dependently typed functions.
 In total, the proof engineer used at least three automatic configurations and no manual configurations.
 Two of these automatic configurations existed already, while the one for tuples and records was
-added in response to the proof engineers' needs.
-This search procedure took about two weeks for us to implement using techniques from
-the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
+added in response to the proof engineer's needs.
+This search procedure took about two weeks for us to implement. %using techniques from
+%the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
 Flexibility could be further improved by exposing an interface to users to allow them to
 write search procedures themselves.
 
@@ -168,8 +168,8 @@ In the initial days, we worked closely with the proof engineer;
 later, the proof engineer worked independently and reached out occasionally by email.
 \toolname was usable enough for this to work, but we found two challenges with workflow integration:
 the proof engineer sometimes could not distinguish between user errors and bugs in our code,
-and the proof engineer typically waited only about 10 seconds at most for \toolname to return.
-Both of these observations informed improvements to \toolname, like better error messages, caching of transformed subterms,
+and the proof engineer typically waited only about ten seconds at most for \toolname to return.
+Both observations informed improvements to \toolname, like better error messages, caching of transformed subterms,
 and the ability to set terms as opaque to \toolname.
 % TODO how long did compiling the file take?
 
@@ -197,9 +197,8 @@ We used two configurations to ease development with dependent types using algebr
 The first fits the proof term transformation from \textsc{Devoid} into the \toolname framework:
 it ports functions and proofs from the input type to the ornamented type at \textit{some} index,
 like $\Sigma$\lstinline{(n : nat).vector T n}.
-The second configuration goes beyond the functionality from \textsc{Devoid}, and provides
-the missing link to get proofs at a \textit{particular} index, like \lstinline{vector T n}.
-\textsc{Devoid} had left this step to the user.
+The second provides the missing link to get proofs at a \textit{particular} index, like \lstinline{vector T n};
+\textsc{Devoid} had left this to the proof engineer.
 
 The search procedure for the first configuration is based heavily on the search procedure from \textsc{Devoid}.
 In the case of lists and vectors, it used the equivalence:
@@ -245,8 +244,8 @@ and the same type escaping the sigma type, in our example:
 \begin{lstlisting}
 $\Sigma$(s : $\Sigma$(m : nat).vector T m).$\pi_l$ s = n $\simeq$ vector T n
 \end{lstlisting}
-By composition with the initial equivalence, this lets us transport proofs
-across the equivalence we eventually want:
+By composition with the initial equivalence, this transports proofs
+across the equivalence we	 want:
 
 \begin{lstlisting}
 $\Sigma$(l : list T).length l = n $\simeq$ vector T n
@@ -280,15 +279,15 @@ functions from lists to vectors of some length.
 It then manually ported those proofs to proofs over vectors at a particular length.
 The updated \toolname example automates this last step.
 
-The workflow for this was a bit different than it was with \textsc{Devoid}.
-First, we used a custom eliminator \toolname generated to combine the list functions
+%The workflow for this was a bit different than it was with \textsc{Devoid}.
+To handle this, first, we used a custom eliminator \toolname generated to combine the list functions
 with the length invariants from \textsc{Devoid}, and to combine the list proofs
 with the proofs about those length invariants from \textsc{Devoid}.
 This gave us a proof of this lemma:
 
 \begin{lstlisting}
-Lemma zip_with_is_zip : $\forall$ A B n
-  (v1: $\Sigma$(l1: (@\codediff{list A}@)).(@\codediff{length}@) l1 = n) (v2: $\Sigma$(l2: (@\codediff{list B}@)).(@\codediff{length}@) l2 = n),
+Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
+  (v1: $\Sigma$(l1: (@\codediff{list A}@)).(@\codediff{length}@) l1 = n) (v2: $\Sigma$(l2: (@\codediff{list B}@)).(@\codediff{length}@) l2 = n),(@\vspace{-0.04cm}@)
     zip_with pair n v1 v2 = zip n v1 v2.
 \end{lstlisting}
 with functions \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths.
@@ -302,7 +301,7 @@ Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
 \end{lstlisting}
 with functions \lstinline{zip_with} and \lstinline{zip} updated as well.
 We composed this with \lstinline{Repair module} on the second configuration,
-which proved this lemma:
+which proved the final lemma:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
 Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
@@ -315,18 +314,18 @@ with functions \lstinline{zip_with} and \lstinline{zip} operating directly over 
 
 %\paragraph{Configuration \& Flexibility}
 Implementing the configuration from \textsc{Devoid} in this framework was straightforward and
-took a couple of days.
+took about two days.
 It also simplified the transformation from \textsc{Devoid} %by removing the need for special rules for handling eliminators and constructors
 %by adding and removing arguments, and for special handling of non-primitive projections,
 %as that work is done in the configuration.
-significantly by moving all of the interesting into the search procedure for the configuration.
+by moving all of the interesting into the search procedure for the configuration.
 Implementing the second configuration was less straightforward,
 especially when it came to understanding the behaviors of equalities.
-There are still some open challenges in correctly supporting \lstinline{Iota} to port any arbitrary
+There are still some open challenges in correctly defining \lstinline{Iota} to port any arbitrary
 proof backward along the second configuration in the opposite direction.
 
 %\paragraph{Workflow Integration}
-The result was a simplifed workflow from \textsc{Devoid} and automated steps 
+The result was a simplifed workflow from \textsc{Devoid} that automated steps 
 that had previously been manual.
 %\toolname implemented some additional automation to generate eliminators that help separate out this additional information
 %for repair. 
@@ -338,7 +337,7 @@ were very difficult for us to write by hand.
 Still, additional effort is needed to improve tactic integration with dependent types.
 % TODO how long did compiling the file take?
 
-\subsection{\textsc{Replica} Benchmark}
+\subsection{\textsc{Replica} Benchmark Variants}
 \label{sec:replica}
 
 \begin{figure}
@@ -355,15 +354,15 @@ Still, additional effort is needed to improve tactic integration with dependent 
 
 The constructor swapping example from Section~\ref{sec:overview} was inspired by two benchmarks 
 from the \textsc{Replica} user study of proof engineers~\cite{replica}.
-An isolated change corresponding to part of the benchmark is shown in Figure~\ref{fig:replica}.
+An isolated change corresponding to part of one of the benchmarks is shown in Figure~\ref{fig:replica}.
 The proof engineer had a simple language represented by an inductive type \lstinline{Term},
 as well as some definitions and proofs about the language.
 The proof engineer swapped two constructors in the term language.
 
-We were able to use \toolname to automatically configure the program transformation to move this constructor,
+We used \toolname to automatically configure the proof term transformation to move this constructor,
 then transform all of the functions and proofs about the language.
 We also succeeded at more difficult variants of this,
-like swapping two constructors with the same type, or renaming all of the constructors,
+like swapping two constructors with the same type, renaming all of the constructors,
 or swapping and renaming at the same time.
 In all cases, with just a bit of human guidance, \toolname was able to repair the functions and proofs.
 
@@ -374,8 +373,8 @@ This is one of the simplest configurations.
 The only nontrivial part is that \lstinline{DepConstr} over the updated type swaps back the constructors, in our example:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_constr_0 (H : Z) : Term := Int H.(@\vspace{-0.04cm}@)
-dep_constr_1 (H H0 : Term) : Term := Eq H H0.
+dep_constr_0 (H : Z) : Term := (@\codediff{Int}@) H.(@\vspace{-0.04cm}@)
+dep_constr_1 (H H0 : Term) : Term := (@\codediff{Eq}@) H H0.
 \end{lstlisting}
 so that they align with the constructors of the original type.
 The eliminator similarly swaps cases:
@@ -402,8 +401,8 @@ This included functions about \lstinline{Term}, as well as a large record \lstin
 plus a proof about that record:
 
 \begin{lstlisting}
-Theorem eval_eq_true_or_false :
-  $\forall$ (L : EpsilonLogic) env (t1 t2 : Term),
+Theorem eval_eq_true_or_false:(@\vspace{-0.04cm}@)
+  $\forall$ (L : EpsilonLogic) env (t1 t2 : Term),(@\vspace{-0.04cm}@)
     L.eval env (Eq t1 t2) = L.vTrue $\vee$ L.eval env (Eq t1 t2) = L.vFalse.
 \end{lstlisting}
 \toolname automatically updated all of these. For the inductive proof, it produced
@@ -412,14 +411,14 @@ It also discovered all other 23 type-correct permutations of constructors, all a
 prove the appropriate equivalence and use to update functions and proofs.
 It presented the desired transformation as the first option in the list, so that all we had to do
 was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this change.
-It was also able to handle more advance changes like renaming constructors, swapping multiple constructors at once,
+It was also able to handle more advanced changes like renaming constructors, swapping multiple constructors at once,
 and doing both at the same time.
 
 \subsubsection{Lessons}
 
-Implementing the search procedure was simple and took about three days total.
+Implementing the search procedure was simple and took about three days.
 The biggest challenge was implementing an interactive interface to choose between mappings when there are multiple possible mappings,
-or to allow the user to write a single custom mapping function and derive the rest of the configuration from there.
+or to allow the user to write a single custom mapping function and derive the rest of the configuration from that.
 This was only a single snapshot of the benchmark, which included
 other changes like adding constructors to inductive types.
 One ongoing challenge is defining and discovering useful configurations to support adding new constructors.
@@ -443,27 +442,27 @@ All of the case studies so far have dealt with pairs of types with the same indu
 Some of the oldest problems in the transport literature deal with \textit{changing} inductive
 structure.
 We have realized a classic example~\cite{magaud2000changing}  of this with \toolname using a manual configuration:
-updating unary to binary natural numbers (Section~\ref{sec:key2}, Figure~\ref{fig:nattobin}).
+updating unary to binary natural numbers.
 
-In Coq, a binary number \lstinline{N} is either zero or a positive binary number. A positive binary number
+In Coq, a binary number \lstinline{N} (see Section~\ref{sec:key2}, Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
 is either 1 (\lstinline{xH}), the result of shifting left and adding 1 (\lstinline{xI}),
 or the result of shifting left and not adding anything (\lstinline{xO}).
-This allows for a fast addition function, also found in the Coq standard library.
+This allows for a fast addition function, found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we use \toolname to derive a slow binary
 addition function that does not refer to \lstinline{nat}.
-From that, we are able to port our proofs over unary addition to binary addition,
+From that, port proofs over unary addition to binary addition,
 removing all references to \lstinline{nat}, and show that they hold over fast binary addition too.
 
 \subsubsection{Configuration}
-We supplied this configuration manually using the \lstinline{Configure} command,
-which takes the configuration parts as arguments.
+We configured this manually using the \lstinline{Configure} command,
+which takes the configuration as an argument.
 The result is in \lstinline{nonorn.v}.
 The configuration for \lstinline{nat} was straightforward.
 For \lstinline{N}, we used functions from the Coq standard library that
 behaved like the \lstinline{nat} constructors:
 
 \begin{lstlisting}
-dep_constr_0 : N := 0%N.
+dep_constr_0 : N := 0%N.(@\vspace{-0.04cm}@)
 dep_constr_1 : N $\rightarrow$ N := N.succ.
 \end{lstlisting}
 Similarly, the Coq standard library included precisely the eliminator we wanted, one that behaves
@@ -471,31 +470,30 @@ like the eliminator over unary natural numbers:
 
 \begin{lstlisting}
 dep_elim (P: N $\rightarrow$ Type) (pO: P dep_constr_0) (pS: $\forall$n, P n $\rightarrow$ P (dep_constr_1 n)) (n: N) 
-    : P n :=
+    : P n :=(@\vspace{-0.04cm}@)
   N.peano_rect P pO pS n.
 \end{lstlisting}
 \lstinline{Iota} was almost written for us.
 The standard library had a lemma that reduced the successor case:
 
 \begin{lstlisting}
-N.peano_rect_succ :
+N.peano_rect_succ :(@\vspace{-0.04cm}@)
   $\forall$ P pO pS n, N.peano_rect P pO pS (N.succ n) = pS n (N.peano_rect P pO pS n).
 \end{lstlisting}
 \lstinline{Iota} over the successor case was a simple rewrite by this lemma:
 
 \begin{lstlisting}
-Lemma iota_1 :
-  $\forall$ P pO pS n (Q : P (dep_constr_1 n) $\rightarrow$ Type),
-     Q (pS n (dep_elim P pO pS n)) $\rightarrow$
-     Q (dep_elim P pO pS (dep_constr_1 n)).
-Proof.
-  intros. unfold dep_elim, dep_constr_1. rewrite N.peano_rect_succ. auto.
+Lemma iota_1 :(@\vspace{-0.04cm}@)
+  $\forall$ P pO pS n (Q : P (dep_constr_1 n) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+     Q (pS n (dep_elim P pO pS n)) $\rightarrow$(@\vspace{-0.04cm}@)
+     Q (dep_elim P pO pS (dep_constr_1 n)).(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  intros. unfold dep_elim, dep_constr_1. rewrite N.peano_rect_succ. auto.(@\vspace{-0.04cm}@)
 Defined.
 \end{lstlisting}
 
 The need for a nontrivial \lstinline{Iota} comes from the fact that \lstinline{N} has a different
-inductive structure from \lstinline{nat}.
-The need for it is noted as far back as \citet{magaud2000changing}.
+inductive structure from \lstinline{nat}, and is noted as far back as \citet{magaud2000changing}.
 This corresponds to a broader pattern---it captures the essence of the change in inductive structure.
 \toolname's configurable proof term transformation captures that intuition.
 
@@ -512,13 +510,13 @@ Like \citet{magaud2000changing}, we found it easy to manually prove that
 this has the same behavior as fast binary addition:
 
 \begin{lstlisting}
-Lemma add_fast_add:
-  $\forall$ (n m : Bin.nat), slow_add n m = N.add n m.
-Proof.
-  induction n using N.peano_rect; intros m; auto. unfold slow_add.
-  rewrite N.peano_rect_succ. (* $\leftarrow$ iota_1 *)
-  unfold slow_add in IHn. rewrite IHn.
-  rewrite N.add_succ_l. reflexivity.
+Lemma add_fast_add:(@\vspace{-0.04cm}@)
+  $\forall$ (n m : Bin.nat), slow_add n m = N.add n m.(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  induction n using N.peano_rect; intros m; auto. unfold slow_add.(@\vspace{-0.04cm}@)
+  rewrite N.peano_rect_succ. (* $\leftarrow$ iota_1 *)(@\vspace{-0.04cm}@)
+  unfold slow_add in IHn. rewrite IHn.(@\vspace{-0.04cm}@)
+  rewrite N.add_succ_l. reflexivity.(@\vspace{-0.04cm}@)
 Qed.
 \end{lstlisting}
 
@@ -556,14 +554,14 @@ just by writing a configuration with \lstinline{Iota}.
 
 The entire file took under a second for us to compile using \toolname.
 We did not need tactic integration, since we
-ultimately wanted compatibility with a faster version of the function.
+wanted compatibility with a faster version of the function.
 We did note that supporting custom eliminators like \lstinline{N.peano_rect} would be a simple way
 to improve the tactic decompiler.
 The most difficult part was manually expanding proofs about \lstinline{nat}
 to explicitly apply \lstinline{Iota}.
 This is because there is not yet any way for manual configuration to supply custom matching functions,
 and unification was not enough.
-We discuss some ideas for this in Section~\ref{sec:discussion}. % TODO actually dos
+We discuss ideas for this in Sections~\ref{sec:related} and~\ref{sec:discussion}. % TODO actually dos
 
 % TODO what does the tactic decompiler do for this? It's broken. Why?
 
