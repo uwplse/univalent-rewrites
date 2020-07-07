@@ -147,12 +147,11 @@ Lemma corkLemma :(@\vspace{-0.04cm}@)
 \subsubsection{Lessons}
 
 %but also to help write dependently typed functions.
-So far, the proof engineer has used at least three automatic configurations and no manual configurations.
+So far, the proof engineer has used at least three automatic configurations.
 Two of these automatic configurations existed already, while the one for tuples and records was
 added in response to the proof engineer's needs.
-This search procedure took about two weeks for us to implement, %using techniques from
+This search procedure took about two weeks for us to implement. %using techniques from
 %the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
-and is the configuration that the proof engineer uses most often.
 Flexibility could be further improved by exposing an interface to allow proof engineers to
 write search procedures themselves.
 
@@ -466,8 +465,7 @@ Similarly, the Coq standard library included precisely the eliminator we wanted,
 like the eliminator over unary natural numbers:
 
 \begin{lstlisting}
-dep_elim (P: N $\rightarrow$ Type) (pO: P dep_constr_0) (pS: $\forall$n, P n $\rightarrow$ P (dep_constr_1 n)) (n: N) 
-    : P n :=(@\vspace{-0.04cm}@)
+dep_elim P (pO : P dep_constr_0) (pS : $\forall$n, P n $\rightarrow$ P (dep_constr_1 n)) (n : N) : P n :=(@\vspace{-0.04cm}@)
   N.peano_rect P pO pS n.
 \end{lstlisting}
 \lstinline{Iota} was almost written for us.

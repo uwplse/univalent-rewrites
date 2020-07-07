@@ -491,14 +491,10 @@ which typically show up contracted in real code.
 This problem is exactly why \citet{tabareau2019marriage} speculated that converting definitional to propositional equalities
 like we do with \lstinline{Iota} may, in general, be intractable.
 
-In practice, we find that unification is often not enough to identify an implicit application of one of the configuration terms.
-Each of our search procedures for automatic configuration in turn implements special rewrite rules that tell \toolname
+In practice, we find that unification is sometimes not enough to identify an implicit application of one of the configuration terms.
+Each of our search procedures for automatic configuration in turn implements rewrite rules that tell \toolname
 how to identify and expand these implicit applications before applying the transformation.
-There is not yet a way for proof engineers themselves to supply these custom rewrite rules,
-so sometimes in order to use \toolname with manual configuration, proof engineers must manually expand
-input terms to explicitly apply parts of the configuration like \lstinline{Iota}.
-This can be challenging, so we plan to let proof engineers write
-these custom rewrite rules themselves in the future.
+In the worst case, proof engineers can provide hints to \toolname in the form of explicit annotations.
 
 \paragraph{Termination \& Intent}
 
