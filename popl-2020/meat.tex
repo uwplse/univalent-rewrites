@@ -165,7 +165,7 @@ More formally, they define $\eta$-expansion and $\iota$-reduction of \A and \B,
 which may be propositional rather than definitional, and so must be explicit in the transformation.
 $\eta$-expansion describes how to expand a term to apply a constructor to an eliminator in a way that preserves propositional equality,
 and is important for defining dependent eliminators~\cite{nlab:eta-conversion}.
-$\iota$-reduction ($\beta$-reduction for inductive types) is dual, and so describes how to reduce elimination of a constructor~\cite{nlab:beta-reduction}.
+$\iota$-reduction ($\beta$-reduction for inductive types) describes how to reduce an elimination of a constructor~\cite{nlab:beta-reduction}.
  
 % TODO cite something here
 
@@ -399,7 +399,7 @@ and it is not always straightforward. This section specifies what it means for t
 to be correct and gives some intuition to why.
 Section~\ref{sec:search} shows some useful example configurations.
 
-The configuration ((\lstinline{DepConstr}, \lstinline{DepElim}), (\lstinline{Eta}, \lstinline{Iota})) instantiates
+The configuration \lstinline{((DepConstr, DepElim), (Eta, Iota))} instantiates
 the proof term transformation to a particular equivalence between \A and \B.
 Choosing an equivalence is a bit of an art:
 there can be infinitely many equivalences that correpond to a 
