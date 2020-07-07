@@ -10,14 +10,14 @@ we can decompile these Gallina terms to Ltac proof scripts for the proof enginee
 \textbf{Insight 3}: The transformed proof terms can then be translated back to tactic scripts.
 \end{quote}
 
-The \textbf{Decompile} component implements a prototype of this translation:
-it accepts a proof term and generates a candidate proof script that attempts to prove the same theorem the same way.
-Of course, this problem is not very well defined: there is always a proof script that 
-works (applying the entire proof term with the \lstinline{apply} tactic), but it is often unreadable.
-This is the baseline for success of the decompiler, and the decompiler defaults to this behavior.
-From there, the goal of the decompiler is to improve on that baseline as much as possible,
+\textbf{Decompile} implements a prototype of this translation:
+it translates a proof term to a candidate proof script that attempts to prove the same theorem the same way.
+Note that this problem is not well defined: while there is always a proof script that 
+works (applying the entire proof term with the \lstinline{apply} tactic), it is often unreadable.
+This is the baseline for success, and the decompiler defaults to this behavior.
+The goal of the decompiler is to improve on that baseline as much as possible,
 or else produce a candidate proof script that is close enough to correct that the proof engineer can step through it
-and manually massage it into something that both works and is maintainable.
+and manually massage it into something that works and is maintainable.
 
 The output language for the implementation of \textbf{Decompile} is Ltac, the proof script language for Coq.
 Ltac can be confusing to reason about, since Ltac tactics can refer to Gallina terms, and the semantics of Ltac depends both on the
@@ -42,11 +42,12 @@ induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right |
 \label{fig:ltacsyntax1}
 \end{figure}
 
-The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call Qtac.\footnote{Pronounced \textit{cute-tac}.}
+The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call 
+Qtac (pronounced \textit{cute-tac}).
 The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
-Qtac includes hypothesis introduction (\lstinline{intro},
-rewriting by equalities (\lstinline{rewrite}), symmetry (\lstinline{symmetry}) of equality,
-application of a term to prove the goal (\lstinline{apply}), induction over terms (\lstinline{induction}),
+Qtac includes hypothesis introduction (\lstinline{intro}),
+rewriting by equalities (\lstinline{rewrite}), symmetry of equality (\lstinline{symmetry}),
+application of a term to prove the goal (\lstinline{apply}), inductions (\lstinline{induction}),
 case splitting of conjunctions (\lstinline{split}),
 constructors of disjunctions (\lstinline{left} and \lstinline{right}), and
 composition (\lstinline{.}).
@@ -96,7 +97,7 @@ The implementation reasons about Ltac and so does not make these assumptions.
   { \\ }
   { \Gamma \vdash t \Rightarrow \mathrm{apply}\ t }
 \end{mathpar}
-\vspace{-0.2cm}
+\vspace{-0.3cm}
 \caption{Qtac decompiler semantics.}
 \label{fig:someantics}
 \end{figure}

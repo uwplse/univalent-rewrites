@@ -19,6 +19,12 @@ then introduces the proof term transformation that builds on that (Section~\ref{
 It then gives intuition for what it means for a configuration to be correct (Section~\ref{sec:art}),
 and finally describes the additional work needed to go from this transformation to the implementation (Section~\ref{sec:implementation}). 
 
+\paragraph{Conventions}
+All terms that we introduce in this section are in CIC$_{\omega}$ with primitive eliminators,
+the syntax for which is in Figure~\ref{fig:syntax}.
+The typing rules are standard.
+Throughout, we use $\vec{i}$ and $\{t_1, \ldots, t_n\}$ to denote lists of terms.
+
 \begin{figure}
 \small
 \begin{grammar}
@@ -27,16 +33,10 @@ and finally describes the additional work needed to go from this transformation 
 <t> ::= <v> | <s> | $\Pi$ (<v> : <t>) . <t> | $\lambda$ (<v> : <t>) . <t> | <t> <t> | \\ 
 Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\}
 \end{grammar}
-\vspace{-0.2cm}
+\vspace{-0.3cm}
 \caption{Syntax for CIC$_\omega$, from \citet{Timany2015FirstST}.}
 \label{fig:syntax}
 \end{figure}
-
-\paragraph{Conventions}
-All terms that we introduce in this section are in CIC$_{\omega}$ with primitive eliminators,
-the syntax for which is in Figure~\ref{fig:syntax}.
-The typing rules are standard.
-Throughout, we use $\vec{i}$ and $\{t_1, \ldots, t_n\}$ to denote lists of terms.
 
 \subsection{The Configuration}
 \label{sec:configurable}
@@ -287,7 +287,7 @@ What \lstinline{Iota} does in the configuration is encode this more generally.
   { \Gamma \vdash T \Uparrow T' \\\\ \Gamma,\ t : T \vdash b \Uparrow b' }
   {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t : T').b'}
 \end{mathpar}
-\vspace{-0.2cm}
+\vspace{-0.3cm}
 \caption{Proof term transformation for transporting terms across an equivalence $A \simeq B$ described by configuration \lstinline{((DepConstr, DepElim), (Eta, Iota))}.}
 \label{fig:final}
 \end{figure}
@@ -355,7 +355,7 @@ $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
  } m.
 \end{lstlisting}
 \end{minipage}
-\vspace{-0.2cm}
+\vspace{-0.3cm}
 \caption{Swapping cases of the append function, with names fully qualified only when needed for clarity, counterclockwise: 1) the input, 2) the term unified with the configuration, 3) the term ported to the updated type, and 4) the term reduced to the final output.}
 \label{fig:appswap1}
 \end{figure}
@@ -436,7 +436,7 @@ So, as long as we are able to identify and expand all implicit applications of \
 To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules
 over \lstinline{DepConstr} and \lstinline{DepElim}.
 For \lstinline{Eta}, we need it to have the same definitional behavior as the
-eliminator, in other words:
+eliminator:
 
 \begin{lstlisting}
 DepElim(a, P) { f$_0$, ..., f$_n$ } : P (Eta(A) a)
@@ -459,9 +459,9 @@ of the eliminators and constructors should be sufficient, since again those are 
 
 \textbf{Configure} implements search procedures that discover the functions \lstinline{f} and \lstinline{g} for certain classes of
 equivalences, and also
-produce proofs \lstinline{section} and \lstinline{retraction} in Coq that these functions form an equivalence.
-It can be difficult to prove the entire correctness criteria for the configuration---proving equality of the dependent eliminators
-up to transport, for example, requires either a special framework~\cite{tabareau2017equivalences}
+generate proofs \lstinline{section} and \lstinline{retraction} that these functions form an equivalence.
+It can be difficult to prove the entire correctness criteria for the configuration---proving equality of the eliminators
+up to transport, for example, requires a special framework~\cite{tabareau2017equivalences}
 or a univalent type theory~\cite{univalent2013homotopy}.
 Thankfully, the user does not need to prove the correctness criteria for a configuration in order to use \toolname.
 Rather, the correctness criteria simply need to hold in order for the proof term transformation to work.
@@ -499,7 +499,7 @@ how to identify and expand these implicit applications before applying the trans
 There is not yet a way for proof engineers themselves to supply these custom rewrite rules,
 so sometimes in order to use \toolname with manual configuration, proof engineers must manually expand
 input terms to explicitly apply parts of the configuration like \lstinline{Iota}.
-This can be challenging, so we plan to give proof engineers the opportunity to write
+This can be challenging, so we plan to let proof engineers write
 these custom rewrite rules themselves in the future.
 
 \paragraph{Termination \& Intent}
@@ -514,11 +514,11 @@ over and over again, forever.
 useful to support this case.
 To support this, we include some simple termination checks in our code.
 
-More generally, even when termination is guaranteed, whether to run a matching transformation rule
-depends on the intent of the user.
+Even when termination is guaranteed, whether to run a matching transformation rule
+depends on user intent.
 For example, our industrial proof engineer sometimes wished to port only some occurrences of \A,
-especially when \A was a tuple like \lstinline{(nat * bool)} that could feasibly appear elsewhere in the term
-but have a different meaning.
+especially when \A was a tuple like \lstinline{(nat * bool)} that could appear elsewhere
+with a different meaning.
 We helped the proof engineer do this by interacting with \toolname using a particular workflow.
 We plan to support this automatically using type-directed search in the future.
 
