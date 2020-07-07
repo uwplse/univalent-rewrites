@@ -13,14 +13,13 @@ only one of which---the new version---continues to exist.
 
 \begin{quote}
 \textbf{Insight 1}:
-Proof repair is a form of proof reuse, with the additional
-challenge that the specification about which
-we are reusing proofs ceases to exist (Section~\ref{sec:repair}).
+Proof repair is a form of proof reuse---reusing proofs about one specification to derive proofs about another specification---with 
+the additional challenge that one of the specifications ceases to exist (Section~\ref{sec:repair}).
 The key to supporting proof repair is to build a proof reuse
 tool that can handle that additional challenge (Section~\ref{sec:time}).
 \end{quote}
 
-\subsection{Repair as Transport with a Twist}
+\subsection{Repair is Transport with a Twist}
 \label{sec:repair}
 
 \begin{figure}
@@ -55,7 +54,9 @@ if $t$ is a proof, then $t'$ talks about the same things modulo the equivalence.
 The formal details of this in a univalent type theory can be found in \citet{univalent2013homotopy}, and an approximation in Coq
 without univalence can be found in \citet{tabareau2017equivalences}.
 
-The goal of a proof repair tool like \toolname is thus to define a transport method that
+Transport methods typically work by explicitly applying the functions that make up the equivalence to convert
+inputs and outputs back and forth between equivalent types.
+The goal of a proof repair tool like \toolname, in contrast, is to define a transport method that
 removes references to the old specification, rather than converting back and forth like standard transport methods.
 That way, the proof repair tool can produce proofs that no longer refer in any way to the old specification,
 since the old specification no longer exists.
@@ -63,7 +64,7 @@ Section~\ref{sec:overview} showed a simple case of this: \toolname
 reused the proof of \lstinline{rev_app_distr} defined over \lstinline{Old.list}
 to generate a new proof of \lstinline{rev_app_distr} defined over equivalent \lstinline{New.list}.
 Furthermore, it did so in a way that removed all references to \lstinline{Old.list}, both in the proof
-and in all of its dependencies.
+and in its dependencies.
 That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be removed.
 
 \begin{figure}

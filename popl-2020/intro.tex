@@ -43,13 +43,12 @@ of changes~\cite{robert2018, wibergh2019}, and these are not informed by real us
 Our progress towards each these challenges leverages three key insights: % TODO dan comment
 
 \begin{enumerate}
-\item Proof repair is a form of proof reuse, with the additional
-challenge that the specification about which
-we are reusing proofs ceases to exist.
+\item Proof repair is a form of proof reuse---reusing proofs about one specification to derive proofs about another specification---with 
+the additional challenge that one of the specifications ceases to exist.
 The key to supporting proof repair is to build a proof reuse
 tool that can handle that additional challenge (Section~\ref{sec:key1}). 
 \item The proof term transformation from an existing proof reuse tool can be generalized
-to build such a proof repair tool, and the result can handle many different kinds of changes (Section~\ref{sec:key2}).
+to build such a proof repair tool that can handle many different kinds of changes (Section~\ref{sec:key2}).
 \item The transformed proof terms can then be translated back to tactic scripts (Section~\ref{sec:decompiler}).
 \end{enumerate}
 
