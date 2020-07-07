@@ -160,10 +160,13 @@ may fail to generate well-typed terms if it does not consider the problem of tra
 Otherwise, if the transformation transforms a term \lstinline{t : T} to some \lstinline{t' : T'}, it does not necessarily
 hold that it transforms \lstinline{T} to \lstinline{T'}.
 
-\lstinline{Eta} and \lstinline{Iota} handle this.
-These together describe identity and equality as they relate to \lstinline{DepConstr} and \lstinline{DepElim}.
-More formally, they define $\eta$-expansion and $\iota$-reduction over \lstinline{DepConstr} and \lstinline{DepElim},
+\lstinline{Eta} and \lstinline{Iota} describe how to transport equalities.
+More formally, they define $\eta$-expansion and $\iota$-reduction of \A and \B,
 which may be propositional rather than definitional, and so must be explicit in the transformation.
+$\eta$-expansion describes how to expand a term to apply a constructor to an eliminator in a way that preserves propositional equality,
+and is important for defining dependent eliminators~\cite{nlab:eta-conversion}.
+$\iota$-reduction ($\beta$-reduction for inductive types) is dual, and so describes how to reduce elimination of a constructor~\cite{nlab:beta-reduction}.
+ 
 % TODO cite something here
 
 \begin{figure}
@@ -179,12 +182,8 @@ which may be propositional rather than definitional, and so must be explicit in 
 \label{fig:nattobin}
 \end{figure}
 
-\lstinline{Eta} describes how to $\eta$-expand an \A in a way that is coherent with the dependent eliminator \lstinline{DepElim}.
-This describes $\eta$-expansion for \textit{propositional} $\eta$-conversion,
-(constructing and eliminating an \A in a way that preserves propositional but not definitional equality),
-which is important for defining dependent eliminators~\cite{nlab:eta-conversion}.
-For example, for the change from list to \lstinline{$\Sigma$(n : nat).vector T n}, this corresponds to $\eta$-expansion
-of $\Sigma$ types:
+The configuration (see Section~\ref{sec:dep}) for to the change from \lstinline{list} to \lstinline{$\Sigma$(n : nat).vector T n} has propositional \lstinline{Eta}.
+To describe \lstinline{Eta}, it is enough to use the standard definition of $\eta$-expansion for $\Sigma$:
 
 \begin{lstlisting}
 Eta ($\Sigma$(n : nat).vector T n) := $\lambda$ (s : $\Sigma$(n : nat).vector T n).$\exists$ ($\pi_l$ s) ($\pi_r$ s).
@@ -223,12 +222,12 @@ for the base case and are exactly rewrites along the proofs of theorems above fo
 The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N},
 that way the dependent eliminators behave the same way over \lstinline{nat} and \lstinline{N}.
 
-Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ from one another.
+Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ from each other.
 The structures of \lstinline{DepElim} over \A and \B are always the same, so if \A and \B have the same 
 inductive structure (if they are \textit{ornaments}~\cite{mcbride}),
 then if $\iota$-reduction is definitional over \lstinline{DepElim} on \A, it will also be definitional on \B.
 Otherwise, if \A and \B have different inductive structures, as with \lstinline{nat} and \lstinline{N},
-then definitional $\iota$ over one would lift to propositional $\iota$ over the other.
+then definitional $\iota$ over one would become propositional $\iota$ over the other.
 For the case of \lstinline{nat} and \lstinline{N},
 the need for explicit $\iota$ was noted as far back as \citet{magaud2000changing}.
 What \lstinline{Iota} does in the configuration is encode this more generally.
@@ -297,8 +296,8 @@ What \lstinline{Iota} does in the configuration is encode this more generally.
 Figure~\ref{fig:final} shows the proof term transformation $\Gamma \vdash t \Uparrow t'$ that forms the core of \toolname.
 Like the transformation from \textsc{Devoid},
 this transformation is parameterized over two equivalent types \A and \B (\textsc{Equivalence}) and assumes fully expanded terms.
-It is also parameterized over the configuration (\lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}),
-which appear in the transformation as metavariables.
+It is also parameterized over the configuration \lstinline{((DepConstr, DepElim), (Eta, Iota))},
+which each appear in the transformation as a metavariable.
 
 The goal of the proof term transformation is to preserve equality up to transport along that equivalence,
 while no longer referring to the old specification.
