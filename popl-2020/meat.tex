@@ -80,7 +80,7 @@ These describe how to construct and eliminate \A and \B, wrapping the two types 
 There must be the same number of dependent constructors and inductive hypotheses in dependent eliminators for both \A and \B,
 even if \A and \B are inductive types with different numbers of constructors.
 The idea is to port functions and proofs over \A to functions and proofs over \B by viewing \B as if it is an \A.
-This way, the rest of the transformation can replace constructions of \A with constructions of \B and
+This way, the rest of the transformation can replace values of \A with values of \B and
 inductive proofs about \A with inductive proofs about \B, and otherwise recursively lift
 the other subterms without changing the order or number of arguments.
 
@@ -127,7 +127,7 @@ One example of this arises from integrating the change from lists and $\Sigma$\l
 \textsc{Devoid} supports into the \toolname framework.
 \toolname includes a search procedure that automatically configures the \toolname  
 transformation to perform this same repair.
-It does this by configuring the dependent constructors to pack the index into an existential, for example:
+It does this by configuring the dependent constructors to pack the index into an existential, for example (letting $\exists$ denote the constructor for $\Sigma$ types):
 
 \begin{lstlisting}
 DepConstr(0, $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n :=(@\vspace{-0.04cm}@)
@@ -148,8 +148,8 @@ the configuration for the swap example takes care of swapping constructors and c
 and the configuration for the \textsc{Devoid} example implements the constructor and eliminator rules from the \textsc{Devoid} transformation.
 That way, that the rest of the \toolname transformation does not need to add, drop, or reorder arguments.
 In essence, all of the difficult work moves into the configuration, but once it is done, it is done.
-Furthermore, for both examples, the \textsc{Configure} component of \toolname is able to discover \lstinline{DepConstr}
-and \lstinline{DepElim} from just the types \A and \B, taking care of even the difficult work.
+Furthermore, both examples use automatic configuration, which means that the \textsc{Configure} component of \toolname is able to 
+discover \lstinline{DepConstr} and \lstinline{DepElim} from just the types \A and \B, taking care of even the difficult work.
 
 \subsubsection{Producing Well-Typed Terms}
 \label{sec:equality}
@@ -193,32 +193,31 @@ that our language has primitive projections (definitional $\eta$ for $\Sigma$ ty
 \end{figure}
 
 Each \lstinline{Iota}---one per constructor---describes and proves the $\iota$-reduction behavior
-of \lstinline{DepElim} on the corresponding case. For example, with unary natural numbers defined in the standard way,
-and using the standard eliminator over the natural numbers, the $\iota$ rules are definitional, since:
+of \lstinline{DepElim} on the corresponding case.
+This is needed, for example, to port proofs about unary numbers \lstinline{nat} to
+proofs about binary numbers \lstinline{N} (Figure~\ref{fig:nattobin}).
+While we can in fact define \lstinline{DepConstr} and \lstinline{DepElim} to induce an equivalence
+between them (see Section~\ref{sec:bin}), we run into trouble reasoning about applications of \lstinline{DepElim},
+since proofs about \lstinline{nat} that hold by reflexivity do not necessarily hold by reflexivity over \lstinline{N}. 
+For example, in Coq, while \lstinline{S (n + m)  = S n + m} holds by reflexivity over \lstinline{nat},
+when we define \lstinline{+} with our new dependent eliminator over \lstinline{N},
+the corresponding theorem over \lstinline{N} does not hold by reflexivity.
+
+To transform proofs about \lstinline{nat} to proofs about \lstinline{N}, we must transform \textit{definitional} $\iota$-reduction over \lstinline{nat} to explicit \textit{propositional} $\iota$-reduction over \lstinline{N}.
+For our choice of configuration in Section~\ref{sec:bin},
+$\iota$-reduction is definitional over \lstinline{nat}, since a proof of:
 
 \begin{lstlisting}
 $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n, DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
 goes through by reflexivity.
-However, for the corresponding eliminator, this is no longer true for binary numbers \lstinline{N} as defined in the Coq standard library (Figure~\ref{fig:nattobin}).
-So while we can in fact define \lstinline{DepConstr} and \lstinline{DepElim} to induce an equivalence
-between them (see Section~\ref{sec:bin}), we run into trouble reasoning about applications of \lstinline{DepElim},
-since the corresponding $\iota$ rule:
+However, the corresponding $\iota$ rule for \lstinline{N} is propositional, since:
 
 \begin{lstlisting}
 $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n, DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
 no longer holds by reflexivity.
-
-The result of this is that proofs about \lstinline{nat} that hold by reflexivity
-do not necessarily hold by reflexivity over \lstinline{N}. For example, in Coq,
-while \lstinline{S (n + m)  = S n + m} holds by reflexivity over \lstinline{nat},
-when we define \lstinline{+} with our new dependent eliminator over \lstinline{N},
-the corresponding theorem over \lstinline{N} does not hold by reflexivity.
-To transform proofs about \lstinline{nat} to proofs about \lstinline{N}, we must transform \textit{definitional} $\iota$-reduction over \lstinline{nat}
-to explicit \textit{propositional} $\iota$-reduction over \lstinline{N}.
-
-For our choice of equivalence in Section~\ref{sec:bin} between \lstinline{nat} and \lstinline{N}, the \lstinline{Iota} rules are trivial
+Thus, the \lstinline{Iota} rules are trivial
 for the base case and are exactly rewrites along the proofs of theorems above for the successor case.
 The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N},
 that way the dependent eliminators behave the same way over \lstinline{nat} and \lstinline{N}.
@@ -428,12 +427,12 @@ In addition, we need that:
 The intuition for this is based on insights from \textsc{Devoid},
 and is proven on an example from \textsc{Devoid} in the univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
 Essentially, that these are equal up to transport along the equivalence means that replacing dependent constructors (respectively eliminators) of \A
-with dependent constructions (respectively eliminators) of \B will preserve equality up to transport for those particular subterms.
+with dependent constructors (respectively eliminators) of \B will preserve equality up to transport for those particular subterms.
 Furthermore, since CIC$_{\omega}$ is a constructive logic, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
 and the \textit{only} way to match over an \A (respectively \B) is to apply its eliminator.
 Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and eliminators.
 So, as long as we are able to identify and expand all implicit applications of \lstinline{DepConstr} and \lstinline{DepElim},
-\textsc{Dep-Constr} and \textsc{Dep-Elim} preserve correctness of the transformation and cover all constructions and eliminations of \A and \B.
+\textsc{Dep-Constr} and \textsc{Dep-Elim} preserve correctness of the transformation and cover all values and eliminations of \A and \B.
 
 To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules
 over \lstinline{DepConstr} and \lstinline{DepElim}.
