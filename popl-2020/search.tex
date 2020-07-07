@@ -512,13 +512,11 @@ Like \citet{magaud2000changing}, we found it easy to manually prove that
 this has the same behavior as fast binary addition:
 
 \begin{lstlisting}
-Lemma add_fast_add:(@\vspace{-0.04cm}@)
-  $\forall$ (n m : Bin.nat), slow_add n m = N.add n m.(@\vspace{-0.04cm}@)
+Lemma add_fast_add: $\forall$ (n m : Bin.nat), slow_add n m = N.add n m.(@\vspace{-0.04cm}@)
 Proof.(@\vspace{-0.04cm}@)
   induction n using N.peano_rect; intros m; auto. unfold slow_add.(@\vspace{-0.04cm}@)
   rewrite N.peano_rect_succ. (* $\leftarrow$ iota_1 *)(@\vspace{-0.04cm}@)
-  unfold slow_add in IHn. rewrite IHn.(@\vspace{-0.04cm}@)
-  rewrite N.add_succ_l. reflexivity.(@\vspace{-0.04cm}@)
+  unfold slow_add in IHn. rewrite IHn. rewrite N.add_succ_l. reflexivity.(@\vspace{-0.04cm}@)
 Qed.
 \end{lstlisting}
 
@@ -541,8 +539,7 @@ Showing that the same theorem held over fast binary addition was then
 straightforward:
 
 \begin{lstlisting}
-Lemma add_n_Sm :
-  $\forall$ n m, Bin.succ (N.add n m) = N.add n (Bin.succ m).
+Lemma add_n_Sm : $\forall$ n m, Bin.succ (N.add n m) = N.add n (Bin.succ m).
 Proof.
   intros. repeat rewrite $\leftarrow$ add_fast_add. apply slow_plus_n_Sm.
 Qed.

@@ -66,11 +66,11 @@ The univalent parametricity framework~\cite{tabareau2017equivalences} realizes u
 in a non-univalent type theory, only sometimes relying on additional axioms beyond the core type theory of Coq.
 While powerful, neither of these approaches to transport remove references to the old type, making them poorly suited for repair.
 
-Recent work~\cite{tabareau2019marriage} extends the univalent parametricity framework with 
-a white-box proof term transformation using hints proven by the proof engineer.
-This approach may be well suited for proof repair.
-However, it relies on proof obligations from the proof engineer that establish what is effectively the correctness criteria
-for the configuration in \toolname, while \toolname needs only that it holds metatheoretically.
+Recent work~\cite{tabareau2019marriage} extends univalent parametricity with 
+a white-box transformation that may be well suited for proof repair.
+However, it relies on proof obligations from the proof engineer beyond those imposed by \toolname.
+%that establish what is effectively the correctness criteria
+%for the configuration in \toolname, while \toolname needs only that it holds metatheoretically.
 In addition, it does not include search procedures like \toolname to discover new equivalences from types,
 and it does not include tactic script generation like \toolname.
 Finally, it does not implement any support for porting definitional equalities to propositional equalities,
@@ -79,33 +79,33 @@ the \lstinline{Iota} rule addresses this problem in \toolname and is based on le
 The most fruitful progress may come from integrating these tools together to take advantage of the benefits that both offer.
 
 The univalent parametricity framework implements type-directed search, a feature that \toolname does not yet support.
-The framework achieve this using type classes~\cite{Sozeau2008}; this does not always scale well~\cite{tabareau2019marriage}.
-Both \toolname and the univalent parametricity framework could benefit from implementing type-directed search using e-graphs~\cite{egraph1}.
-Of particular interest are the univalent e-graphs developed for congruence closure in Cubical Agda~\cite{egraph6},
-which prove the crucial thereom necessary to use e-graphs not derivable in other dependent type theories~\cite{egraph7},
-and which should allow for efficient and elegant automatic transport across equivalences.
+The framework achieves this using type classes~\cite{Sozeau2008}; this does not always scale well~\cite{tabareau2019marriage}.
+Both \toolname and univalent parametricity could benefit from implementing type-directed search using e-graphs~\cite{egraph1}.
+Of particular interest are those developed for congruence in Cubical Agda~\cite{egraph6},
+which prove the thereom necessary to use e-graphs not derivable in other dependent type theories~\cite{egraph7},
+and which should allow for efficient and elegant automatic transport.
 
 \paragraph{Proof Design}
 
-Much of the work on proof engineering focuses on designing proofs
-in a way that is resilient to change, rather than fixing proofs that are already broken.
-This can take the form of design principles, for example using 
+Much of the proof engineering work focuses on designing proofs
+to be robust to change, rather than fixing already broken proofs.
+This can take the form of design principles, like using 
 information hiding techniques~\cite{Woos:2016:PCF:2854065.2854081, Klein:2014:CFV:2584468.2560537}
-or any of the various structures~\cite{Chrzaszcz2003, Sozeau2008, Saibi:PhD} for encoding interfaces in Coq,
-thereby localizing the burden of change to the interface.
+or any of the structures~\cite{Chrzaszcz2003, Sozeau2008, Saibi:PhD} for encoding interfaces in Coq.
+%thereby localizing the burden of change to the interface.
 Design and repair are complementary: design requires foresight, whereas repair can be applied retroactively.
-Proof repair can help with changes that occur outside of the proof engineer's control,
+Repair can help with changes that occur outside of the proof engineer's control,
 or with changes that are difficult to protect against even with informed design.
 
 Another approach to this is to use heavy proof automation, for example through
-program-specific proof automation~\cite{Chlipala:2013:CPD:2584504},
-implementations of decision procedures~\cite{Pugh1991},
-and hammers~\cite{Blanchette2016b, Blanchette2013, Kaliszyk2014, Czajka2018}.
-The benefit of an automation-heavy style is that this localizes the burden of change to the automation itself.
-On the other hand, heavy automation can produce terms that are large and slow to type check,
-and tactics can be difficult to debug when they fail.
+program-specific proof automation~\cite{Chlipala:2013:CPD:2584504}
+%implementations of decision procedures~\cite{Pugh1991},
+or hammers~\cite{Blanchette2016b, Blanchette2013, Kaliszyk2014, Czajka2018}.
 The degree to which proof engineers rely on automation varies, as seen in the data from the
 \textsc{REPLica} user study of Coq proof engineers~\cite{replica}.
+Automation-heavy proof engineering styles localize the burden of change to the automation itself,
+but can result in terms that are large and slow to type check,
+and tactics that can be difficult to debug.
 While these approaches are also complementary, more work will be needed for \toolname to better support 
 proof developments in this style.
 
