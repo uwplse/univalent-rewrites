@@ -22,11 +22,11 @@ and manually massage it into something that both works and is maintainable.
 The output language for the implementation of \textbf{Decompile} is Ltac, the proof script language for Coq.
 Ltac can be confusing to reason about, since Ltac tactics can refer to Gallina terms, and the semantics of Ltac depends both on the
 semantics of Gallina and on the implementation of proof search procedures written in OCaml.
-To give a sense of how the decompiler works without the clutter of these proof search details, we start by defining a toy
+To give a sense of how the decompiler works without the clutter of these proof search details, we start by defining a mini
 decompiler from CIC$_{\omega}$ to a simple subset of Ltac containing just a few predefined tactics (Section~\ref{sec:first}).
 We then explain how we scale that up to the actual implementation (Section~\ref{sec:second}), and where we plan to go from there.
 
-\subsection{A Toy Decompiler}
+\subsection{A Mini Decompiler}
 \label{sec:first}
 
 \begin{figure}
@@ -42,7 +42,7 @@ induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right |
 \label{fig:ltacsyntax1}
 \end{figure}
 
-The toy decompiler takes CIC$_{\omega}$ terms and produces tactics in a toy version of Ltac which we call Qtac.\footnote{Pronounced \textit{cute-tac}.}
+The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call Qtac.\footnote{Pronounced \textit{cute-tac}.}
 The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
 Qtac includes hypothesis introduction (\lstinline{intro},
 rewriting by equalities (\lstinline{rewrite}), symmetry (\lstinline{symmetry}) of equality,
@@ -58,7 +58,7 @@ The implementation reasons about Ltac and so does not make these assumptions.
 \begin{mathpar}
 \mprset{flushleft}
 \small
-\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Rightarrow$ $p$}\\
+\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Rightarrow$ $p$}\vspace{-0.4cm}\\
 
 \inferrule[Intro]
   { \Gamma,\ n : T \vdash b \Rightarrow p }
@@ -101,12 +101,12 @@ The implementation reasons about Ltac and so does not make these assumptions.
 \label{fig:someantics}
 \end{figure}
 
-The semantics for the toy decompiler $\Gamma \vdash t \Rightarrow p$ are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
-As with the real decompiler, the toy decompiler defaults to the proof script
+The semantics for the mini decompiler $\Gamma \vdash t \Rightarrow p$ are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
+As with the real decompiler, the mini decompiler defaults to the proof script
 that applies the entire proof term with \lstinline{apply} (\textsc{Base}).
 Otherwise, it improves on that behavior by recursing over the proof term and constructing a proof script using a predefined set of tactics.
 
-For the toy decompiler, this is straightforward: Lambda terms become introduction of hypotheses (\textsc{Intro}), since they introduce new bindings
+For the mini decompiler, this is straightforward: Lambda terms become introduction of hypotheses (\textsc{Intro}), since they introduce new bindings
 in the environment of the body. Applications of \lstinline{eq_sym} become symmetry of equality (\textsc{Symmetry}).
 Constructors of conjunction and disjunction map to the respective tactics (\textsc{Split}, \textsc{Left}, and \textsc{Right}).
 Applications of equality eliminators compose symmetry (to orient the rewrite direction with the goal) with rewrites (\textsc{Rewrite}),
@@ -115,7 +115,7 @@ The remaining applications become apply tactics (\textsc{Apply}).
 In all cases, the decompiler recurses on the remaining body, breaking into cases when relevant, until no other preconditions match.
 At that point the \textsc{Base} case holds, and we are done.
 
-While the toy compiler is very simple, only a few simple changes are needed
+While the mini compiler is very simple, only a few simple changes are needed
 to move this from CIC$_{\omega}$ to Coq.
 Furthermore, the result can already handle some of the example proofs \toolname has produced.
 The generated proof term of \lstinline{rev_app_distr} with swapped list constructors from Section~\ref{sec:overview},
@@ -140,29 +140,29 @@ decompiles to this proof script:
 where corresponding terms and tactics are highlighted with the same color, and nothing else is highlighted for clarity.
 Of course, this script is fairly low-level and close to the proof term, but it is already something that the proof engineer
 can step through piece by piece to understand, modify, and maintain.
-There are very few differences from the toy decompiler needed to produce this,
+There are very few differences from the mini decompiler needed to produce this,
 for example handling of rewrites in both directions (\lstinline{eq_ind_r} as opposed to \lstinline{eq_ind}),
 simplifying to handle motive inference for rewrites,
 and turning applications of \lstinline{eq_refl} into reflexivity.
 
 In fact, since \toolname uses the \lstinline{Preprocess} command from \textsc{Devoid}, \textit{all} of the proof terms that \toolname
 produces will use induction and rewriting rather than fixpoints and pattern matching.
-Because we have control over output terms, even a toy decompiler gets us pretty far.
+Because we have control over output terms, even a mini decompiler gets us pretty far.
 
 % TODO add any new things RanDair implements, like exists
 
 \subsection{Scaling Up}
 \label{sec:second}
 
-The toy decompiler abstracts a lot of the details that make Ltac so useful to proof engineers---and so painful to 
+The mini decompiler abstracts a lot of the details that make Ltac so useful to proof engineers---and so painful to 
 reason about automatically.
-This section discusses how we scale up from this toy decompiler to a prototype Gallina to Ltac decompiler,
+This section discusses how we scale up from this mini decompiler to a prototype Gallina to Ltac decompiler,
 and how we imagine the decompiler continuing to evolve from there.
 
 \paragraph{Second Pass}
-The toy decompiler reasons about tactics one subterm at a time, and produces tactics only from a predefined set of tactics.
+The mini decompiler reasons about tactics one subterm at a time, and produces tactics only from a predefined set of tactics.
 This does not always match the thought processes of proof engineers.
-To produce a more natural set of tactics, \textbf{Decompile} operates in two passes: first it runs something similar to the toy decompiler, and then it modifies those tactics to produce a more natural proof script.
+To produce a more natural set of tactics, \textbf{Decompile} operates in two passes: first it runs something similar to the mini decompiler, and then it modifies those tactics to produce a more natural proof script.
 For example, the second pass combines each sequence of \lstinline{intro} tactics into an \lstinline{intros} tactic,
 and combines repetitive tactics in multiple cases using the \lstinline{;} tactical.
 
@@ -177,7 +177,7 @@ Even better would be generalizing the behavior of the proof script into more fle
 For now, massaging the output if desired is left to the proof engineer.
 
 \paragraph{Induction and Rewriting}
-The toy decompiler includes more predictable versions of \lstinline{rewrite} and \lstinline{induction}
+The mini decompiler includes more predictable versions of \lstinline{rewrite} and \lstinline{induction}
 than those found in Coq. \textbf{Decompile} includes additional logic to reason about these tactics.
 For example, Qtac assumes that there is only one \lstinline{rewrite} direction. Ltac has two rewrite directions,
 and so the decompiler infers the right direction based on the motive used.
@@ -211,7 +211,7 @@ In all other cases, the implementation uses the \lstinline{pose} tactic, a catch
 
 \paragraph{Pretty Printing}
 After decompiling proof terms, there is one final step to present the information to the proof engineer: pretty printing.
-Like the toy decompiler, \textbf{Decompile} represents its output language using a predefined grammar of Ltac tactics,
+Like the mini decompiler, \textbf{Decompile} represents its output language using a predefined grammar of Ltac tactics,
 albeit one that is larger than Qtac.
 It maintains the recursive proof structure as it goes, then uses that structure to print proofs of subgoals using bullet points.
 It displays the resulting proof script to the proof engineer, who can modify it as needed.

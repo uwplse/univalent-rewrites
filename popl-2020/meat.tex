@@ -64,8 +64,7 @@ each of which corresponds to one of the two goals, namely:
 \item \lstinline{DepConstr} and \lstinline{DepElim} define how to transform constructors and eliminators, thereby preserving the equivalence (Section~\ref{sec:equivalence}), and 
 \item \lstinline{Eta} and \lstinline{Iota} define how to transform $\eta$-expansion and $\iota$-reduction of these constructors and eliminators, thereby producing well-typed terms (Section~\ref{sec:equality}).
 \end{enumerate}
-Each of these is defined in as terms in CIC$_{\omega}$ for any given equivalence.
-
+Each of these is defined in CIC$_{\omega}$ for any given equivalence.
 \textbf{Configure} passes this configuration to \textbf{Transform}.
 The four parts of this configuration must be in relation to one another in a certain way in order for the proof
 term transformation to work correctly (Section~\ref{sec:art}).
@@ -73,16 +72,16 @@ term transformation to work correctly (Section~\ref{sec:art}).
 \subsubsection{Preserving the Equivalence}
 \label{sec:equivalence}
 
-The two configuration parts responsible for ensuring that the program transformation preserves the 
-equivalence are \lstinline{DepConstr} (\textit{dependent constructors}) 
-and \lstinline{DepElim} (\textit{dependent eliminators}).
-These describe how to construct and eliminate \A and \B, wrapping the two types with a common inductive structure.
-There must be the same number of dependent constructors and inductive hypotheses in dependent eliminators for both \A and \B,
-even if \A and \B are inductive types with different numbers of constructors.
-The idea is to port functions and proofs over \A to functions and proofs over \B by viewing \B as if it is an \A.
+The two configuration parts responsible for preserving the
+equivalence are \lstinline{DepConstr}
+and \lstinline{DepElim} (\textit{dependent constructors and eliminators}).
+These describe how to construct and eliminate \A and \B, wrapping the types with a common inductive structure.
+There must be the same number of dependent constructors and inductive hypotheses in dependent eliminators for \A and \B,
+even if \A and \B are types with different numbers of constructors.
+The idea is to port terms \A to terms over \B by viewing \B as if it is an \A.
 This way, the rest of the transformation can replace values of \A with values of \B and
-inductive proofs about \A with inductive proofs about \B, and otherwise recursively lift
-the other subterms without changing the order or number of arguments.
+inductive proofs about \A with inductive proofs about \B, then recursively transform
+subterms without changing the order or number of arguments.
 
 \begin{figure}
 \begin{minipage}{0.48\textwidth}
@@ -91,7 +90,7 @@ DepConstr(0, list T) : list T :=(@\vspace{-0.04cm}@)
   Constr((@\codediff{0}@), list T).(@\vspace{-0.04cm}@)
 DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
   Constr ((@\codediff{1}@), list T) t l.(@\vspace{-0.04cm}@)
-(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
 DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
   Elim(l, P) { (@\codediff{p$_{\mathtt{nil}}$}@), (@\codediff{p$_{\mathtt{cons}}$}@) }.
 \end{lstlisting}
@@ -103,12 +102,12 @@ DepConstr(0, list T) : list T :=(@\vspace{-0.04cm}@)
   Constr((@\codediff{1}@), list T).(@\vspace{-0.04cm}@)
 DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
   Constr((@\codediff{0}@), list T) t l.(@\vspace{-0.04cm}@)
-(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
 DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
   Elim(l, P) { (@\codediff{p$_{\mathtt{cons}}$}@), (@\codediff{p$_{\mathtt{nil}}$}@) }.
 \end{lstlisting}
 \end{minipage}
-\vspace{-0.2cm}
+\vspace{-0.3cm}
 \caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}.}
 \label{fig:listconfig}
 \end{figure}
@@ -116,11 +115,11 @@ DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.0
 For the \lstinline{list} change from Section~\ref{sec:overview},
 the configuration that \toolname discovers uses the dependent constructors
 and eliminators in Figure~\ref{fig:listconfig}. The dependent constructors for \lstinline{Old.list}
-are just the normal constructors \lstinline{nil} and \lstinline{cons} with the order unchanged,
+are the normal constructors \lstinline{nil} and \lstinline{cons} with the order unchanged,
 while the dependent constructors for \lstinline{New.list} swap \lstinline{nil} and \lstinline{cons}
 back to the original order.
-Similarly, the dependent eliminator for \lstinline{Old.list} is just the normal eliminator for \lstinline{Old.list},
-while the dependent eliminator for \lstinline{New.list} swaps the \lstinline{nil} and \lstinline{cons} cases.
+Similarly, the dependent eliminator for \lstinline{Old.list} is the normal eliminator for \lstinline{Old.list},
+while the dependent eliminator for \lstinline{New.list} swaps 	cases.
 
 These constructors and eliminators can be \textit{dependent}.
 One example of this arises from integrating the change from lists and $\Sigma$\lstinline{(n : nat).vector T n} that
@@ -138,16 +137,16 @@ and by configuring the eliminator to eliminate over the projections:
 \begin{lstlisting}
 DepElim(s, P) { f$_0$ f$_1$ } : P ($\exists$ ($\pi_l$ s) ($\pi_r$ s)) :=(@\vspace{-0.04cm}@)
   Elim($\pi_r$ s, $\lambda$ (n : nat) (v : vector T n) . P ($\exists$ n v)) {(@\vspace{-0.04cm}@)
-    f$_0$(@\vspace{-0.04cm}@)
+    f$_0$,(@\vspace{-0.04cm}@)
     ($\lambda$ (t : T) (n : nat) (v : vector T n) . f$_1$ t ($\exists$ n v))(@\vspace{-0.04cm}@)
   }. 
 \end{lstlisting}
 
 In both of these examples, the only interesting work moves into the configuration:
-the configuration for the swap example takes care of swapping constructors and cases,
+the configuration for the swap example swaps constructors and cases,
 and the configuration for the \textsc{Devoid} example implements the constructor and eliminator rules from the \textsc{Devoid} transformation.
 That way, that the rest of the \toolname transformation does not need to add, drop, or reorder arguments.
-In essence, all of the difficult work moves into the configuration, but once it is done, it is done.
+In essence, all of the difficult work moves into the configuration.
 Furthermore, both examples use automatic configuration, which means that the \textsc{Configure} component of \toolname is able to 
 discover \lstinline{DepConstr} and \lstinline{DepElim} from just the types \A and \B, taking care of even the difficult work.
 
@@ -164,8 +163,21 @@ hold that it transforms \lstinline{T} to \lstinline{T'}.
 \lstinline{Eta} and \lstinline{Iota} handle this.
 These together describe identity and equality as they relate to \lstinline{DepConstr} and \lstinline{DepElim}.
 More formally, they define $\eta$-expansion and $\iota$-reduction over \lstinline{DepConstr} and \lstinline{DepElim},
-which may be propositional rather than definitional, and so must be represented explicitly in the transformation.
+which may be propositional rather than definitional, and so must be explicit in the transformation.
 % TODO cite something here
+
+\begin{figure}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=8]{nattobin.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=10, lastline=17]{nattobin.tex}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{Unary (left) and binary (right) natural numbers.}
+\label{fig:nattobin}
+\end{figure}
 
 \lstinline{Eta} describes how to $\eta$-expand the body of the identity function in a way that preserves equalities
 coherently with the definitions of \lstinline{DepConstr} and \lstinline{DepElim}.
@@ -179,19 +191,6 @@ which corresponds to the strategic packing in the \textsc{Devoid} implementation
 non-primitive projections not handled by the transformation. Thanks to this, we can forego the assumption from the \textsc{Devoid} transformation
 that our language has primitive projections (definitional $\eta$ for $\Sigma$ types).
 
-\begin{figure}
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=1, lastline=8]{nattobin.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=10, lastline=17]{nattobin.tex}
-\end{minipage}
-\vspace{-0.2cm}
-\caption{Unary (left) and binary (right) natural numbers.}
-\label{fig:nattobin}
-\end{figure}
-
 Each \lstinline{Iota}---one per constructor---describes and proves the $\iota$-reduction behavior
 of \lstinline{DepElim} on the corresponding case.
 This is needed, for example, to port proofs about unary numbers \lstinline{nat} to
@@ -200,7 +199,7 @@ While we can in fact define \lstinline{DepConstr} and \lstinline{DepElim} to ind
 between them (see Section~\ref{sec:bin}), we run into trouble reasoning about applications of \lstinline{DepElim},
 since proofs about \lstinline{nat} that hold by reflexivity do not necessarily hold by reflexivity over \lstinline{N}. 
 For example, in Coq, while \lstinline{S (n + m)  = S n + m} holds by reflexivity over \lstinline{nat},
-when we define \lstinline{+} with our new dependent eliminator over \lstinline{N},
+when we define \lstinline{+} with \lstinline{DepElim} over \lstinline{N},
 the corresponding theorem over \lstinline{N} does not hold by reflexivity.
 
 To transform proofs about \lstinline{nat} to proofs about \lstinline{N}, we must transform \textit{definitional} $\iota$-reduction over \lstinline{nat} to explicit \textit{propositional} $\iota$-reduction over \lstinline{N}.
@@ -239,7 +238,7 @@ What \lstinline{Iota} does in the configuration is encode this more generally.
 \begin{mathpar}
 \mprset{flushleft}
 \small
-\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Uparrow$ $t'$}\vspace{-0.2cm}\\
+\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Uparrow$ $t'$}\vspace{-0.4cm}\\
 
 \inferrule[Dep-Elim]
   { \Gamma \vdash a \Uparrow b \\ \Gamma \vdash p_{a} \Uparrow p_b \\ \Gamma \vdash \vec{f_{a}}\phantom{l} \Uparrow \vec{f_{b}} }
@@ -269,23 +268,23 @@ What \lstinline{Iota} does in the configuration is encode this more generally.
   { \Gamma \vdash T \Uparrow T' \\ \Gamma \vdash \vec{C} \Uparrow \vec{C'}  }
   { \Gamma \vdash \mathrm{Ind} (\mathit{Ty} : T) \vec{C} \Uparrow \mathrm{Ind} (\mathit{Ty} : T') \vec{C'} }
 
-\inferrule[Elim] % TODO wait why do we have c here when it clearly refers to the term we eliminate over? um
-  { \Gamma \vdash c \Uparrow c' \\ \Gamma \vdash Q \Uparrow Q' \\ \Gamma \vdash \vec{f} \Uparrow \vec{f'}}
-  { \Gamma \vdash \mathrm{Elim}(c, Q) \vec{f} \Uparrow \mathrm{Elim}(c', Q') \vec{f'}  }
-
 %% Application
 \inferrule[App]
  { \Gamma \vdash f \Uparrow f' \\ \Gamma \vdash t \Uparrow t'}
  { \Gamma \vdash f t \Uparrow f' t' }
 
+\inferrule[Elim] % TODO wait why do we have c here when it clearly refers to the term we eliminate over? um
+  { \Gamma \vdash c \Uparrow c' \\ \Gamma \vdash Q \Uparrow Q' \\ \Gamma \vdash \vec{f} \Uparrow \vec{f'}}
+  { \Gamma \vdash \mathrm{Elim}(c, Q) \vec{f} \Uparrow \mathrm{Elim}(c', Q') \vec{f'}  }
+
 % Lamda
 \inferrule[Lam]
-  { \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
+  { \Gamma \vdash T \Uparrow T' \\\\ \Gamma,\ t : T \vdash b \Uparrow b' }
   {\Gamma \vdash \lambda (t : T).b \Uparrow \lambda (t : T').b'}
 
 % Product
 \inferrule[Prod]
-  { \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
+  { \Gamma \vdash T \Uparrow T' \\\\ \Gamma,\ t : T \vdash b \Uparrow b' }
   {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t : T').b'}
 \end{mathpar}
 \vspace{-0.2cm}
@@ -294,10 +293,10 @@ What \lstinline{Iota} does in the configuration is encode this more generally.
 \end{figure}
 
 Figure~\ref{fig:final} shows the proof term transformation $\Gamma \vdash t \Uparrow t'$ that forms the core of \toolname.
-Like the transformation from \textsc{Devoid}, this transformation is parameterized over
-two equivalent types \A and \B (\textsc{Equivalence}) and assumes fully expanded terms.
-In addition, it is parameterized over the configuration (\lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}),
-which appear in the proof term transformation as metavariables.
+Like the transformation from \textsc{Devoid},
+this transformation is parameterized over two equivalent types \A and \B (\textsc{Equivalence}) and assumes fully expanded terms.
+It is also parameterized over the configuration (\lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}),
+which appear in the transformation as metavariables.
 
 The goal of the proof term transformation is to preserve equality up to transport along that equivalence,
 while no longer referring to the old specification.
@@ -306,71 +305,71 @@ This is the same as the correctness criterion for the program transformation fro
 with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
 The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
 to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
-From there, rest of the transformation is straightforward.
+The rest is straightforward.
 
 \begin{figure}
-\begin{minipage}{0.48\textwidth}
+\begin{minipage}{0.49\textwidth}
 \begin{lstlisting}
-$\lambda$ (T : Type) (l m : list T) .
- Elim (l, $\lambda$(l: list T).list T $\rightarrow$ list T))
- {
-   (@\codediff{($\lambda$ m . m)}@),
-   ($\lambda$ t _ IHl m.
-      Constr((@\codediff{1}@), list T) t (IHl m))
- } m.
-\end{lstlisting}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
+(* 1: original term *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- Elim (l, $\lambda$(l: list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
+ (@\codediff{Elim}@)(@\vspace{-0.04cm}@)
+   (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
  {(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m),(@\vspace{-0.04cm}@)
    ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
-      Constr((@\codediff{0}@), list T) t (IHl m)),(@\vspace{-0.04cm}@)
-   (@\codediff{($\lambda$ m . m)}@)(@\vspace{-0.04cm}@)
- } m.
-\end{lstlisting}
-\end{minipage}
-\caption{The list append function before (left) and after (right) repair.}
-\label{fig:appswap1}
-\end{figure}
-
-\begin{figure}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-$\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- Elim(@\vspace{-0.04cm}@)
-   (l, $\lambda$(l: list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
- {(@\vspace{-0.04cm}@)
-   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
-      Constr(1, list T) t (IHl m))(@\vspace{-0.04cm}@)
- } m.
-\end{lstlisting}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
+      (@\codediff{Constr}@)(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
+ } m.(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+(* 2: after unifying (@\texttt{with}@) configuration *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
  (@\codediff{DepElim}@)(@\vspace{-0.04cm}@)
-   (l, $\lambda$(l: list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
+   (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
  {(@\vspace{-0.04cm}@)
    ($\lambda$ m . m)(@\vspace{-0.04cm}@)
    ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
-      (@\codediff{DepConstr}@)(1, list T) t (IHl m))(@\vspace{-0.04cm}@)
+      (@\codediff{DepConstr}@)(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
+ } m.
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.49\textwidth}
+\begin{lstlisting}
+(* 4: reduced to final term *)(@\vspace{-0.04cm}@)
+$\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
+ (@\codediff{Elim}@)(@\vspace{-0.04cm}@)
+   (l, $\lambda$(l: New.list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
+ {(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
+      (@\codediff{Constr}@)(0, New.list T) t (IHl m)),(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
+ } m.(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+(* 3: ported to New.list *)(@\vspace{-0.04cm}@)
+$\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
+ DepElim(@\vspace{-0.04cm}@)
+   (l, $\lambda$(l: (@\codediff{New.list T}@)).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
+ {(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
+      DepConstr(1, (@\codediff{New.list T}@)) t (IHl m))(@\vspace{-0.04cm}@)
  } m.
 \end{lstlisting}
 \end{minipage}
 \vspace{-0.2cm}
-\caption{The original list append function (left) and the same function rewritten to use \lstinline{DepConstr} (right).}
-\label{fig:appswap2}
+\caption{Swapping cases of the append function, with names fully qualified only when needed for clarity, counterclockwise: 1) the input, 2) the term unified with the configuration, 3) the term ported to the updated type, and 4) the term reduced to the final output.}
+\label{fig:appswap1}
 \end{figure}
 
+The transformation is simple because it moves the bulk of the work into the configuration, and into unifying input terms with 
+the configuration. Before running the transformation, \toolname unifies the input proof term with applications of the 
+terms in the configuration for \A. The transformation then transforms those to applications to the terms in the configuration for \B.
+Reducing the result produces the output term defined over \B.
+
 For example, to update the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
-identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (Figure~\ref{fig:appswap2}).
-The transformation then just recursively substitutes in the updated \lstinline{list} type
-for the original \lstinline{list} type, which moves \lstinline{DepConstr} and \lstinline{DepElim}
+identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (in this case,
+just by matching against \lstinline{Constr} and \lstinline{Elim}, though this can be more difficult).
+The transformation then recursively substitutes in \lstinline{New.list}
+for \lstinline{Old.list}, which moves \lstinline{DepConstr} and \lstinline{DepElim}
 to construct and eliminate over the updated type.
 Finally, this reduces to the term on the right of Figure~\ref{fig:appswap1}.
 Both versions of append behave equally up to transport along the equivalence from Figure~\ref{fig:equivalence}, since:
@@ -426,9 +425,9 @@ In addition, we need that:
 \end{enumerate}
 The intuition for this is based on insights from \textsc{Devoid},
 and is proven on an example from \textsc{Devoid} in the univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
-Essentially, that these are equal up to transport along the equivalence means that replacing dependent constructors (respectively eliminators) of \A
-with dependent constructors (respectively eliminators) of \B will preserve equality up to transport for those particular subterms.
-Furthermore, since CIC$_{\omega}$ is a constructive logic, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
+That these are equal up to transport along the equivalence means that replacing dependent constructors (respectively eliminators) of \A
+with dependent constructors (respectively eliminators) of \B will preserve equality up to transport for those subterms.
+Furthermore, since CIC$_{\omega}$ constructive, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
 and the \textit{only} way to match over an \A (respectively \B) is to apply its eliminator.
 Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and eliminators.
 So, as long as we are able to identify and expand all implicit applications of \lstinline{DepConstr} and \lstinline{DepElim},
@@ -455,11 +454,12 @@ Iota(A) :(@\vspace{-0.04cm}@)
 where each \lstinline{IH}$_i$ is each recursive occurrence of \A in the eliminator case,
 and similarly for \B.
 Together, these induce proofs of \lstinline{section} and \lstinline{retraction} (by induction).
-The intuition here is that it should be enough to preserve the reduction behavior
-of the eliminators and constructors, since again those are the only ways we can construct or eliminate our types.
+The intuition here is that preserving the reduction behavior
+of the eliminators and constructors should be sufficient, since again those are the only ways we can construct or eliminate our types.
 
-Each search procedure that \textbf{Configure} implements discovers the functions \lstinline{f} and \lstinline{g}, and also
-produces proofs \lstinline{section} and \lstinline{retraction} in Coq that these functions form an equivalence.
+\textbf{Configure} implements search procedures that discover the functions \lstinline{f} and \lstinline{g} for certain classes of
+equivalences, and also
+produce proofs \lstinline{section} and \lstinline{retraction} in Coq that these functions form an equivalence.
 It can be difficult to prove the entire correctness criteria for the configuration---proving equality of the dependent eliminators
 up to transport, for example, requires either a special framework~\cite{tabareau2017equivalences}
 or a univalent type theory~\cite{univalent2013homotopy}.
@@ -478,8 +478,8 @@ Section~\ref{sec:discussion} elaborates on the remaining challenges and our plan
 
 Like \textsc{Devoid}, we also had to handle language differences to scale from CIC$_{\omega}$ to Coq.
 We use the same \lstinline{Preprocess} command that \textsc{Devoid} uses to turn pattern matching and fixpoints into applications of eliminators.
-We generalize the work from \textsc{Devoid} to handle Coq's non-primitive projections into our \lstinline{Eta} rule.
-We move the work of refolding constants into the configuration for each search procedure.
+We handle non-primitive projections using \lstinline{Eta}, and we handle refolding of constants in constructors
+using \lstinline{DepConstr}.
 
 \paragraph{Matching Against Preconditions}
 
@@ -538,8 +538,8 @@ For example, all of our search procedures for configurations generate proofs tha
 equivalence actually is an equivalence.
 We also implemented special search procedures to generate custom eliminators to make it easier to reason about
 types that we found common for certain search procedures.
-For example, \toolname generates a custom eliminator automatically to reason about types like $\Sigma$\lstinline{(l : list T).length l = n}
-by breaking them into parts and reasoning seperately about the two projections.
+For example, \toolname generates a custom eliminator to reason about types refined by equalities like $\Sigma$\lstinline{(l : list T).length l = n}
+by breaking them into parts and reasoning seperately about the projections.
 These features along with our tactic decompiler helped with integration into proof engineering workflows.
 
 %First we need that \lstinline{DepElim} over $A$ into \lstinline{DepConstr} over $B$ and \lstinline{DepElim} over $B$ into
