@@ -179,17 +179,19 @@ which may be propositional rather than definitional, and so must be explicit in 
 \label{fig:nattobin}
 \end{figure}
 
-\lstinline{Eta} describes how to $\eta$-expand the body of the identity function in a way that preserves equalities
-coherently with the definitions of \lstinline{DepConstr} and \lstinline{DepElim}.
-Note that this refers to $\eta$ over a given type, like $\eta$-expansion for $\Sigma$ types, and not to $\eta$-expansion of functions.
-For example, for the change from list to \lstinline{$\Sigma$(n : nat).vector T n}, we have:
+\lstinline{Eta} describes how to $\eta$-expand an \A in a way that is coherent with the dependent eliminator \lstinline{DepElim}.
+This describes $\eta$-expansion for \textit{propositional} $\eta$-conversion,
+(constructing and eliminating an \A in a way that preserves propositional but not definitional equality),
+which is important for defining dependent eliminators~\cite{nlab:eta-conversion}.
+For example, for the change from list to \lstinline{$\Sigma$(n : nat).vector T n}, this corresponds to $\eta$-expansion
+of $\Sigma$ types:
 
 \begin{lstlisting}
 Eta ($\Sigma$(n : nat).vector T n) := $\lambda$ (s : $\Sigma$(n : nat).vector T n).$\exists$ ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
-which corresponds to the strategic packing in the \textsc{Devoid} implementation to deal with
-non-primitive projections not handled by the transformation. Thanks to this, we can forego the assumption from the \textsc{Devoid} transformation
-that our language has primitive projections (definitional $\eta$ for $\Sigma$ types).
+which is propositional and not definitional in Coq.
+Thanks to this, we can forego the assumption from the \textsc{Devoid} transformation
+that our language has primitive projections (definitional $\eta$ for $\Sigma$).
 
 Each \lstinline{Iota}---one per constructor---describes and proves the $\iota$-reduction behavior
 of \lstinline{DepElim} on the corresponding case.
