@@ -166,6 +166,15 @@ then configures \textbf{Transform} using that equivalence.
 \textbf{Transform} then ports the proof term that inducted over \lstinline{Old.list}
 to instead induct over \lstinline{New.list}, and finally
 \textbf{Decompile} produces the tactic script from Figure~\ref{fig:auto}.
-Section~\ref{sec:search} includes many more examples as applied to real proof reuse and repair scenarios.
+
+There are currently four search procedures for automatic configuration implemented in \toolname:
+one for porting tuples to records, two for porting non-dependent types to certain dependent types, 
+and one for swapping and renaming constructors.
+All of these are informed by the needs of real proof engineers.
+Manual configuration makes it possible for the proof engineer to directly configure the tool to a particular equivalence
+for which no search procedure is yet implemented.
+Section~\ref{sec:search} shows examples of both workflows as applied to real proof reuse and repair scenarios.
+
+
 
 
