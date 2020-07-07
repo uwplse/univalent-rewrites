@@ -436,14 +436,13 @@ So, as long as we are able to identify and expand all implicit applications of \
 \textsc{Dep-Constr} and \textsc{Dep-Elim} preserve correctness of the transformation and cover all values and eliminations of \A and \B.
 
 To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules
-over \lstinline{DepConstr} and \lstinline{DepElim}.
-For \lstinline{Eta}, we need it to have the same definitional behavior as the
-eliminator:
+over \lstinline{DepElim}.
+For \lstinline{Eta}, we need it to have the same definitional behavior as the dependent eliminator:
 
 \begin{lstlisting}
 DepElim(a, P) { f$_0$, ..., f$_n$ } : P (Eta(A) a)
 \end{lstlisting}
-and similarly for \B. % TODO do we need anything for DepConstr?
+and similarly for \B.
 
 Each \lstinline{Iota} needs to prove and rewrite along the simplification or refolding behavior that corresponds to a case of the dependent eliminator, in other words: % TODO do we need eta here?
 
