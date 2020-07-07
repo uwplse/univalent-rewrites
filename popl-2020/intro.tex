@@ -57,21 +57,20 @@ These insights informed our design of
 \toolname combines a configurable proof term transformation,
 search procedures to configure the proof term transformation,
 and a prototype decompiler from proof terms back to tactics.
-The result is a proof repair tool that:
+The result is a flexible proof repair tool that: 
 
 \begin{enumerate}
-\item supports many different classes of changes, and
+\item supports changes informed by real user needs and not supported by other repair tools, and
 \item produces tactic scripts as part of better workflow integration.
 \end{enumerate}
 Our main technical advances are techniques for transforming proof terms directly to repair broken proofs, while our decompiler up to the tactic level is important for usability in the Coq setting.
 We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname:
 
 \begin{enumerate}
-\item has helped an industrial proof engineer integrate Coq with a company proof engineering workflow and write proofs about an implementation
-of the TLS Handshake Protocol,
-\item can simplify dependently-typed programming and proving,
-\item can support variants of a repair benchmark from a user study of Coq proof engineers, and
-\item can help port functions and proofs from unary to binary numbers.
+\item has helped an industrial proof engineer integrate Coq with a company workflow, port tuples to records, and write proofs about an implementation of the TLS Handshake Protocol,
+\item can help proof engineers port proofs from non-dependent types to certain dependent types,
+\item can rename and swap constructors to support variants of a benchmark from a user study of Coq proof engineers, and
+\item can help proof engineers port functions and proofs from unary to binary numbers.
 \end{enumerate}
 Our experiences drive ideas (Section~\ref{sec:discussion}) that open the door to better proof engineering tools.
 
