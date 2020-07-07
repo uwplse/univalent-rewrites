@@ -9,8 +9,8 @@ More can be found in a recent survey of proof engineering~\cite{PGL-045}.
 
 \paragraph{Proof Repair}
 
-\toolname is not the first proof repair tool.
-\textsc{Pumpkin Patch}~\cite{pumpkinpatch} is also a proof repair tool for Coq.
+%\toolname is not the first proof repair tool.
+\textsc{Pumpkin Patch}~\cite{pumpkinpatch}, like \toolname, is also a proof repair tool for Coq.
 The search procedures in \textbf{Configure} are based partly on ideas from \textsc{Pumpkin Patch}, which includes
 similar search procedures for discovering patches to fix broken proofs.
 Unlike \toolname, \textsc{Pumpkin Patch} does not apply the patches that it finds,
@@ -27,15 +27,16 @@ and examples thanks to constructivism.
 
 \paragraph{Proof Refactoring}
 
-Proof repair is closely related to proof refactoring~\cite{WhitesidePhD}, and a number of the changes
-that \toolname supports can be viewed as refactorings.
+Proof repair is closely related to proof refactoring~\cite{WhitesidePhD}. 
+%and a number of the changes that \toolname supports can be viewed as refactorings.
 The proof refactoring tool Levity~\cite{Bourke12} has, like \toolname, seen industrial use.
 Unlike \toolname, it focuses on a specific refactoring task, whereas \toolname is configurable to many different kinds of changes.
 Chick~\cite{robert2018} and RefactorAgda~\cite{wibergh2019} are proof refactoring tools that
 also support a few changes that can be viewed as repairs~\cite{PGL-045}.
 %Chick operates over a Gallina-like language, while RefactorAgda is implemented in Agda.
-Unlike \toolname, the changes these tools support are still primarily syntactic,
-and neither of these tools have tactic support.
+Unlike \toolname, these tools support primarily syntactic changes and do not have tactic support.
+% changes these tools support are still primarily syntactic,
+%and neither of these tools have tactic support.
 
 A few proof refactoring tools operate directly over tactics:
 POLAR~\cite{Dietrich2013} refactors proof scripts in languages based on Isabelle/Isar~\cite{Wenzel2007isar},
@@ -46,8 +47,8 @@ This approach is not tractable for handling more complex changes;
 
 \paragraph{Proof Reuse}
 
-Proof repair is proof reuse with the additional constraint that one specification ceases to exist.
-A few proof reuse tools work by proof term transformation and so can handle this additional constraint.
+%Proof repair is proof reuse with the additional constraint that one specification ceases to exist.
+A few proof reuse tools work by proof term transformation and so can be repurposed for proof repair.
 The namesake of this paper is based on a proof reuse tool~\cite{Johnsen2004}
 that generalizes theorems in Isabelle/HOL.
 \toolname's proof term transformation generalizes the proof term transformation from \textsc{Devoid}~\cite{Ringer2019},
