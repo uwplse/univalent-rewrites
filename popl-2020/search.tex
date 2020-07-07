@@ -62,20 +62,20 @@ that would have otherwise been difficult.
 \subsubsection{Configuration}
 
 \begin{figure}
-\begin{minipage}{0.25\textwidth}
-   \lstinputlisting[firstline=1, lastline=4]{records.tex}
+\begin{minipage}{0.33\textwidth}
+   \lstinputlisting[firstline=1, lastline=10]{records.tex}
 \end{minipage}
 \hfill
-\begin{minipage}{0.74\textwidth}
-   \lstinputlisting[firstline=6, lastline=9]{records.tex}
+\begin{minipage}{0.66\textwidth}
+   \lstinputlisting[firstline=12, lastline=21]{records.tex}
 \end{minipage}
 \vspace{-0.3cm}
 \caption{Two unnamed tuples (left) and corresponding named records (right).}
 \label{fig:records}
 \end{figure}
 
-Minimal examples corresponding to the proofs that the proof engineer used \toolname for
-can be found in \lstinline{minimal_records.v}.
+Some example proofs that the proof engineer used \toolname for
+can be found in the proof engineer's repository.\footnote{Link withheld for double-blind review.}
 The proof engineer used \toolname to port anonymous tuples produced by \company's compiler
 to named records, as shown in the example in Figure~\ref{fig:records}.
 
@@ -85,25 +85,28 @@ The search procedure triggered automatically when the proof engineer called the 
 %It set \A to be the record type and \B to be the tuple.
 The configuration it found for the record type was straightforward: identity for \lstinline{Eta},
 the record constructor for \lstinline{DepConstr}, the record eliminator for \lstinline{DepElim}, and reflexive \lstinline{Iota}.
-For the tuple, it set \lstinline{Eta} to expand and project, in our example:
+For the tuple, it set \lstinline{Eta} to expand and project, for \lstinline{Handshake}:
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-eta (H : input) : input := (fst H, (fst (snd H), snd (snd H))).
+eta (H : Handshake) : Handshake := (fst H, snd H).
 \end{lstlisting}
-it set \lstinline{DepConstr} to recursively apply the pair constructor:
+It set \lstinline{DepConstr} to apply the pair constructor:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_constr_0 (firstBool : bool) (numberI : nat) (secondBool : bool) : input :=(@\vspace{-0.04cm}@)
-  (firstBool, (numberI, secondBool)).
+dep_constr_0 (handshakeType : seq 32 bool) (messageNumber : seq 32 bool) :=(@\vspace{-0.04cm}@)
+  (handshakeType, messageNumber).
 \end{lstlisting}
-and it set \lstinline{DepElim} to recursively eliminate over the pair:
+and it set \lstinline{DepElim} to eliminate over the pair:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_elim (P: input $\rightarrow$ Type) (f: $\forall$ f n s, P(dep_constr_0 f n s)) (i: input): P(eta i) :=(@\vspace{-0.04cm}@)
-  prod_rect (@\vspace{-0.04cm}@)
-    (fun (p : bool * (nat * bool)) => P (eta p)) (@\vspace{-0.04cm}@)
-    (fun (a : bool) (b : nat * bool) => f a (fst b) (snd b)) (@\vspace{-0.04cm}@)
-    i.
+dep_elim P (f: $\forall$ h m, P (dep_constr_0 h m)) (H : Handshake) : P (eta H) :=(@\vspace{-0.04cm}@)
+  prod_rect(@\vspace{-0.04cm}@)
+    (fun (p : seq 32 bool * seq 32 bool) => P (eta p))(@\vspace{-0.04cm}@)
+    (fun (h : seq 32 bool) (m : seq 32 bool) => f h m)(@\vspace{-0.04cm}@)
+    H.
 \end{lstlisting}
+For \lstinline{Connection}, it chose similar \lstinline{Eta}, \lstinline{DepConstr}, and \lstinline{DepElim},
+except that \lstinline{Eta} included all nine projections, \lstinline{DepConstr} \textit{recursively} applied the
+pair constructor, and \lstinline{DepElim} \textit{recursively} eliminated the pair.
 This induced an equivalence between the nested tuple and record,
 which \toolname generated and proved automatically.
 
@@ -111,54 +114,46 @@ which \toolname generated and proved automatically.
 Using this configuration, the proof engineer automatically ported this compiler-generated function:
 
 \begin{lstlisting}
-op (r : bool * (nat * bool)) : nat * bool :=(@\vspace{-0.04cm}@)
-  (fst (snd r), andb (firstBool r) (secondBool r)).
+cork (c : Connection) : Connection :=(@\vspace{-0.04cm}@)
+  (fst c, (bvAdd _ (fst (snd c)) (bvNat _ 1), snd (snd c))).
 \end{lstlisting}
-to this function:
+to the corresponding function over records:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-op (r : (@\texttt{Record}@).input) : (@\texttt{Record}@).output := (@\vspace{-0.04cm}@)
-  {| (@\vspace{-0.04cm}@)
-     numberO := numberI r; (@\vspace{-0.04cm}@)
-     andBools := andb (fistBool r) (secondBool r) (@\vspace{-0.04cm}@)
-  |}.
+cork (c : (@\texttt{Record}@).Connection) : (@\texttt{Record}@).Connection := {|(@\vspace{-0.04cm}@)
+  clientAuthFlag := clientAuthFlag c; (@\hspace{0.43cm}@) corked := bvAdd _ (corked c) (bvNat _ 1);(@\vspace{-0.04cm}@)
+  corkedIO := corkedIO c; (@\hspace{2.36cm}@) handshake := handshake c;(@\vspace{-0.04cm}@)
+  isCachingEnabled := isCachingEnabled c; keyExchangeEPH := keyExchangeEPH c;(@\vspace{-0.04cm}@)
+  mode := mode c; (@\hspace{3.64cm}@) resumeFromCache := resumeFromCache c;(@\vspace{-0.04cm}@)
+  serverCanSendOCSP := serverCanSendOCSP c(@\vspace{-0.04cm}@)
+|}.
 \end{lstlisting}
-The proof engineer then wrote this proof about the new specification: % TODO did val write this or did I?
+The proof engineer then wrote proofs that record, for example:
 
 \begin{lstlisting}
-Theorem and_spec_true_true : $\forall$ (r : (@\texttt{Record}@).input),(@\vspace{-0.04cm}@)
-  firstBool r = true $\rightarrow$ secondBool r = true $\rightarrow$ andBools ((@\texttt{Record}@).op r) = true.(@\vspace{-0.04cm}@)
+Lemma corkLemma :(@\vspace{-0.04cm}@)
+  $\forall$ (c : (@\texttt{Record}@).Connection), corked c = bvNat 2 0 $\rightarrow$ corked (cork c) = bvNat 2 1.(@\vspace{-0.04cm}@)
 Proof.(@\vspace{-0.04cm}@)
-  destruct r as [f n s].(@\vspace{-0.04cm}@)
-  unfold (@\texttt{Record}@).op.(@\vspace{-0.04cm}@)
-  simpl in *.(@\vspace{-0.04cm}@)
-  apply andb_true_intro.(@\vspace{-0.04cm}@)
-  intuition.(@\vspace{-0.04cm}@)
-Qed.
-\end{lstlisting}
-and then used \toolname to automatically port this proof back to a proof of the original function
-(with a bit of massaging to clean up the tactic output): % TODO induction & preprocess though
+  intros []. simpl. intros H. subst. reflexivity.(@\vspace{-0.04cm}@)
+Defined.
+\end{lstlisting} % TODO better proof
+and then used \toolname to automatically port these back to proofs about the original function:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-Theorem and_spec_true_true : $\forall$ (r : input),(@\vspace{-0.04cm}@)
-  fst r = true $\rightarrow$ snd (snd r) = true $\rightarrow$ andb (op r) = true.(@\vspace{-0.04cm}@)
-Proof.(@\vspace{-0.04cm}@)
-  destruct r as [a b].(@\vspace{-0.04cm}@)
-  apply andb_true_intro.(@\vspace{-0.04cm}@)
-  intuition.(@\vspace{-0.04cm}@)
-Qed.
-\end{lstlisting}
+Lemma corkLemma :(@\vspace{-0.04cm}@)
+  $\forall$ (c : Connection), fst (snd c) = bvNat 2 0 $\rightarrow$ fst (snd (cork c)) = bvNat 2 1.
+\end{lstlisting} % TODO decompiler
 
 \subsubsection{Lessons}
 
-The proof engineer used \toolname most commonly to update tuples to records,
-but also to help write dependently typed functions.
-In total, the proof engineer used at least three automatic configurations and no manual configurations.
+%but also to help write dependently typed functions.
+So far, the proof engineer has used at least three automatic configurations and no manual configurations.
 Two of these automatic configurations existed already, while the one for tuples and records was
 added in response to the proof engineer's needs.
-This search procedure took about two weeks for us to implement. %using techniques from
+This search procedure took about two weeks for us to implement, %using techniques from
 %the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
-Flexibility could be further improved by exposing an interface to users to allow them to
+and is the configuration that the proof engineer uses most often.
+Flexibility could be further improved by exposing an interface to allow proof engineers to
 write search procedures themselves.
 
 The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
@@ -166,7 +161,7 @@ workflow using solver-aided tools at \company.
 The workflow for using \toolname itself, however, was a bit nonstandard,
 and there was little need for tactic proofs about the compiler-generated functions and specifications.
 In the initial days, we worked closely with the proof engineer;
-later, the proof engineer worked independently and reached out occasionally by email.
+later, the proof engineer worked independently and reached out occasionally by email or phone.
 \toolname was usable enough for this to work, but we found two challenges with workflow integration:
 the proof engineer sometimes could not distinguish between user errors and bugs in our code,
 and the proof engineer typically waited only about ten seconds at most for \toolname to return.
