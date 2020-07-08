@@ -457,20 +457,20 @@ Together, these induce proofs of \lstinline{section} and \lstinline{retraction} 
 The intuition here is that preserving the reduction behavior
 of the eliminators and constructors should be sufficient, since again those are the only ways we can construct or eliminate our types.
 
-\textbf{Configure} implements search procedures that discover the functions \lstinline{f} and \lstinline{g} for certain classes of
+\textbf{Configure} implements search procedures that discover functions \lstinline{f} and \lstinline{g} for certain classes of
 equivalences, and also
 generate proofs \lstinline{section} and \lstinline{retraction} that these functions form an equivalence.
 It can be difficult to prove the entire correctness criteria for the configuration---proving equality of the eliminators
 up to transport, for example, requires a special framework~\cite{tabareau2017equivalences}
 or a univalent type theory~\cite{univalent2013homotopy}.
-Thankfully, the user does not need to prove the correctness criteria for a configuration in order to use \toolname.
-Rather, the correctness criteria simply need to hold in order for the proof term transformation to work.
+Thankfully, the proof engineer does not need to prove the correctness criteria for a configuration in order to use \toolname.
+Rather, the correctness criteria simply need to hold in order for the transformation to work.
 
 \subsection{The Tool}
 \label{sec:implementation}
 
 The configurable proof term transformation helped us build a flexible proof repair and reuse tool.
-However, it alone was not enough to build a tool that reaches real users.
+However, it alone was not enough to build a tool that reaches real proof engineers.
 This section describes a sample of the implementation challenges that we encountered and how we solved them.
 Section~\ref{sec:discussion} elaborates on the remaining challenges and our plans to address them in the future.
 
@@ -511,7 +511,7 @@ useful to support this case.
 To support this, we include some simple termination checks in our code.
 
 Even when termination is guaranteed, whether to run a matching transformation rule
-depends on user intent.
+depends on intent.
 For example, our industrial proof engineer sometimes wished to port only some occurrences of \A,
 especially when \A was a tuple like \lstinline{(nat * bool)} that could appear elsewhere
 with a different meaning.
@@ -520,8 +520,8 @@ We plan to support this automatically using type-directed search in the future.
 
 \paragraph{Reaching Real Proof Engineers}
 Many of our design decisions in implementing \toolname were informed by our partnership with
-an industrial user.
-For example, we found that our industrial user rarely had the patience to wait more than ten seconds
+an industrial proof engineer.
+For example, we found that the proof engineer rarely had the patience to wait more than ten seconds
 for \toolname to port a function or proof.
 In response, we implemented very aggressive caching (with an option to disable the cache), even caching intermediate subterms that
 we encounter in the course of running our proof term transformation.
@@ -529,10 +529,8 @@ We also added the option to set certain terms or modules as opaque to \toolname,
 unecessary $\delta$-reduction.
 We also implemented many optimizations from \textsc{Devoid}.
 
-User experiences also informed features that we exposed.
-For example, all of our search procedures for configurations generate proofs that the discovered
-equivalence actually is an equivalence.
-We also implemented special search procedures to generate custom eliminators to make it easier to reason about
+The experiences of proof engineers also informed features that we exposed.
+We implemented special search procedures to generate custom eliminators to make it easier to reason about
 types that we found common for certain search procedures.
 For example, \toolname generates a custom eliminator to reason about types refined by equalities like $\Sigma$\lstinline{(l : list T).length l = n}
 by breaking them into parts and reasoning seperately about the projections.
