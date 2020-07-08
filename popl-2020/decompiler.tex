@@ -13,7 +13,7 @@ we can decompile these Gallina terms to Ltac proof scripts for the proof enginee
 \textbf{Decompile} implements a prototype of this translation:
 it translates a proof term to a candidate proof script that attempts to prove the same theorem the same way.
 Note that this problem is not well defined: while there is always a proof script that 
-works (applying the entire proof term with the \lstinline{apply} tactic), it is often unreadable.
+works (applying the proof term with the \lstinline{apply} tactic), the result is often unreadable.
 This is the baseline for success, and the decompiler defaults to this behavior.
 The goal of the decompiler is to improve on that baseline as much as possible,
 or else produce a candidate proof script that is close enough to correct that the proof engineer can step through it
@@ -37,7 +37,7 @@ We then explain how we scale that up to the actual implementation (Section~\ref{
 <p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | \\
 induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right | <p> . <p>
 \end{grammar}
-\vspace{-0.2cm}
+\vspace{-0.3cm}
 \caption{Qtac syntax.}
 \label{fig:ltacsyntax1}
 \end{figure}
@@ -116,29 +116,44 @@ The remaining applications become apply tactics (\textsc{Apply}).
 In all cases, the decompiler recurses on the remaining body, breaking into cases when relevant, until no other preconditions match.
 At that point the \textsc{Base} case holds, and we are done.
 
+\begin{figure}
+\begin{minipage}{0.44\textwidth}
+\begin{lstlisting}
+fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _(@\vspace{-0.04cm}@)
+    (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
+      (@\codesimc{eq_ind_r}@) _ (@\vspace{-0.04cm}@)
+        (@\codesimd{eq_refl}@)(@\vspace{-0.04cm}@)
+        (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
+    (@\codesima{y0}@)
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.54\textwidth}
+\begin{lstlisting}
+- (@\codesimb{intro y0.}@)
+  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@)(@\vspace{-0.04cm}@)
+    (@\codesimd{reflexivity.}@)(@\vspace{-0.04cm}@)
+  + (@\codesime{reflexivity.}@)
+\end{lstlisting}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{Proof term (left) and corresponding decopmiled proof script (right) for the base case of 
+\lstinline{rev_app_distr} from Section~\ref{sec:overview}, with corresponding terms and tactics 
+highlighted with the same color, and nothing else highlighted for clarity.}
+\label{fig:rainbow}
+\end{figure}
+
 While the mini compiler is very simple, only a few simple changes are needed
 to move this from CIC$_{\omega}$ to Coq.
 Furthermore, the result can already handle some of the example proofs \toolname has produced.
 The generated proof term of \lstinline{rev_app_distr} with swapped list constructors from Section~\ref{sec:overview},
 for example, consists only of induction, rewriting, simplification, and reflexivity.
-The proof term for the base case:
+Figure~\ref{fig:rainbow} shows the proof term for the base case of \lstinline{rev_app_distr} 
+alongside the decompiled tactic script that \toolname produces.
 
-\begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _(@\vspace{-0.04cm}@)
-    (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
-      (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
-    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
-    (@\codesima{y0}@)
-\end{lstlisting}
-decompiles to this proof script:
-
-\begin{lstlisting}
-- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{reflexivity.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{reflexivity.}@)
-\end{lstlisting}
-where corresponding terms and tactics are highlighted with the same color, and nothing else is highlighted for clarity.
 Of course, this script is fairly low-level and close to the proof term, but it is already something that the proof engineer
 can step through piece by piece to understand, modify, and maintain.
 There are very few differences from the mini decompiler needed to produce this,
