@@ -76,17 +76,17 @@ That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be remove
 \begin{minipage}{0.58\textwidth}
    \lstinputlisting[firstline=6, lastline=9]{listtovect.tex}
 \end{minipage}
-\vspace{-0.2cm}
+\vspace{-0.3cm}
 \caption{A vector (right) is a list (left) indexed by its length.}
 \label{fig:listtovect}
 \end{figure}
 
-Viewing repair as transport supports not just simple refactorings,
+Viewing repair as transport supports not just refactorings,
 but also changes in which the proof engineer adds or removes information.
 In that case, the equivalence along which the tool transports functions and proofs
 is an equivalence between \textit{refinements}.
 It is up to the proof engineer to supply the additional information in order to construct proofs about the refinement.
-Consider an example from a proof reuse tool called \textsc{Devoid}~\cite{Ringer2019}:
+Consider an example from the proof reuse tool \textsc{Devoid}~\cite{Ringer2019}:
 changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
 \textsc{Devoid} can repair proofs about lists to proofs about \textit{vectors of some length}, since:
 
@@ -143,8 +143,11 @@ to fix her functions and proofs, she must additionally prove invariants about th
 The proof term transformation implements transport across equivalences,
 but in a way that replaces references to the old specification (in Section~\ref{sec:overview}, the theorem that refers to \lstinline{Old.list})
 with references to the new specification (in Section~\ref{sec:overview}, the theorem that refers to \lstinline{New.list}).
-The configuration instantiates the proof term transformation to a particular equivalence corresponding to the old and new 
-specifications (in Section~\ref{sec:overview}, \lstinline{Old.list} and \lstinline{New.list}).
+To implement transport as a proof term transformation, \toolname needs to transform certain constructors, eliminators, and equalities.
+This is captured in a configuration, which instantiates the proof term transformation to a particular equivalence corresponding to 
+the old and new specifications (in Section~\ref{sec:overview}, \lstinline{Old.list} and \lstinline{New.list}),
+and which can be supplied manually or discovered automatically.
+
 Figure~\ref{fig:system} shows how this comes together when the user invokes \toolname:
 
 \begin{enumerate}
@@ -157,16 +160,12 @@ Figure~\ref{fig:system} shows how this comes together when the user invokes \too
 \item \textbf{Decompile} produces a new proof script from the new proof term.
 \end{enumerate}
 
-The example in Section~\ref{sec:overview} uses automatic configuration. When we run the \lstinline{Repair} command:
-
-\begin{lstlisting}
-Repair Old.list New.list in rev_app_distr.
-\end{lstlisting}
-\textbf{Configure} invokes a special search procedure that automatically proves the equivalence in Figure~\ref{fig:equivalence},
+The example in Section~\ref{sec:overview} uses automatic configuration. When we run the \lstinline{Repair} command,
+\textbf{Configure} invokes a search procedure that automatically proves the equivalence in Figure~\ref{fig:equivalence},
 then configures \textbf{Transform} using that equivalence.
 \textbf{Transform} then ports the proof term that inducted over \lstinline{Old.list}
-to instead induct over \lstinline{New.list}, and finally
-\textbf{Decompile} produces the tactic script from Figure~\ref{fig:auto}.
+to induct over \lstinline{New.list}, and finally
+\textbf{Decompile} produces the tactic script in Figure~\ref{fig:auto}.
 
 There are currently four search procedures for automatic configuration implemented in \toolname:
 one for porting tuples to records, two for porting non-dependent types to certain dependent types, 
