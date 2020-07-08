@@ -81,14 +81,13 @@ That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be remove
 \label{fig:listtovect}
 \end{figure}
 
-Viewing repair as transport supports not just refactorings,
-but also changes in which the proof engineer adds or removes information.
+Viewing repair as transport is flexible enough to support changes in which the proof engineer adds or removes information.
 In that case, the equivalence along which the tool transports functions and proofs
 is an equivalence between \textit{refinements}.
 It is up to the proof engineer to supply the additional information in order to construct proofs about the refinement.
 Consider an example from the proof reuse tool \textsc{Devoid}~\cite{Ringer2019}:
 changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
-\textsc{Devoid} can repair proofs about lists to proofs about \textit{vectors of some length}, since:
+Both \textsc{Devoid} and \toolname can repair proofs about lists to proofs about \textit{vectors of some length}, since:
 
 \begin{lstlisting}
 list T $\simeq$ $\Sigma$ (n : nat) . vector T n.
@@ -96,29 +95,30 @@ list T $\simeq$ $\Sigma$ (n : nat) . vector T n.
 This is enough to automatically repair a lemma about lists:
 
 \begin{lstlisting}
-$\forall$ {A B} (l1 : list A) (l2 : list B),
+$\forall$ {A B} (l1 : list A) (l2 : list B),(@\vspace{-0.04cm}@)
   zip_with pair l1 l2 = zip l1 l2.
 \end{lstlisting}
 to a lemma about vectors of some length:
 
 \begin{lstlisting}
-$\forall$ {A B} (l1 : (@\codediff{$\Sigma$(n : nat).vector A n}@)) (l2 : (@\codediff{$\Sigma$(n : nat).vector B n}@)),
+$\forall$ {A B} (l1 : (@\codediff{$\Sigma$(n : nat).vector A n}@)) (l2 : (@\codediff{$\Sigma$(n : nat).vector B n}@)),(@\vspace{-0.04cm}@)
   zip_with pair l1 l2 = zip l1 l2.
 \end{lstlisting}
 recursively updating dependencies \lstinline{zip} and \lstinline{zip_with}.
 It is not enough, however, to help the proof engineer get from that to a proof about vectors \textit{of a particular length}:
 
 \begin{lstlisting}
-$\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\codediff{vector B n}@)),
+$\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\codediff{vector B n}@)),(@\vspace{-0.04cm}@)
   zip_with pair (@\codediff{n}@) l1 l2 = zip (@\codediff{n}@) l1 l2.
 \end{lstlisting}
 
-More desirable is a repair that takes us from lists of a particular length to vectors of that length:
+\textsc{Devoid} leaves this step to the proof engineer.
+\toolname, in contrast, can handle this step as well.
+The key is to transport functions and proofs across this equivalence:
 
 \begin{lstlisting}
 $\Sigma$(l : list T).length l = n $\simeq$ vector T n.
 \end{lstlisting}
-\toolname can handle both of these changes.
 Practically, when the proof engineer changes specifications to refer to \lstinline{vector} instead of \lstinline{list},
 to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists.
 \toolname makes it easy to separate out that proof obligation, and then automates the rest.
@@ -139,14 +139,14 @@ to fix her functions and proofs, she must additionally prove invariants about th
 \label{fig:system}
 \end{figure}
 
-\toolname implements this transport with a twist using a configurable proof term transformation.
-The proof term transformation implements transport across equivalences,
+\toolname implements this transport with a twist using a proof term transformation that implements transport across equivalences,
 but in a way that replaces references to the old specification (in Section~\ref{sec:overview}, the theorem that refers to \lstinline{Old.list})
 with references to the new specification (in Section~\ref{sec:overview}, the theorem that refers to \lstinline{New.list}).
-To implement transport as a proof term transformation, \toolname needs to transform certain constructors, eliminators, and equalities.
-This is captured in a configuration, which instantiates the proof term transformation to a particular equivalence corresponding to 
-the old and new specifications (in Section~\ref{sec:overview}, \lstinline{Old.list} and \lstinline{New.list}),
-and which can be supplied manually or discovered automatically.
+This proof term transformation is configurable to a particular equivalence:
+it takes a \textit{configuration} (see Section~\ref{sec:configurable}) 
+that tells \toolname how to transform certain constructors, eliminators, and equalities that 
+correspond to the equivalence.
+The configuration can be supplied manually, or discovered automatically by a search procedure.
 
 Figure~\ref{fig:system} shows how this comes together when the proof engineer invokes \toolname:
 
