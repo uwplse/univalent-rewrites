@@ -206,13 +206,14 @@
 \begin{abstract}
 We show a new approach to automatically repairing proofs in the Coq proof assistant.
 Our approach combines a configurable proof term transformation with a proof term to tactic script decompiler.
+The proof term transformation implements transport across certain equivalences in a way that is suitable for repair
+and does not rely on any axioms beyond those assumed in Coq.
+
 The result is a flexible proof repair tool with workflow integration.
 We have used this tool to support industrial integration with Coq,
 ease development with dependent types,
 support a benchmark from a user study, and
 port functions and proofs between unary and binary natural numbers.
-Our experiences inform new ideas we hope will scale proof repair
-beyond small-scale industrial use.
 \end{abstract}
 
 %% 2012 ACM Computing Classification System (CSS) concepts
