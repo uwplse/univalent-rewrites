@@ -66,13 +66,13 @@ command; the results of this are in \lstinline{Swap.v}.\footnote{Links to reposi
 \label{fig:auto}
 \end{figure} % TODO revisit all generated tactic proofs with final decompiler
 
-The key to success here is that \toolname does not even attempt to update the poorly structured proof script directly.
-Even for the simple proof script above, this would not be straightforward: Grouping tactics by line, there are $6! = 620$
+The key to success is that \toolname does not even attempt to update the poorly structured proof script directly.
+Even for the simple proof script above, this would not be straightforward: Grouping tactics by line, there are $6! = 720$
 permutations of this proof script.
-It is not clear which lines to swap since these tactics do not have a semantics beyond the meaning imposed by evaluation.
+It is not clear which lines to swap since these tactics do not have a semantics beyond the searches their evaluation performs.
 Furthermore, just swapping lines is not enough: even for such a simple change, we must also swap
 arguments, so \lstinline{induction x as [| a l IHl]} becomes \lstinline{induction x as [a l IHl|]}.
-Handling even swapping constructors this way would require a specific search procedure that would not generalize to other changes.
+Handling even swapping constructors this way would require a search procedure that would not generalize to other changes.
 \citet{robert2018} describes the challenges of repairing tactics directly in detail.
 
 Instead, \toolname takes advantage of the fact that Coq's \textit{proof term} language Gallina is well structured.
@@ -80,14 +80,9 @@ Coq compiles each proof script to a proof term---\toolname repairs that term.
 \toolname then decompiles the repaired proof term back to a proof script that the proof engineer can maintain.
 Here, \toolname transforms the proof term Coq compiles \lstinline{rev_app_distr} to,
 and then decompiles that transformed proof term to the tactic script in Figure~\ref{fig:auto}.
-It tries only $1$ rather than $620$ candidates. 
+It tries only $1$ rather than $720$ candidates. 
 
-While this is a simple change, this same workflow can get us much more.
-Section~\ref{sec:search} shows how we have used \toolname to support industrial integration with Coq,
-write dependently-typed functions and proofs with little effort,
-support examples from a benchmark from Coq proof engineers,
-and port proofs between unary and binary natural numbers.
-
+As later sections show, our approach is much more general than just swapping constructors.
 
 
 

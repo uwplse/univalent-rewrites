@@ -2,8 +2,7 @@
 \label{sec:key1}
 
 \toolname is a tool for \textit{proof repair}.
-Proof repair is the problem of updating a broken proof in response to a change in a program or specification~\cite{PGL-045, pumpkinpatch},
-like the change in Section~\ref{sec:overview}, Figure~\ref{fig:listswap}.
+Proof repair is the problem of updating a broken proof in response to a change in a program or specification~\cite{PGL-045, pumpkinpatch}.
 We can view this as a form of 
 \textit{proof reuse}~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}, % TODO consider citation list
 or reusing proofs about one specification (say, from another library, or from within the same proof development)
@@ -51,7 +50,7 @@ Old.list $\simeq$ New.list
 
 A transport method takes an input term $t$ and produces an output term $t'$ that is \textit{equal up to transport}
 along some equivalence $A \simeq B$ (denoted $t \equiv_{A \simeq B} t'$). Informally, this means that if $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
-if $t$ is a proof, then $t'$ talks about the same things modulo the equivalence.
+if $t$ is a proof, then $t'$ proves the same theorem the same way modulo the equivalence.
 The formal details of this in a univalent type theory can be found in \citet{univalent2013homotopy}, and an approximation in Coq
 without univalence can be found in \citet{tabareau2017equivalences}.
 

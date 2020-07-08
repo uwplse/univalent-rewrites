@@ -23,7 +23,7 @@ and finally describes the additional work needed to go from this transformation 
 All terms that we introduce in this section are in CIC$_{\omega}$ with primitive eliminators,
 the syntax for which is in Figure~\ref{fig:syntax}.
 The typing rules are standard.
-Throughout, we use $\vec{i}$ and $\{t_1, \ldots, t_n\}$ to denote lists of terms.
+Throughout, we use $\vec{t}$ and $\{t_1, \ldots, t_n\}$ to denote lists of terms.
 
 \begin{figure}
 \small
@@ -44,8 +44,8 @@ Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldo
 The configuration is the key to building a proof term transformation that can support many different classes of changes.
 %Before introducing the proof term transformation, we will describe the configuration, which in effect specifies the behavior
 %of the transformation.
-It instantiates the proof term transformation to two equivalent types \A and \B, so that the proof term transformation
-can transform terms defined over \A to terms defined over \B instead.
+%It instantiates the proof term transformation to two equivalent types \A and \B, so that the proof term transformation
+%can transform terms defined over \A to terms defined over \B instead.
 %The behavior of the proof term transformation at a particular equivalence hinges on correct configuration.
 At a high level, the configuration helps the transformation achieve two goals:
 
@@ -78,7 +78,7 @@ and \lstinline{DepElim} (\textit{dependent constructors} and \textit{eliminators
 These describe how to construct and eliminate \A and \B, wrapping the types with a common inductive structure.
 There must be the same number of dependent constructors and inductive hypotheses in dependent eliminators for \A and \B,
 even if \A and \B are types with different numbers of constructors.
-The idea is to port terms \A to terms over \B by viewing \B as if it is an \A.
+The idea is to port terms over \A to terms over \B by viewing \B as if it is an \A.
 This way, the rest of the transformation can replace values of \A with values of \B and
 inductive proofs about \A with inductive proofs about \B, then recursively transform
 subterms without changing the order or number of arguments.
@@ -178,7 +178,7 @@ $\iota$-reduction ($\beta$-reduction for inductive types) describes how to reduc
 \label{fig:nattobin}
 \end{figure}
 
-The configuration (see Section~\ref{sec:dep}) for to the change from \lstinline{list} to \lstinline{$\Sigma$(n : nat).vector T n} has propositional \lstinline{Eta}.
+The configuration for the change from \lstinline{list} to \lstinline{$\Sigma$(n : nat).vector T n} has propositional \lstinline{Eta}.
 To describe \lstinline{Eta}, it is enough to use the standard definition of $\eta$-expansion for $\Sigma$:
 
 \begin{lstlisting}
@@ -297,8 +297,8 @@ which appear in the transformation as metavariables.
 The goal of the proof term transformation is to preserve equality up to transport along that equivalence,
 while no longer referring to the old specification.
 That is, we need that $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
-This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
-with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
+%This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
+%with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
 The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
 to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
 The rest is straightforward.
@@ -394,7 +394,7 @@ specifications herself to ensure that they specify the expected behavior.
 Both when designing a search procedure for an automatic configuration and when
 configuring \toolname manually, choosing a correct and useful configuration is important,
 and it is not always straightforward. This section specifies what it means for these
-to be correct and gives some intuition to why.
+to be correct and gives some intuition as to why.
 Section~\ref{sec:search} shows some useful example configurations.
 
 The configuration instantiates the proof term transformation to a particular equivalence between \A and \B.
@@ -422,11 +422,11 @@ In addition, we need that:
 \item $\forall$ \lstinline{j}, \lstinline{DepConstr(j, A)} $\equiv_{A \simeq B}$ \lstinline{DepConstr(j, B)}, and
 \item $\forall$ \lstinline{(a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type)},\\ \lstinline{a} $\equiv_{A \simeq B}$ \lstinline{b} $\rightarrow$ \lstinline{P} $\equiv_{A \simeq B}$ \lstinline{Q} $\rightarrow$ \lstinline{DepElim(a, P)} $\equiv_{A \simeq B}$ \lstinline{DepElim(b, Q)}.
 \end{enumerate}
-The intuition for this is based on insights from \textsc{Devoid},
-and is proven on an example from \textsc{Devoid} in the univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
+This had previously been proven on the change from \lstinline{list T} to $\Sigma$\lstinline{(n : nat).vector T n)} in the 
+univalent parametricity framework\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}---we build on that intuition.
 That these are equal up to transport along the equivalence means that replacing dependent constructors (respectively eliminators) of \A
 with dependent constructors (respectively eliminators) of \B will preserve equality up to transport for those subterms.
-Furthermore, since CIC$_{\omega}$ constructive, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
+Furthermore, since CIC$_{\omega}$ is constructive, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
 and the \textit{only} way to match over an \A (respectively \B) is to apply its eliminator.
 Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and eliminators.
 So, as long as we are able to identify and expand all implicit applications of \lstinline{DepConstr} and \lstinline{DepElim},
@@ -473,8 +473,8 @@ Section~\ref{sec:discussion} elaborates on the remaining challenges and our plan
 
 \paragraph{From CIC$_{\omega}$ to Coq}
 
-Like \textsc{Devoid}, we must handle language differences to scale from CIC$_{\omega}$ to Coq.
-We use the same \lstinline{Preprocess} command that \textsc{Devoid} uses to turn pattern matching and fixpoints into applications of eliminators.
+We must handle language differences to scale from CIC$_{\omega}$ to Coq.
+We use the \lstinline{Preprocess} command that \textsc{Devoid} uses to turn pattern matching and fixpoints into applications of eliminators.
 We handle non-primitive projections using \lstinline{Eta}, and we handle refolding of constants in constructors
 using \lstinline{DepConstr}.
 

@@ -35,12 +35,11 @@ This remains so difficult that sometimes, even experts give up in the face of ch
 We make progress on two open challenges in proof repair:
 
 \begin{enumerate}
-%\item Few tools~\cite{robert2018, wibergh2019} support both proof refactoring (semantics-preserving changes) and repair (non-semantics-preserving changes)~\cite{PGL-045}.
 \item Proof repair tools support limited classes of changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
 of changes~\cite{robert2018, wibergh2019}, and these are not informed by the needs of proof engineers~\cite{replica}.
 \item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018}.
 \end{enumerate}
-Our progress towards each these challenges leverages three key insights: % TODO dan comment
+Our progress towards these challenges leverages three key insights:
 
 \begin{enumerate}
 \item Proof repair is a form of proof reuse---reusing proofs about one specification to derive proofs about another specification---with 
