@@ -25,7 +25,7 @@ easier than verifying the original the
 first time around.
 \end{quote}
 Tools that can automatically refactor or repair proofs~\cite{wibergh2019, WhitesidePhD, Dietrich2013, adams2015, Bourke12, Roe2016, robert2018, pumpkinpatch}
-give us reason to believe that verifying a modified program is sometimes easier than verifying the original the first time
+give us reason to believe that verifying a modified program can sometimes be easier than verifying the original the first time
 around, even when proof engineers do not follow good development processes,
 or when change occurs outside of proof engineers' control~\cite{PGL-045}.
 Still, maintaining verified programs can be challenging: it means keeping not just the programs, but also the
@@ -63,15 +63,16 @@ The result is a flexible proof repair tool that:
 \item supports changes informed by proof engineers and not supported by other repair tools,
 \item produces tactic scripts as part of better workflow integration.
 \end{enumerate}
-\toolname can support changes like porting certain non-dependent types to dependent types
-and changing inductive structure---anything described by an equivalence or refinement with a certain form described later.
+\toolname can support changes like porting non-dependent types to certain dependent types
+and changing inductive structure---anything described by an equivalence or refinement with a certain form
+detailed in Section~\ref{sec:key2}.
 
 Our main technical advances are techniques for transforming proof terms directly to repair broken proofs, while our decompiler up to the tactic level is important for usability in Coq.
 We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname:
 
 \begin{enumerate}
 \item has helped an industrial proof engineer integrate Coq with a company workflow and write proofs about an implementation of the TLS Handshake Protocol,
-\item can simplify dependently-typed programming and proving,
+\item can simplify dependently-typed programming, automating manual steps from previous work,
 \item can support variants of a benchmark from a user study of Coq proof engineers, and
 \item can help proof engineers port functions and proofs from unary to binary numbers.
 \end{enumerate}
