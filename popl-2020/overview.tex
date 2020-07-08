@@ -80,6 +80,7 @@ Coq compiles each proof script to a proof term---\toolname repairs that term.
 \toolname then decompiles the repaired proof term back to a proof script that the user can maintain.
 In this example, \toolname transforms the proof term Coq compiles \lstinline{rev_app_distr} to,
 and then decompiles that transformed proof term to the tactic script in Figure~\ref{fig:auto}.
+It tries only $1$ rather than $620$ candidates. 
 
 While this is a simple change, this same workflow can get us much more.
 Section~\ref{sec:search} shows how we have used \toolname to support industrial integration with Coq,

@@ -6,7 +6,8 @@ Proof repair is the problem of updating a broken proof in response to a change i
 like the change in Section~\ref{sec:overview}, Figure~\ref{fig:listswap}.
 We can view this as a form of 
 \textit{proof reuse}~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}, % TODO consider citation list
-or reusing proofs about one specification to derive proofs about another specification.
+or reusing proofs about one specification (say, from another library, or from within the same proof development)
+to derive proofs about another specification.
 The difference is that in standard proof reuse, both of these specifications continue to exist.
 In contrast, proof repair is the process of reusing proofs across \textit{two versions of a single specification},
 only one of which---the new version---continues to exist.
@@ -31,7 +32,7 @@ tool that can handle that additional challenge (Section~\ref{sec:time}).
 \begin{minipage}{0.48\textwidth}
 \lstinputlisting[firstline=17, lastline=32]{equivproof.tex}
 \end{minipage}}
-\vspace{-0.2cm}
+\vspace{-0.3cm}
 \caption{Two functions between \lstinline{Old.list} and \lstinline{New.list} (top) that form an equivalence (bottom).}
 \label{fig:equivalence}
 \end{figure}
