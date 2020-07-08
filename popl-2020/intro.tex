@@ -60,17 +60,20 @@ and a prototype decompiler from proof terms back to tactics.
 The result is a flexible proof repair tool that: 
 
 \begin{enumerate}
-\item supports changes informed by real user needs and not supported by other repair tools, and
+\item supports changes informed by real user needs and not supported by other repair tools,
 \item produces tactic scripts as part of better workflow integration.
 \end{enumerate}
-Our main technical advances are techniques for transforming proof terms directly to repair broken proofs, while our decompiler up to the tactic level is important for usability in the Coq setting.
+\toolname can support changes like porting certain non-dependent types to dependent types
+and changing inductive structure---anything described by an equivalence or refinement with a certain form described later.
+
+Our main technical advances are techniques for transforming proof terms directly to repair broken proofs, while our decompiler up to the tactic level is important for usability in Coq.
 We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname:
 
 \begin{enumerate}
-\item has helped an industrial proof engineer integrate Coq with a company workflow, port tuples to records, and write proofs about an implementation of the TLS Handshake Protocol,
-\item can help proof engineers port proofs from non-dependent types to certain dependent types,
-\item can rename and swap constructors to support variants of a benchmark from a user study of Coq proof engineers, and
+\item has helped an industrial proof engineer integrate Coq with a company workflow and write proofs about an implementation of the TLS Handshake Protocol,
+\item can simplify dependently-typed programming and proving,
+\item can support variants of a benchmark from a user study of Coq proof engineers, and
 \item can help proof engineers port functions and proofs from unary to binary numbers.
 \end{enumerate}
-Our experiences drive ideas (Section~\ref{sec:discussion}) that open the door to better proof engineering tools.
+%Our experiences drive ideas (Section~\ref{sec:discussion}) that open the door to better proof engineering tools.
 
