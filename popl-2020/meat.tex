@@ -145,7 +145,7 @@ DepElim(s, P) { f$_0$ f$_1$ } : P ($\exists$ ($\pi_l$ s) ($\pi_r$ s)) :=(@\vspac
 In both of these examples, the only interesting work moves into the configuration:
 the configuration for the swap example swaps constructors and cases,
 and the configuration for the \textsc{Devoid} example implements the constructor and eliminator rules from the \textsc{Devoid} transformation.
-That way, that the rest of the \toolname transformation does not need to add, drop, or reorder arguments.
+That way, the rest of the \toolname transformation does not need to add, drop, or reorder arguments.
 In essence, all of the difficult work moves into the configuration.
 Furthermore, both examples use automatic configuration, which means that the \textsc{Configure} component of \toolname is able to 
 discover \lstinline{DepConstr} and \lstinline{DepElim} from just the types \A and \B, taking care of even the difficult work.
@@ -359,9 +359,11 @@ $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
 \label{fig:appswap1}
 \end{figure}
 
-The transformation is simple because it moves the bulk of the work into the configuration, and into unifying input terms with 
-the configuration. Before running the transformation, \toolname unifies the input proof term with applications of the 
-terms in the configuration for \A. The transformation then transforms those to applications to the terms in the configuration for \B.
+The transformation is simple because it moves the bulk of the work into the configuration,
+and because it represents the configuration explicitly.
+Before running the transformation, \toolname unifies the input proof term with applications of the 
+terms in the configuration for \A. The transformation then transforms the applications of the terms in the configuration of \A
+to applications of the terms in the configuration for \B.
 Reducing the result produces the output term defined over \B.
 
 For example, to update the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
@@ -382,7 +384,7 @@ as the original proof up to the same equivalence---and up to the corresponding c
 and \lstinline{rev}.
 
 Note that this goal for correctness is metatheoretical:
-stating and proving that two terms are in equal up to transport is in general not possible in a language like Coq
+stating and proving that two terms are equal up to transport is in general not possible in a language like Coq
 without additional axioms, though it is in some cases realizable with an external tool~\cite{tabareau2017equivalences}.
 \toolname does not yet generate these proofs as we were focused on building a usable tool with axiomatic freedom and few dependencies.
 Coq ensures that all terms that plugins produce are well-typed; for now, as with \textsc{Devoid}, the proof engineer must vet the transformed
