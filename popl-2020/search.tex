@@ -1,21 +1,21 @@
 \section{Case Studies: \textsc{Carrot} Four Ways}
 \label{sec:search}
 
-This section explains four case studies in using \toolname:
+This section explains four case studies for \toolname:
 
 \begin{enumerate}
-\item We report on the experiences of an industrial proof engineer who is using \toolname to integrate Coq with a company proof engineering workflow and write proofs about an implementation of the TLS handshake protocol (automatic configuration, Section~\ref{sec:industry}).
+\item We report on the experiences of an industrial proof engineer who is using \toolname to integrate Coq with a company proof engineering workflow and write proofs about an implementation of the TLS handshake protocol (Section~\ref{sec:industry}).
 \item We use \toolname to update functions and proofs about lists to functions and proofs about dependently typed vectors of
-a particular length (automatic configuration, Section~\ref{sec:dep}).
-\item We use \toolname to support multiple variants of a repair benchmark from a user study of Coq proof engineers (automatic configuration, Section~\ref{sec:replica}).
-\item We use \toolname to port functions and proofs about unary numbers to functions and proofs about binary numbers (manual configuration, Section~\ref{sec:bin}).
+a particular length (Section~\ref{sec:dep}).
+\item We use \toolname to support multiple variants of a repair benchmark from a user study of Coq proof engineers (Section~\ref{sec:replica}).
+\item We use \toolname to port functions and proofs about unary numbers to functions and proofs about binary numbers (Section~\ref{sec:bin}).
 \end{enumerate}
 For each case study, we explain the configuration used, walk through an example, and describe lessons learned.
 In all, we found the following:
 
 \begin{enumerate}
 \item \toolname was flexible. Each search procedure for automatic configuration
-took between two days and two weeks to write, and handled an entire class of equivalences corresponding to a real use case.
+was simple to write, and handled an entire class of equivalences corresponding to real use cases.
 Manual configuration was possible but challenging for an interesting use case.
 \item \toolname had good enough workflow integration to support real use cases.
 The tactic decompiler was far from perfect, but showed promising early results with clear paths to improvements.
@@ -150,7 +150,7 @@ Lemma corkLemma :(@\vspace{-0.04cm}@)
 So far, the proof engineer has used at least three automatic configurations.
 Two had existed already, while the one for tuples and records was
 added in response to the proof engineer's needs.
-This search procedure took about two weeks for us to implement. %using techniques from
+This search procedure was easy for us to implement. %using techniques from
 %the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
 Flexibility could be further improved by exposing an interface to allow proof engineers to
 write search procedures themselves.
@@ -195,8 +195,7 @@ like $\Sigma$\lstinline{(n : nat).vector T n}.
 The second provides the missing link to get proofs at a \textit{particular} index, like \lstinline{vector T n};
 \textsc{Devoid} had left this to the proof engineer.
 
-The search procedure for the first configuration is based heavily on the search procedure from \textsc{Devoid}.
-In the case of lists and vectors, it used the equivalence:
+The search procedure for the first configuration used the equivalence:
 
 \begin{lstlisting}
 list T $\simeq$ $\Sigma$(n : nat).vector T n
@@ -309,8 +308,7 @@ with functions \lstinline{zip_with} and \lstinline{zip} operating directly over 
 \subsubsection{Lessons}
 
 %\paragraph{Configuration \& Flexibility}
-Implementing the configuration from \textsc{Devoid} in this framework was straightforward and
-took about two days.
+Implementing the configuration from \textsc{Devoid} in this framework was straightforward.
 It also simplified the transformation from \textsc{Devoid} %by removing the need for special rules for handling eliminators and constructors
 %by adding and removing arguments, and for special handling of non-primitive projections,
 %as that work is done in the configuration.
@@ -413,7 +411,7 @@ and doing both at the same time.
 
 \subsubsection{Lessons}
 
-Implementing the search procedure was simple and took about three days.
+Implementing the search procedure was simple. %and took about three days.
 The biggest challenge was implementing an interactive interface to choose between mappings when there are multiple possible mappings,
 or to allow the proof engineer to write a single custom mapping function and derive the rest of the configuration from that.
 This was only a single snapshot of the benchmark, which included

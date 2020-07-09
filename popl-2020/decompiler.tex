@@ -13,8 +13,8 @@ we can decompile these Gallina terms to Ltac proof scripts for the proof enginee
 \textbf{Decompile} implements a prototype of this translation:
 it translates a proof term to a candidate proof script that attempts to prove the same theorem the same way.
 Note that this problem is not well defined: while there is always a proof script that 
-works (applying the proof term with the \lstinline{apply} tactic), the result is often unreadable.
-This is the baseline for success, and the decompiler defaults to this behavior.
+works (applying the proof term with the \lstinline{apply} tactic), the result is often qualitatively unreadable.
+This is the baseline behavior to which the decompiler defaults.
 The goal of the decompiler is to improve on that baseline as much as possible,
 or else produce a candidate proof script that is close enough to correct that the proof engineer can step through it
 and manually massage it into something that works and is maintainable.
@@ -42,8 +42,7 @@ induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right |
 \label{fig:ltacsyntax1}
 \end{figure}
 
-The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call 
-Qtac (pronounced \textit{cute-tac}).
+The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call Qtac.
 The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
 Qtac includes hypothesis introduction (\lstinline{intro}),
 rewriting by equalities (\lstinline{rewrite}), symmetry of equality (\lstinline{symmetry}),
@@ -185,7 +184,7 @@ in some proof engineering styles.
 This second pass will be the natural integration point for these.
 Our current plan is to take additional input in this pass, either directly from the proof engineer
 or by feeding in the original proof script from before \textbf{Transform}.
-We can then iteratively replace tactics with custom tactics and decision procedures, and check the result see if it works.
+We can then iteratively replace tactics with custom tactics and decision procedures, and check the result to see if it works.
 Even better would be generalizing the behavior of the proof script into more flexible custom tactics.
 %We also plan to support tacticals like \lstinline{;} and \lstinline{try}.
 For now, massaging the output if desired is left to the proof engineer. % TODO does this belong in future work?
