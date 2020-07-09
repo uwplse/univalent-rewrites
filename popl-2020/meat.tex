@@ -2,8 +2,10 @@
 \label{sec:key2}
 
 At the heart of \toolname is a configurable proof term transformation for transporting
-proofs across equivalences. This is a generalization of the proof term transformation from 
+proofs across equivalences. 
+This proof term transformation is a generalization of the proof term transformation from 
 \textsc{Devoid}~\cite{Ringer2019}, which solved this problem for a particular class of equivalences.
+\toolname moves the reasoning specific to that class of equivalences into the configuration. 
 
 \begin{quote}
 \textbf{Insight 2}:
@@ -504,7 +506,8 @@ depends on intent.
 For example, our industrial proof engineer sometimes wished to port only some occurrences of \A,
 especially when \A was a tuple that could appear elsewhere
 with a different meaning.
-We helped the proof engineer do this by interacting with \toolname using a particular workflow.
+\toolname supports this for now using an interactive workflow.
+%We helped the proof engineer do this by interacting with \toolname using a particular workflow.
 %We plan to support this automatically using type-directed search in the future.
 
 \paragraph{Reaching Real Proof Engineers}
