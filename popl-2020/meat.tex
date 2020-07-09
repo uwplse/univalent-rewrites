@@ -18,7 +18,7 @@ It then gives intuition for what it means for a configuration to be correct (Sec
 and finally describes the additional work needed to go from this transformation to the implementation (Section~\ref{sec:implementation}). 
 
 \paragraph{Conventions}
-All terms that we introduce in this section are in CIC$_{\omega}$ with primitive eliminators,
+All terms that we introduce in this section are in CIC$_{\omega}$ (the core calculus of Coq) with primitive eliminators,
 the syntax for which is in Figure~\ref{fig:syntax}.
 The typing rules are standard.
 Throughout, we use $\vec{t}$ and $\{t_1, \ldots, t_n\}$ to denote lists of terms.
@@ -70,16 +70,16 @@ term transformation to work correctly (Section~\ref{sec:art}).
 \subsubsection{Preserving the Equivalence}
 \label{sec:equivalence}
 
-The two configuration parts responsible for preserving the
-equivalence are \lstinline{DepConstr}
+To preserve the equivalence, the configuration ports terms over \A to terms over \B by viewing \B as if it is an \A.
+This way, the rest of the transformation can replace values of \A with values of \B and
+inductive proofs about \A with inductive proofs about \B, then recursively transform
+subterms without changing the order or number of arguments.
+
+The two configuration parts responsible for preserving this are \lstinline{DepConstr}
 and \lstinline{DepElim} (\textit{dependent constructors} and \textit{eliminators}).
 These describe how to construct and eliminate \A and \B, wrapping the types with a common inductive structure.
 There must be the same number of dependent constructors and inductive hypotheses in dependent eliminators for \A and \B,
 even if \A and \B are types with different numbers of constructors.
-The idea is to port terms over \A to terms over \B by viewing \B as if it is an \A.
-This way, the rest of the transformation can replace values of \A with values of \B and
-inductive proofs about \A with inductive proofs about \B, then recursively transform
-subterms without changing the order or number of arguments.
 
 \begin{figure}
 \begin{minipage}{0.48\textwidth}
@@ -141,8 +141,8 @@ In both of these examples, the only interesting work moves into the configuratio
 the configuration for the first example swaps constructors and cases,
 and the configuration for the second example implements the constructor and eliminator rules from the \textsc{Devoid} transformation.
 That way, the rest of the \toolname transformation does not need to add, drop, or reorder arguments.
-In essence, all of the difficult work moves into the configuration.
-Furthermore, both examples use automatic configuration, which means that the \textsc{Configure} component of \toolname is able to 
+%In essence, all of the difficult work moves into the configuration.
+Furthermore, both examples use automatic configuration, which means that the \textbf{Configure} component of \toolname is able to 
 discover \lstinline{DepConstr} and \lstinline{DepElim} from just the types \A and \B, taking care of even the difficult work.
 
 \subsubsection{Producing Well-Typed Terms}
@@ -287,17 +287,17 @@ What \lstinline{Iota} does in the configuration is encode this more generally.
 Figure~\ref{fig:final} shows the proof term transformation $\Gamma \vdash t \Uparrow t'$ that forms the core of \toolname.
 %Like the transformation from \textsc{Devoid},
 The transformation is parameterized over two equivalent types \A and \B (\textsc{Equivalence})
-as well as the configuration terms, which appear in the transformation as metavariables.
+as well as the configuration terms, which appear in the transformation explicitly.
 It assumes fully expanded terms.
 
-The goal of the proof term transformation is to preserve equality up to transport along that equivalence,
-while no longer referring to the old specification.
-That is, we need that $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
-%This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
-%with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
-The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
-to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
-The rest is straightforward.
+The transformation is simple because it moves the bulk of the work into the configuration,
+and because it represents the configuration explicitly.
+It does not fully describe the search procedure for transforming terms that \toolname implements:
+Before running the transformation, \toolname unifies (by Coq's unification or by custom rewrite rules) the 
+input proof term with applications of the  terms in the configuration for \A. 
+The transformation then transforms the applications of the terms in the configuration of \A
+to applications of the terms in the configuration for \B.
+Reducing the result produces the output term defined over \B.
 
 \begin{figure}
 \begin{minipage}{0.49\textwidth}
@@ -352,13 +352,6 @@ $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
 \label{fig:appswap1}
 \end{figure}
 
-The transformation is simple because it moves the bulk of the work into the configuration,
-and because it represents the configuration explicitly.
-Before running the transformation, \toolname unifies the input proof term with applications of the 
-terms in the configuration for \A. The transformation then transforms the applications of the terms in the configuration of \A
-to applications of the terms in the configuration for \B.
-Reducing the result produces the output term defined over \B.
-
 For example, to update the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
 identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (in this case,
 just by matching against \lstinline{Constr} and \lstinline{Elim}, though this can be more difficult).
@@ -366,15 +359,15 @@ The transformation then recursively substitutes in \lstinline{New.list}
 for \lstinline{Old.list}, which moves \lstinline{DepConstr} and \lstinline{DepElim}
 to construct and eliminate over the updated type.
 Finally, this reduces to the term on the right of Figure~\ref{fig:appswap1}.
-Both versions of append behave equally up to transport along the equivalence from Figure~\ref{fig:equivalence}, since:
 
-\begin{lstlisting}
-$\forall$ T (l1 l2 : Old.list T), swap T (l1 ++ l2) = (swap T l1) ++ (swap T l2).
-\end{lstlisting}
-by induction and rewriting, and similarly in the opposite direction.
-The transformed proof of \lstinline{rev_app_distr} from Section~\ref{sec:overview} then proves the same thing the same way
-as the original proof up to the same equivalence---and up to the corresponding changes in \lstinline{++}
-and \lstinline{rev}.
+The goal of the proof term transformation is to preserve equality up to transport along the equivalence $A \simeq B$,
+while no longer referring to the old specification.
+That is, we need that $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
+%This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
+%with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
+The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
+to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
+The rest is straightforward.
 
 Note that this goal for correctness is metatheoretical:
 stating and proving that two terms are equal up to transport is in general not possible in a language like Coq
@@ -447,7 +440,8 @@ Iota(A) :(@\vspace{-0.04cm}@)
 \end{lstlisting}
 where each \lstinline{IH}$_i$ is each recursive occurrence of \A in the eliminator case,
 and similarly for \B.
-Together, these induce proofs of \lstinline{section} and \lstinline{retraction} (by induction).
+Together, these induce proofs of \lstinline{section} and \lstinline{retraction} (by induction) that show \lstinline{f} and \lstinline{g}
+are mutual inverses and so form an equivalence.
 The intuition here is that preserving the reduction behavior
 of the eliminators and constructors should be sufficient, since again those are the only ways we can construct or eliminate our types.
 

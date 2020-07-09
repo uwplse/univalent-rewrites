@@ -49,10 +49,24 @@ Old.list $\simeq$ New.list
 \end{lstlisting}
 
 A transport method takes an input term $t$ and produces an output term $t'$ that is \textit{equal up to transport}
-along some equivalence $A \simeq B$ (denoted $t \equiv_{A \simeq B} t'$). Informally, this means that if $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
+along an equivalence $A \simeq B$ (denoted $t \equiv_{A \simeq B} t'$).
+Informally, equality up to transport means that if $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
 if $t$ is a proof, then $t'$ proves the same theorem the same way modulo the equivalence.
-The formal details of this in a univalent type theory can be found in \citet{univalent2013homotopy}, and an approximation in Coq
-without univalence can be found in \citet{tabareau2017equivalences}.
+For example, in Section~\ref{sec:overview}, the original append function \lstinline{++} over \lstinline{Old.list}
+and the updated append function \lstinline{++} over \lstinline{New.list} that \toolname produces are
+equal up to transport along the equivalence from Figure~\ref{fig:equivalence}, since:
+
+\begin{lstlisting}
+$\forall$ T (l1 l2 : Old.list T), swap T (l1 ++ l2) = (swap T l1) ++ (swap T l2).
+\end{lstlisting}
+by induction and rewriting, and similarly in the opposite direction.
+The original proof of \lstinline{rev_app_distr} is equal to the transformed proof along the same equivalence,
+since it proves thing the same way as the transformed proof up to the same equivalence---and up to the corresponding changes in \lstinline{++}
+and \lstinline{rev}.
+
+The formal details of equality up to transport in a univalent type theory can be found in \citet{univalent2013homotopy}, and an approximation in Coq without univalence can be found in \citet{tabareau2017equivalences}.
+Note that for any equivalent \A and \B, there can be many equivalences $A \simeq B$.
+Equality up to transport is along a \textit{particular} equivalence, though we erase this in the notation.
 
 Transport methods typically work by explicitly applying the functions that make up the equivalence to convert
 inputs and outputs back and forth between equivalent types.
@@ -82,7 +96,7 @@ That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be remove
 
 Viewing repair as transport is flexible enough to support changes in which the proof engineer adds or removes information.
 In that case, the equivalence along which the tool transports functions and proofs
-is an equivalence between \textit{refinements}.
+is an equivalence between \textit{refinements} ($\Sigma$ types).
 It is up to the proof engineer to supply the additional information in order to construct proofs about the refinement.
 Consider an example from the proof reuse tool \textsc{Devoid}~\cite{Ringer2019}:
 changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
