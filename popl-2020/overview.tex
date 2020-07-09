@@ -59,6 +59,7 @@ Qed.
 \end{lstlisting}
 We can even repair the entire list module from the Coq standard library all at once by running the \lstinline{Repair module}
 command; the results of this are in \lstinline{Swap.v}. %\footnote{Links to repository withheld for double-blind review.} % TODO
+When we are done, we can get rid of \lstinline{Old.list} entirely.
 
 \begin{figure}
 \codeauto{\lstinputlisting{overviewproof.tex}}
@@ -83,7 +84,7 @@ Handling even swapping constructors this way would require a search procedure th
 \citet{robert2018} describes the challenges of repairing tactics directly in detail.
 
 By instead transforming proof terms, \toolname is able to try just $1$ rather than $720$ candidates.
-As later sections show, our approach is much more general than just permuting constructors.
+As later sections show, this approach is much more general than just permuting constructors.
 
 
 
