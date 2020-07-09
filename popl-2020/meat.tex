@@ -520,8 +520,8 @@ For example, we found that the proof engineer rarely had the patience to wait mo
 for \toolname to port a function or proof.
 In response, we implemented aggressive caching (with an option to disable the cache), even caching intermediate subterms that
 we encounter in the course of running our proof term transformation.
-We also added the option to set certain terms or modules as opaque to \toolname, to prevent
-unnecessary $\delta$-reduction.
+We also added an option to tell \toolname not to $\delta$-reduce certain terms or recurse into certain modules.
+% set certain terms or modules as opaque to \toolname, to prevent unnecessary $\delta$-reduction.
 
 The experiences of proof engineers also informed features that we exposed.
 We implemented special search procedures to generate custom eliminators to make it easier to reason about
