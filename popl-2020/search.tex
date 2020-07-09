@@ -360,21 +360,21 @@ We used \toolname to automatically configure the proof term transformation to mo
 then transform all of the functions and proofs about the language.
 We also succeeded at more difficult variants of this,
 like swapping two constructors with the same type, renaming all of the constructors,
-or swapping and renaming at the same time.
+or permuting and renaming constructors at the same time.
 In all cases, with just a bit of human guidance, \toolname was able to repair the functions and proofs.
 
 \subsubsection{Configuration}
 
-The configuration this used handles swapping and renaming constructors of inductive types.
+The configuration this used handles permuting and renaming constructors of inductive types.
 This is one of the simplest configurations.
-The only nontrivial part is that \lstinline{DepConstr} over the updated type swaps back the constructors, in our example:
+The only nontrivial part is that \lstinline{DepConstr} over the updated type permutes back the constructors, in our example:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
 dep_constr_0 (H : Z) : Term := (@\codediff{Int}@) H.(@\vspace{-0.04cm}@)
 dep_constr_1 (H H0 : Term) : Term := (@\codediff{Eq}@) H H0.
 \end{lstlisting}
 so that they align with the constructors of the original type.
-The eliminator similarly swaps cases:
+The eliminator similarly permutes cases:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
 dep_elim P f0 f1 f2 f3 f4 f5 f6 t : P t := Term_rect P f0 (@\codediff{f2}@) (@\codediff{f1}@) f3 f4 f5 f6 t.
@@ -408,7 +408,7 @@ It also discovered all other 23 type-correct permutations of constructors, all a
 prove the appropriate equivalence and use to update functions and proofs.
 It presented the desired transformation as the first option in the list, so that all we had to do
 was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this change.
-It was also able to handle more advanced changes like renaming constructors, swapping multiple constructors at once,
+It was also able to handle more advanced changes like renaming constructors, permuting multiple constructors at once,
 and doing both at the same time.
 
 \subsubsection{Lessons}
@@ -428,7 +428,7 @@ More advanced variants of this benchmark that involved also renaming constructor
 and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
 The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
 its dependencies, four variants of the \textsc{Replica} benchmark,
-and testing a large and ambiguous swap of a type \lstinline{Enum} with 30 constructors of identical types,
+and testing a large and ambiguous permutation of a type \lstinline{Enum} with 30 constructors of identical types,
 took \toolname less than 90 seconds total. % TODO specs, reproduction
 Each variant of the \textsc{Replica} benchmark took \toolname less than 5 seconds. % TODO specs, reproduction
 
