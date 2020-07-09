@@ -211,7 +211,7 @@ $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n, DepElim((@\codediff{DepConstr(1, N)
 no longer holds by reflexivity.
 The \lstinline{Iota} rules are exactly rewrites along proofs of the theorems above for the successor case.
 The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N},
-that way the dependent eliminators behave the same way over \lstinline{nat} and \lstinline{N}.
+that way \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinline{N}.
 
 Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ from each other.
 The structures of \lstinline{DepElim} over \A and \B are always the same, so if \A and \B have the same 
@@ -292,12 +292,38 @@ It assumes fully expanded terms.
 
 The transformation is simple because it moves the bulk of the work into the configuration,
 and because it represents the configuration explicitly.
-It does not fully describe the search procedure for transforming terms that \toolname implements:
-Before running the transformation, \toolname unifies (by Coq's unification or by custom rewrite rules) the 
-input proof term with applications of the  terms in the configuration for \A. 
+It does not fully describe the search procedure for transforming terms that \toolname implements.
+Before running the transformation, \toolname unifies the 
+input proof term with applications of the terms in the configuration for \A. 
 The transformation then transforms the applications of the terms in the configuration of \A
 to applications of the terms in the configuration for \B.
 Reducing the result produces the output term defined over \B.
+
+For example, to update the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
+identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (in this case,
+just by matching against \lstinline{Constr} and \lstinline{Elim}, though this can be more difficult).
+The transformation then recursively substitutes in \lstinline{New.list}
+for \lstinline{Old.list}, which moves \lstinline{DepConstr} and \lstinline{DepElim}
+to construct and eliminate over the updated type.
+Finally, this reduces to the term on the right of Figure~\ref{fig:appswap1}.
+
+The goal of the proof term transformation is to preserve equality up to transport along the equivalence $A \simeq B$,
+while no longer referring to the old specification.
+That is, we need that $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
+%This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
+%with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
+The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
+to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
+The rest is straightforward.
+
+Note that this goal for correctness is metatheoretical:
+stating and proving that two terms are equal up to transport is in general not possible in a language like Coq
+without additional axioms, though it is in some cases realizable with an external tool like the
+univalent parametricity framework~\cite{tabareau2017equivalences}.
+\toolname does not yet generate these proofs as we were focused on building a usable tool with axiomatic freedom and few dependencies.
+Coq ensures that all terms that plugins produce are well-typed; for now, %as with \textsc{Devoid},
+the proof engineer must vet the transformed specifications herself to ensure that they specify the expected behavior.
+
 
 \begin{figure}
 \begin{minipage}{0.49\textwidth}
@@ -351,31 +377,6 @@ $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
 \caption{Swapping cases of the append function, with names fully qualified only when needed for clarity, counterclockwise: 1) the input, 2) the term unified with the configuration, 3) the term ported to the updated type, and 4) the term reduced to the final output.}
 \label{fig:appswap1}
 \end{figure}
-
-For example, to update the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
-identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (in this case,
-just by matching against \lstinline{Constr} and \lstinline{Elim}, though this can be more difficult).
-The transformation then recursively substitutes in \lstinline{New.list}
-for \lstinline{Old.list}, which moves \lstinline{DepConstr} and \lstinline{DepElim}
-to construct and eliminate over the updated type.
-Finally, this reduces to the term on the right of Figure~\ref{fig:appswap1}.
-
-The goal of the proof term transformation is to preserve equality up to transport along the equivalence $A \simeq B$,
-while no longer referring to the old specification.
-That is, we need that $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
-%This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
-%with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
-The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
-to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
-The rest is straightforward.
-
-Note that this goal for correctness is metatheoretical:
-stating and proving that two terms are equal up to transport is in general not possible in a language like Coq
-without additional axioms, though it is in some cases realizable with an external tool like the
-univalent parametricity framework~\cite{tabareau2017equivalences}.
-\toolname does not yet generate these proofs as we were focused on building a usable tool with axiomatic freedom and few dependencies.
-Coq ensures that all terms that plugins produce are well-typed; for now, %as with \textsc{Devoid},
-the proof engineer must vet the transformed specifications herself to ensure that they specify the expected behavior.
 
 \subsection{Specifying Correct Configuration}
 \label{sec:art}
