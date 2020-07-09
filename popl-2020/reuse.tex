@@ -9,8 +9,8 @@ or reusing proofs about one specification (say, from another library, or from wi
 to derive proofs about another specification.
 The difference is that in standard proof reuse, both of these specifications continue to exist.
 In contrast, proof repair is the process of reusing proofs across \textit{two versions of a single specification},
-only one of which---the new version---continues to exist.
-That is, the old version of the specification can be removed after updating proofs to use the new version.
+only one of which---the new version---must continue to exist.
+That is, the old version of the specification may be removed after updating proofs to use the new version.
 
 \begin{quote}
 \textbf{Insight 1}:
@@ -38,7 +38,7 @@ tool that can handle that additional challenge (Section~\ref{sec:time}).
 \end{figure}
 
 Proof repair corresponds to a particular kind of proof reuse called \textit{transport},
-with the twist that the specification about which we are reusing proofs ceases to exist.
+with the twist that the specification about which we are reusing proofs may cease to exist.
 Transport is proof reuse across \textit{type equivalences}~\cite{univalent2013homotopy},
 or pairs of functions that map between two types and are mutual inverses.
 Figure~\ref{fig:equivalence} shows a type equivalence between the two versions of \lstinline{list}
@@ -71,10 +71,12 @@ Equality up to transport is along a \textit{particular} equivalence, though we e
 
 Transport methods typically work by explicitly applying the functions that make up the equivalence to convert
 inputs and outputs back and forth between equivalent types.
-The goal of a proof repair tool like \toolname, in contrast, is to define a transport method that
-removes references to the old specification, rather than converting back and forth like standard transport methods.
-That way, the proof repair tool can produce proofs that no longer refer in any way to the old specification,
-since the old specification no longer exists.
+This approach would not work for repair, since it does not make it possible to remove the old specification.
+The goal of a proof repair tool like \toolname is to define a transport method that
+can remove references to the old specification, %rather than converting back and forth like standard transport methods.
+%That way, the proof repair tool can produce proofs that no longer refer in any way to the old specification,
+since the old specification may no longer exist.
+
 Section~\ref{sec:overview} showed a simple case of this: \toolname
 reused the proof of \lstinline{rev_app_distr} defined over \lstinline{Old.list}
 to generate a new proof of \lstinline{rev_app_distr} defined over equivalent \lstinline{New.list}.
@@ -134,8 +136,8 @@ The key is to transport functions and proofs across this equivalence:
 $\Sigma$(l : list T).length l = n $\simeq$ vector T n.
 \end{lstlisting}
 Practically, when the proof engineer changes specifications to refer to \lstinline{vector} instead of \lstinline{list},
-to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists.
-\toolname makes it easy to separate out that proof obligation, and then automates the rest.
+to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists (see Section~\ref{sec:dep}).
+\toolname makes it easy to separate out that proof obligation, then automates the rest.
 
 \subsection{\textsc{Carrot}: A Tool for Proof Repair}
 \label{sec:time}
@@ -154,7 +156,8 @@ to fix her functions and proofs, she must additionally prove invariants about th
 \label{fig:system}
 \end{figure}
 
-\toolname implements this transport with a twist using a proof term transformation that implements transport across equivalences,
+\toolname implements this transport with a twist using a proof term transformation.
+The proof term transformation implements transport across equivalences,
 but in a way that replaces references to the old specification (in Section~\ref{sec:overview}, the theorem that refers to \lstinline{Old.list})
 with references to the new specification (in Section~\ref{sec:overview}, the theorem that refers to \lstinline{New.list}).
 This proof term transformation is configurable to a particular equivalence:
