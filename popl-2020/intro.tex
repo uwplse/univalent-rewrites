@@ -44,7 +44,7 @@ Our progress towards these challenges leverages three key insights:
 
 \begin{enumerate}
 \item Proof repair is a form of proof reuse---reusing proofs about one specification to derive proofs about another specification---with 
-the additional challenge that one of the specifications ceases to exist.
+the additional challenge that one of the specifications may cease to exist.
 The key to supporting proof repair is to build a proof reuse
 tool that can handle that additional challenge (Section~\ref{sec:key1}). 
 \item A configurable proof term transformation can be used to build such a proof repair tool,
@@ -60,7 +60,7 @@ and a prototype decompiler from proof terms back to tactics.
 The result is a flexible proof repair tool that: 
 
 \begin{enumerate}
-\item supports changes informed by proof engineers and not supported by other repair tools,
+\item supports changes informed by proof engineers and not supported by other repair tools, and
 \item produces tactic scripts as part of better workflow integration.
 \end{enumerate}
 \toolname can support changes like porting non-dependent types to certain dependent types
