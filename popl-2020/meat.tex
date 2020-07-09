@@ -71,7 +71,8 @@ term transformation to work correctly (Section~\ref{sec:art}).
 \subsubsection{Preserving the Equivalence}
 \label{sec:equivalence}
 
-To preserve the equivalence, the configuration ports terms over \A to terms over \B by viewing \B as if it is an \A.
+To preserve the equivalence, the configuration ports terms over \A to terms over \B by viewing each
+term of type \B as if it is an \A.
 This way, the rest of the transformation can replace values of \A with values of \B and
 inductive proofs about \A with inductive proofs about \B, then recursively transform
 subterms without changing the order or number of arguments.
@@ -301,9 +302,10 @@ to applications of the terms in the configuration for \B.
 Reducing the result produces the output term defined over \B.
 
 For example, to update the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
-identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (in this case,
-just by matching against \lstinline{Constr} and \lstinline{Elim}, though this can be more difficult).
-The transformation then recursively substitutes in \lstinline{New.list}
+identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them.
+In this case, expansion works just by matching against \lstinline{Constr} and \lstinline{Elim}, 
+though this can be more difficult when \lstinline{DepConstr} and \lstinline{DepElim} over \A are dependent.
+After expansion, the transformation then recursively substitutes in \lstinline{New.list}
 for \lstinline{Old.list}, which moves \lstinline{DepConstr} and \lstinline{DepElim}
 to construct and eliminate over the updated type.
 Finally, this reduces to the term on the right of Figure~\ref{fig:appswap1}.
@@ -418,9 +420,9 @@ univalent parametricity framework\footnote{\url{https://github.com/CoqHott/univa
 That these are equal up to transport along the equivalence means that replacing dependent constructors (respectively eliminators) of \A
 with dependent constructors (respectively eliminators) of \B will preserve equality up to transport for those subterms.
 Furthermore, since CIC$_{\omega}$ is constructive, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
-and the \textit{only} way to match over an \A (respectively \B) is to apply its eliminator.
+and the \textit{only} way to eliminate an \A (respectively \B) is to apply its eliminator.
 Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and eliminators.
-So, as long as we are able to identify and expand all implicit applications of \lstinline{DepConstr} and \lstinline{DepElim},
+So, as long as we are able to expand all implicit applications of \lstinline{DepConstr} and \lstinline{DepElim},
 \textsc{Dep-Constr} and \textsc{Dep-Elim} should preserve correctness of the transformation and cover all values and eliminations of \A and \B.
 
 To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules

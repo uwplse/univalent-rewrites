@@ -14,8 +14,9 @@
 \label{fig:listswap}
 \end{figure}
 
-\toolname is a tool for proof repair that is available on Github.\footnote{Link withheld for double-blind review.}
-Consider a simple example of using \toolname: fixing broken list proofs after swapping the two constructors of a list (Figure~\ref{fig:listswap}).
+\toolname is a proof repair tool that is available on Github.\footnote{Link withheld for double-blind review.}
+Consider a simple example of using \toolname: fixing broken list proofs after swapping the two list constructors (Figure~\ref{fig:listswap}).
+This change is inspired by a similar change from a user study of proof engineers (see Section~\ref{sec:replica}).
 Even such a simple change can cause trouble in existing proofs, like this proof from the Coq standard library:\footnote{We use induction instead of pattern matching.}
 
 \begin{lstlisting}
@@ -80,8 +81,8 @@ Furthermore, just swapping lines is not enough: even for such a simple change, w
 arguments, so \lstinline{induction x as [| a l IHl]} becomes \lstinline{induction x as [a l IHl|]}.
 Handling even swapping constructors this way would require a search procedure that would not generalize to other changes.
 \citet{robert2018} describes the challenges of repairing tactics directly in detail.
-By instead transforming proof terms, \toolname is able to try just $1$ rather than $720$ candidates.
 
+By instead transforming proof terms, \toolname is able to try just $1$ rather than $720$ candidates.
 As later sections show, our approach is much more general than just permuting constructors.
 
 
