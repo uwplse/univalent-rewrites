@@ -31,14 +31,13 @@ transformation without the proof engineer manually expanding the input term.
 Proof engineers would benefit from the ability to add custom rewrite rules to \toolname
 and expand the input terms automatically.
 \end{enumerate}
-We hope to solve all three of these challenges elegantly and efficiently using a
-data structure for managing equivalences from the constraint solver and rewrite system communities
-called \textit{e-graphs}~\cite{egraph1}.
+We hope to solve all three of these challenges elegantly and efficiently using \textit{e-graphs}~\cite{egraph1},
+a data structure that is used in the constraint solver and rewrite system communities for managing equivalences.
 E-graphs are built specifically to deal with multiple equivalences,
 remove the burden of ad-hoc reasoning about termination,
 and make it simple for anyone to extend a system with new
-rewrite rules, even those that call out
-to external procedures~\cite{egraph5}.
+rewrite rules, even those~\cite{egraph5} that call out
+to external procedures.
 The one hurdle is to adapt them to use a univalent definition of equality.
 In cubical type theory, this adaptation is simple~\cite{egraph6}; we hope to repurpose this insight.
 
