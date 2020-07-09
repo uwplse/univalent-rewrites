@@ -204,10 +204,9 @@
 %% Note: \begin{abstract}...\end{abstract} environment must come
 %% before \maketitle command
 \begin{abstract}
-We show a new approach to automatically repairing proofs in the Coq proof assistant.
+We describe a new approach to automatically repairing proofs after updating specifications in the Coq proof assistant.
 Our approach combines a configurable proof term transformation with a proof term to tactic script decompiler.
-The proof term transformation implements transport across certain equivalences in a way that is suitable for repair
-and does not rely on any axioms beyond those assumed in Coq.
+The proof term transformation implements transport across certain equivalences in a way that removes references to the unupdated specification, and does not rely on axioms beyond those assumed in Coq.
 
 The result is a flexible proof repair tool with workflow integration.
 We have used this tool to support a benchmark from a user study,
