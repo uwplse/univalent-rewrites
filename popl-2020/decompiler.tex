@@ -159,8 +159,8 @@ for example handling of rewrites in both directions (\lstinline{eq_ind_r} as opp
 simplifying to handle motive inference for rewrites,
 and turning applications of \lstinline{eq_refl} into reflexivity.
 
-In fact, since \toolname uses the \lstinline{Preprocess} command from \textsc{Devoid}, \textit{all} of the proof terms that \toolname
-produces will use induction and rewriting rather than fixpoints and pattern matching.
+In fact, since \toolname uses an existing command to translate pattern matching and fixpoints to eliminators,
+\textit{all} of the proof terms that \toolname produces will use induction and rewriting instead.
 Because we have control over output terms, even a mini decompiler gets us pretty far.
 
 % TODO add any new things RanDair implements, like exists

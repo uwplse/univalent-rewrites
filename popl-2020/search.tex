@@ -118,10 +118,10 @@ The proof term transformation in \toolname is based on the proof term transforma
 the \textsc{Devoid} proof reuse tool.
 \textsc{Devoid} is a proof reuse tool for \textit{algebraic ornaments}, which describe relations
 between two inductive types, where one type is exactly the other type indexed by a fold~\cite{mcbride}.
-The running example of this in the \textsc{Devoid} paper is the relation between a list and a
+The standard example of this is the relation between a list and a
 length-indexed vector, like we saw in Figure~\ref{fig:listtovect} in Section~\ref{sec:key1}.
 
-We configured the generalized algorithm in \toolname to support algebraic ornaments like those found in \textsc{Devoid},
+We configured the generalized algorithm in \toolname to support algebraic ornaments, %like those found in \textsc{Devoid},
 and passed all of the regression tests from \textsc{Devoid}.
 %We found that this simplified the algorithm from \textsc{Devoid}.
 In addition, we added one more configuration to automate effort that had been manual in \textsc{Devoid}.
@@ -132,18 +132,17 @@ and someone on the \lstinline{coq-club} message board contacted us expressing in
 \subsubsection{Configuration}
 
 We used two configurations to ease development with dependent types using algebraic ornaments.
-The first fits the proof term transformation from \textsc{Devoid} into a \toolname configuration:
-it ports functions and proofs from the input type to the ornamented type at \textit{some} index,
+The first ports functions and proofs from the input type to the ornamented type at \textit{some} index,
 like $\Sigma$\lstinline{(n : nat).vector T n}.
 The second provides the missing link to get proofs at a \textit{particular} index, like \lstinline{vector T n};
 \textsc{Devoid} had left this to the proof engineer.
 
-The search procedure for the first configuration used the equivalence:
+For lists and vectors, the search procedure for the first configuration used the equivalence:
 
 \begin{lstlisting}
 list T $\simeq$ $\Sigma$(n : nat).vector T n
 \end{lstlisting}
-The configuration for \lstinline{list} was simple: identity for \lstinline{Eta},
+The configuration it found for \lstinline{list} was simple: identity for \lstinline{Eta},
 the list constructors for \lstinline{DepConstr}, the list eliminator for \lstinline{DepElim},
 and definitional \lstinline{Iota}.
 For \lstinline{vector}, it set \lstinline{Eta} to expand the input:
@@ -172,8 +171,7 @@ dep_elim (T : Type) (P : $\Sigma$(n : nat).vector T n $\rightarrow$ Type) (pnil 
     ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
 and it used definitional \lstinline{Iota}.
-This configuration was enough to capture all of the search and lifting functionality from \textsc{Devoid}. %for both search and lifting,
-%save for the optional proof that these induce an equivalence, which \toolname borrows from \textsc{Devoid}.
+%This configuration was enough to capture all of the search and lifting functionality from \textsc{Devoid}.
 
 To get from lists to vectors \textit{at a particular length}, we implemented one additional configuration.
 This configuration corresponds to the equivalence between sigma types at a particular projection
@@ -219,8 +217,7 @@ The updated \toolname example automates this last step.
 
 %The workflow for this was a bit different than it was with \textsc{Devoid}.
 To handle this, first, we used a custom eliminator \toolname generated to combine the list functions
-with the length invariants from \textsc{Devoid}, and to combine the list proofs
-with the proofs about those length invariants from \textsc{Devoid}.
+with length invariants, and to combine the list proofs with the proofs about those length invariants.
 This gave us a proof of this lemma:
 
 \begin{lstlisting}
@@ -251,7 +248,7 @@ with functions \lstinline{zip_with} and \lstinline{zip} operating directly over 
 \subsubsection{Lessons}
 
 %\paragraph{Configuration \& Flexibility}
-Implementing the configuration from \textsc{Devoid} in this framework was straightforward.
+Implementing the first configuration was straightforward.
 It also simplified the transformation from \textsc{Devoid} %by removing the need for special rules for handling eliminators and constructors
 %by adding and removing arguments, and for special handling of non-primitive projections,
 %as that work is done in the configuration.

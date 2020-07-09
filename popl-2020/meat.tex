@@ -4,8 +4,6 @@
 At the heart of \toolname is a configurable proof term transformation for transporting
 proofs across equivalences. This is a generalization of the proof term transformation from 
 \textsc{Devoid}~\cite{Ringer2019}, which solved this problem for a particular class of equivalences.
-%The goal of \toolname is to do the same thing over a much broader set of changes, and with better workflow integration.
-%We were able to generalize the \textsc{Devoid} algorithm to do this.
 
 \begin{quote}
 \textbf{Insight 2}:
@@ -184,8 +182,7 @@ To describe \lstinline{Eta}, it is enough to use the standard definition of $\et
 Eta ($\Sigma$(n : nat).vector T n) := $\lambda$ (s : $\Sigma$(n : nat).vector T n).$\exists$ ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
 which is propositional and not definitional in Coq.
-Thanks to this, we can forego the assumption %from the \textsc{Devoid} transformation
-that our language has primitive projections (definitional $\eta$ for $\Sigma$).
+Thanks to this, we can forego the assumption that our language has primitive projections (definitional $\eta$ for $\Sigma$).
 
 Each \lstinline{Iota}---one per constructor---describes and proves the $\iota$-reduction behavior
 of \lstinline{DepElim} on the corresponding case.
@@ -473,7 +470,8 @@ Section~\ref{sec:discussion} elaborates on the remaining challenges and our plan
 \paragraph{From CIC$_{\omega}$ to Coq}
 
 We must handle language differences to scale from CIC$_{\omega}$ to Coq.
-We use the \lstinline{Preprocess} command that \textsc{Devoid} uses to turn pattern matching and fixpoints into applications of eliminators.
+We use an existing command called \lstinline{Preprocess}~\cite{Ringer2019} to turn pattern matching and fixpoints into 
+applications of eliminators.
 We handle non-primitive projections using \lstinline{Eta}, and we handle refolding of constants in constructors
 using \lstinline{DepConstr}.
 
@@ -524,7 +522,6 @@ In response, we implemented aggressive caching (with an option to disable the ca
 we encounter in the course of running our proof term transformation.
 We also added the option to set certain terms or modules as opaque to \toolname, to prevent
 unnecessary $\delta$-reduction.
-We also implemented many optimizations from \textsc{Devoid}.
 
 The experiences of proof engineers also informed features that we exposed.
 We implemented special search procedures to generate custom eliminators to make it easier to reason about
