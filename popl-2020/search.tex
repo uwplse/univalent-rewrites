@@ -1,14 +1,14 @@
 \section{Case Studies: \textsc{Carrot} Four Ways}
 \label{sec:search}
 
-This section explains four case studies for \toolname:
+This section explains four case studies for \toolname, building from the simplest to the most complex:
 
 \begin{enumerate}
-\item We report on the experiences of an industrial proof engineer who is using \toolname to integrate Coq with a company proof engineering workflow and write proofs about an implementation of the TLS handshake protocol (Section~\ref{sec:industry}).
+\item We use \toolname to support multiple variants of a repair benchmark from a user study of Coq proof engineers (Section~\ref{sec:replica}).
 \item We use \toolname to update functions and proofs about lists to functions and proofs about dependently typed vectors of
 a particular length (Section~\ref{sec:dep}).
-\item We use \toolname to support multiple variants of a repair benchmark from a user study of Coq proof engineers (Section~\ref{sec:replica}).
 \item We use \toolname to port functions and proofs about unary numbers to functions and proofs about binary numbers (Section~\ref{sec:bin}).
+\item We report on the experiences of an industrial proof engineer who is using \toolname to integrate Coq with a company proof engineering workflow and write proofs about an implementation of the TLS handshake protocol (Section~\ref{sec:industry}).
 \end{enumerate}
 For each case study, we explain the configuration used, walk through an example, and describe lessons learned.
 In all, we found the following:
@@ -21,152 +21,95 @@ Manual configuration was possible but challenging for an interesting use case.
 The tactic decompiler was far from perfect, but showed promising early results with clear paths to improvements.
 Some workflows were unanticipated and informed design changes in \toolname.
 \end{enumerate}
-% TODO is it a contribution in itself to have real observation of users in a 3P proof refactoring/repair tool?
 
-%\begin{enumerate} TODO
-%\item LOC for each equiv/structure
-%\item Choosing the swap equivalence
-%\item Fun eliminators
-%\end{enumerate}
+\subsection{\textsc{Replica} Benchmark Variants}
+\label{sec:replica}
 
-\subsection{Industrial Use}
-\label{sec:industry}
+\begin{figure}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=8]{replica.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=10, lastline=17]{replica.tex}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{A simple language (left) and the same language with two swapped constructors (right).}
+\label{fig:replica}
+\end{figure}
 
-An industrial proof engineer at \company\footnote{Name withheld for double-blind review.} has been using \toolname in proving
-correct an implementation of the TLS handshake protocol.
-While this is ongoing work, thus far,
-\toolname has helped \company integrate Coq with their existing verification workflow.
+The constructor swapping example from Section~\ref{sec:overview} was inspired by two benchmarks 
+from the \textsc{Replica} user study of proof engineers~\cite{replica}.
+An isolated change corresponding to part of one of the benchmarks is shown in Figure~\ref{fig:replica}.
+The proof engineer had a simple language represented by an inductive type \lstinline{Term},
+as well as some definitions and proofs about the language.
+The proof engineer swapped two constructors in the term language.
 
-Before contact, \company had been using a custom solver-aided verification language to prove correct C programs.
-They had found that at times, those constraint solvers got stuck, and they could not
-progress on proofs about those programs.
-They had built a compiler that translates their solver-aided language into Coq's specification language Gallina,
-that way their proof engineers could finish stuck proofs interactively using Coq.
-However, they had found that the generated Gallina programs and specifications were sometimes too difficult to work with.
-
-A proof engineer at \company has used \toolname to work with those automatically generated programs and specifications
-with the following workflow:
-
-\begin{enumerate}
-\item use \toolname to update the automatically generated functions and specifications into more
-human-readable functions and specifications, then
-\item write Coq proofs about the more human-readable functions and specifications, then finally
-\item use \toolname again to update those proofs about human-readable functions and specifications back to
-proofs about the original automatically generated functions and specifications.
-\end{enumerate}
-This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
-that would have otherwise been difficult.
-
-% TODO will add better proofs here once Val sends them
+We used \toolname to automatically configure the proof term transformation to move this constructor,
+then transform all of the functions and proofs about the language.
+We also succeeded at more difficult variants of this,
+like swapping two constructors with the same type, renaming all of the constructors,
+or permuting and renaming constructors at the same time.
+In all cases, with just a bit of human guidance, \toolname was able to repair the functions and proofs.
 
 \subsubsection{Configuration}
 
-\begin{figure}
-\begin{minipage}{0.33\textwidth}
-   \lstinputlisting[firstline=1, lastline=10]{records.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.66\textwidth}
-   \lstinputlisting[firstline=12, lastline=21]{records.tex}
-\end{minipage}
-\vspace{-0.3cm}
-\caption{Two unnamed tuples (left) and corresponding named records (right).}
-\label{fig:records}
-\end{figure}
-
-Some example proofs that the proof engineer used \toolname for
-can be found in the proof engineer's repository.\footnote{Link withheld for double-blind review.}
-The proof engineer used \toolname to port anonymous tuples produced by \company's compiler
-to named records, as shown in the example in Figure~\ref{fig:records}.
-
-We implemented a search procedure for the proof engineer to automatically configure the proof term transformation to an equivalence
-between nested tuples and named records.
-The search procedure triggered automatically when the proof engineer called the \lstinline{Repair} command.
-%It set \A to be the record type and \B to be the tuple.
-The configuration it found for the record type was straightforward: identity for \lstinline{Eta},
-the record constructor for \lstinline{DepConstr}, the record eliminator for \lstinline{DepElim}, and definitional \lstinline{Iota}.
-For the tuple, it set \lstinline{Eta} to expand and project, for example for \lstinline{Handshake}:
-\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-eta (H : Handshake) : Handshake := (fst H, snd H).
-\end{lstlisting}
-it set \lstinline{DepConstr} to apply the pair constructor:
+The configuration this used handles permuting and renaming constructors of inductive types.
+This is one of the simplest configurations.
+The only nontrivial part is that \lstinline{DepConstr} over the updated type permutes back the constructors, in our example:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_constr_0 (handshakeType : seq 32 bool) (messageNumber : seq 32 bool) :=(@\vspace{-0.04cm}@)
-  (handshakeType, messageNumber).
+dep_constr_0 (H : Z) : Term := (@\codediff{Int}@) H.(@\vspace{-0.04cm}@)
+dep_constr_1 (H H0 : Term) : Term := (@\codediff{Eq}@) H H0.
 \end{lstlisting}
-and it set \lstinline{DepElim} to eliminate over the pair:
+so that they align with the constructors of the original type.
+The eliminator similarly permutes cases:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_elim P (f: $\forall$ h m, P (dep_constr_0 h m)) (H : Handshake) : P (eta H) :=(@\vspace{-0.04cm}@)
-  prod_rect(@\vspace{-0.04cm}@)
-    (fun (p : seq 32 bool * seq 32 bool) => P (eta p))(@\vspace{-0.04cm}@)
-    (fun (h : seq 32 bool) (m : seq 32 bool) => f h m)(@\vspace{-0.04cm}@)
-    H.
+dep_elim P f0 f1 f2 f3 f4 f5 f6 t : P t := Term_rect P f0 (@\codediff{f2}@) (@\codediff{f1}@) f3 f4 f5 f6 t.
 \end{lstlisting}
-For \lstinline{Connection}, it found similar \lstinline{Eta}, \lstinline{DepConstr}, and \lstinline{DepElim},
-except that \lstinline{Eta} included all nine projections, \lstinline{DepConstr} \textit{recursively} applied the
-pair constructor, and \lstinline{DepElim} \textit{recursively} eliminated the pair.
-This induced an equivalence between the nested tuple and record,
-which \toolname generated and proved automatically.
+where \lstinline{Term_rect} is the eliminator over the old version of \lstinline{Term}.
 
 \subsubsection{Example}
-Using this configuration, the proof engineer automatically ported this compiler-generated function:
+
+We used \toolname to automatically update the functions and proofs in \lstinline{Swap.v} from the \textsc{Replica} benchmark.
+This included functions about \lstinline{Term}, as well as a large record \lstinline{EpsilonLogic} that encoded the semantics of the language,
+plus a proof about that record:
 
 \begin{lstlisting}
-cork (c : Connection) : Connection :=(@\vspace{-0.04cm}@)
-  (fst c, (bvAdd _ (fst (snd c)) (bvNat _ 1), snd (snd c))).
+Theorem eval_eq_true_or_false:(@\vspace{-0.04cm}@)
+  $\forall$ (L : EpsilonLogic) env (t1 t2 : Term),(@\vspace{-0.04cm}@)
+    L.eval env (Eq t1 t2) = L.vTrue $\vee$ L.eval env (Eq t1 t2) = L.vFalse.
 \end{lstlisting}
-to the corresponding function over records:
-
-\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-cork (c : (@\texttt{Record}@).Connection) : (@\texttt{Record}@).Connection := {|(@\vspace{-0.04cm}@)
-  clientAuthFlag := clientAuthFlag c; (@\hspace{0.43cm}@) corked := bvAdd _ (corked c) (bvNat _ 1);(@\vspace{-0.04cm}@)
-  corkedIO := corkedIO c; (@\hspace{2.36cm}@) handshake := handshake c;(@\vspace{-0.04cm}@)
-  isCachingEnabled := isCachingEnabled c; keyExchangeEPH := keyExchangeEPH c;(@\vspace{-0.04cm}@)
-  mode := mode c; (@\hspace{3.64cm}@) resumeFromCache := resumeFromCache c;(@\vspace{-0.04cm}@)
-  serverCanSendOCSP := serverCanSendOCSP c(@\vspace{-0.04cm}@)
-|}.
-\end{lstlisting}
-The proof engineer then wrote proofs that record, for example:
-
-\begin{lstlisting}
-Lemma corkLemma :(@\vspace{-0.04cm}@)
-  $\forall$ (c : (@\texttt{Record}@).Connection), corked c = bvNat 2 0 $\rightarrow$ corked (cork c) = bvNat 2 1.(@\vspace{-0.04cm}@)
-Proof.(@\vspace{-0.04cm}@)
-  intros []. simpl. intros H. subst. reflexivity.(@\vspace{-0.04cm}@)
-Defined.
-\end{lstlisting} % TODO better proof
-and then used \toolname to automatically port these back to proofs about the original function:
-
-\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-Lemma corkLemma :(@\vspace{-0.04cm}@)
-  $\forall$ (c : Connection), fst (snd c) = bvNat 2 0 $\rightarrow$ fst (snd (cork c)) = bvNat 2 1.
-\end{lstlisting} % TODO decompiler
+\toolname automatically updated all of these. For the inductive proof, it produced
+a new inductive proof that used the induction principle with the swapped constructors.
+It also discovered all other 23 type-correct permutations of constructors, all available for selection to 
+prove the appropriate equivalence and use to update functions and proofs.
+It presented the desired transformation as the first option in the list, so that all we had to do
+was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this change.
+It was also able to handle more advanced changes like renaming constructors, permuting multiple constructors at once,
+and doing both at the same time.
 
 \subsubsection{Lessons}
 
-%but also to help write dependently typed functions.
-So far, the proof engineer has used at least three automatic configurations.
-Two had existed already, while the one for tuples and records was
-added in response to the proof engineer's needs.
-This search procedure was easy for us to implement. %using techniques from
-%the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
-Flexibility could be further improved by exposing an interface to allow proof engineers to
-write search procedures themselves.
+Implementing the search procedure was simple. %and took about three days.
+The biggest challenge was implementing an interactive interface to choose between mappings when there are multiple possible mappings,
+or to allow the proof engineer to write a single custom mapping function and derive the rest of the configuration from that.
+This was only a single snapshot of the benchmark, which included
+other changes like adding constructors to inductive types.
+One ongoing challenge is defining and discovering useful configurations to support adding new constructors.
 
-The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
-workflow using solver-aided tools at \company.
-The workflow for using \toolname itself was a bit nonstandard,
-and there was little need for tactic proofs about the compiler-generated functions and specifications.
-In the initial days, we worked closely with the proof engineer;
-later, the proof engineer worked independently and reached out occasionally by email or phone.
-\toolname was usable enough for this to work, but we found two challenges with workflow integration:
-the proof engineer sometimes could not distinguish between user errors and bugs in our code,
-and the proof engineer typically waited only about ten seconds at most for \toolname to return.
-Both observations informed improvements to \toolname, like better error messages, caching of transformed subterms,
-and the ability to set terms as opaque to \toolname.
-% TODO how long did compiling the file take?
+The isolated change was simple enough that \toolname would not have been necessary
+for updating the proofs for the initial change---keeping the tactics the same would have also worked.
+%This is a property of the particular proofs that we had access to;
+As we saw in Section~\ref{sec:overview}, even for simple changes, this is not always true.
+More advanced variants of this benchmark that involved also renaming constructors did necessitate \toolname,
+and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
+The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
+its dependencies, four variants of the \textsc{Replica} benchmark,
+and testing a large and ambiguous permutation of a type \lstinline{Enum} with 30 constructors of identical types,
+took \toolname less than 90 seconds total. % TODO specs, reproduction
+Each variant of the \textsc{Replica} benchmark took \toolname less than 5 seconds. % TODO specs, reproduction
 
 \subsection{Vectors from Lists}
 \label{sec:dep}
@@ -331,105 +274,6 @@ were very difficult for us to write by hand.
 Still, additional effort is needed to improve tactic integration with dependent types.
 % TODO how long did compiling the file take?
 
-\subsection{\textsc{Replica} Benchmark Variants}
-\label{sec:replica}
-
-\begin{figure}
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=1, lastline=8]{replica.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=10, lastline=17]{replica.tex}
-\end{minipage}
-\vspace{-0.3cm}
-\caption{A simple language (left) and the same language with two swapped constructors (right).}
-\label{fig:replica}
-\end{figure}
-
-The constructor swapping example from Section~\ref{sec:overview} was inspired by two benchmarks 
-from the \textsc{Replica} user study of proof engineers~\cite{replica}.
-An isolated change corresponding to part of one of the benchmarks is shown in Figure~\ref{fig:replica}.
-The proof engineer had a simple language represented by an inductive type \lstinline{Term},
-as well as some definitions and proofs about the language.
-The proof engineer swapped two constructors in the term language.
-
-We used \toolname to automatically configure the proof term transformation to move this constructor,
-then transform all of the functions and proofs about the language.
-We also succeeded at more difficult variants of this,
-like swapping two constructors with the same type, renaming all of the constructors,
-or permuting and renaming constructors at the same time.
-In all cases, with just a bit of human guidance, \toolname was able to repair the functions and proofs.
-
-\subsubsection{Configuration}
-
-The configuration this used handles permuting and renaming constructors of inductive types.
-This is one of the simplest configurations.
-The only nontrivial part is that \lstinline{DepConstr} over the updated type permutes back the constructors, in our example:
-
-\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_constr_0 (H : Z) : Term := (@\codediff{Int}@) H.(@\vspace{-0.04cm}@)
-dep_constr_1 (H H0 : Term) : Term := (@\codediff{Eq}@) H H0.
-\end{lstlisting}
-so that they align with the constructors of the original type.
-The eliminator similarly permutes cases:
-
-\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_elim P f0 f1 f2 f3 f4 f5 f6 t : P t := Term_rect P f0 (@\codediff{f2}@) (@\codediff{f1}@) f3 f4 f5 f6 t.
-\end{lstlisting}
-where \lstinline{Term_rect} is the eliminator over the old version of \lstinline{Term}.
-
-%The search procedure for this configuration is flexible.
-%It can handle swapping and renaming of constructors at the same time,
-%and it can support multiple swapped constructors at the same time.
-%When there are many possible mappings between the constructors of the old
-%and new version, \toolname prompts the proof engineer to choose a configuration from a ranked list.
-%It allows the user to provide a custom mapping between constructors if the desired mapping
-%does not show up high enough on the ranked list.
-%In all cases, it proves the equivalence from the swap map automatically.
-%The transformation then updates functions, swapping and renaming constructors and cases.
-
-\subsubsection{Example}
-
-We used \toolname to automatically update the functions and proofs in \lstinline{Swap.v} from the \textsc{Replica} benchmark.
-This included functions about \lstinline{Term}, as well as a large record \lstinline{EpsilonLogic} that encoded the semantics of the language,
-plus a proof about that record:
-
-\begin{lstlisting}
-Theorem eval_eq_true_or_false:(@\vspace{-0.04cm}@)
-  $\forall$ (L : EpsilonLogic) env (t1 t2 : Term),(@\vspace{-0.04cm}@)
-    L.eval env (Eq t1 t2) = L.vTrue $\vee$ L.eval env (Eq t1 t2) = L.vFalse.
-\end{lstlisting}
-\toolname automatically updated all of these. For the inductive proof, it produced
-a new inductive proof that used the induction principle with the swapped constructors.
-It also discovered all other 23 type-correct permutations of constructors, all available for selection to 
-prove the appropriate equivalence and use to update functions and proofs.
-It presented the desired transformation as the first option in the list, so that all we had to do
-was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this change.
-It was also able to handle more advanced changes like renaming constructors, permuting multiple constructors at once,
-and doing both at the same time.
-
-\subsubsection{Lessons}
-
-Implementing the search procedure was simple. %and took about three days.
-The biggest challenge was implementing an interactive interface to choose between mappings when there are multiple possible mappings,
-or to allow the proof engineer to write a single custom mapping function and derive the rest of the configuration from that.
-This was only a single snapshot of the benchmark, which included
-other changes like adding constructors to inductive types.
-One ongoing challenge is defining and discovering useful configurations to support adding new constructors.
-
-The isolated change was simple enough that \toolname would not have been necessary
-for updating the proofs for the initial change---keeping the tactics the same would have also worked.
-%This is a property of the particular proofs that we had access to;
-As we saw in Section~\ref{sec:overview}, even for simple changes, this is not always true.
-More advanced variants of this benchmark that involved also renaming constructors did necessitate \toolname,
-and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
-The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
-its dependencies, four variants of the \textsc{Replica} benchmark,
-and testing a large and ambiguous permutation of a type \lstinline{Enum} with 30 constructors of identical types,
-took \toolname less than 90 seconds total. % TODO specs, reproduction
-Each variant of the \textsc{Replica} benchmark took \toolname less than 5 seconds. % TODO specs, reproduction
-
 \subsection{Unary and Binary Numbers}
 \label{sec:bin}
 
@@ -552,7 +396,146 @@ The most difficult part was manually expanding proofs about \lstinline{nat}
 to explicitly apply \lstinline{Iota}.
 This is because there is not yet any way for manual configuration to supply custom matching functions,
 and unification was not enough.
-We discuss ideas for this in Sections~\ref{sec:related} and~\ref{sec:discussion}. % TODO actually dos
+We discuss ideas for this in Sections~\ref{sec:related} and~\ref{sec:discussion}.
+
+\subsection{Industrial Use}
+\label{sec:industry}
+
+An industrial proof engineer at \company\footnote{Name withheld for double-blind review.} has been using \toolname in proving
+correct an implementation of the TLS handshake protocol.
+While this is ongoing work, thus far,
+\toolname has helped \company integrate Coq with their existing verification workflow.
+
+Before contact, \company had been using a custom solver-aided verification language to prove correct C programs.
+They had found that at times, those constraint solvers got stuck, and they could not
+progress on proofs about those programs.
+They had built a compiler that translates their solver-aided language into Coq's specification language Gallina,
+that way their proof engineers could finish stuck proofs interactively using Coq.
+However, they had found that the generated Gallina programs and specifications were sometimes too difficult to work with.
+
+A proof engineer at \company has used \toolname to work with those automatically generated programs and specifications
+with the following workflow:
+
+\begin{enumerate}
+\item use \toolname to update the automatically generated functions and specifications into more
+human-readable functions and specifications, then
+\item write Coq proofs about the more human-readable functions and specifications, then finally
+\item use \toolname again to update those proofs about human-readable functions and specifications back to
+proofs about the original automatically generated functions and specifications.
+\end{enumerate}
+This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
+that would have otherwise been difficult.
+
+% TODO will add better proofs here once Val sends them
+
+\subsubsection{Configuration}
+
+\begin{figure}
+\begin{minipage}{0.33\textwidth}
+   \lstinputlisting[firstline=1, lastline=10]{records.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.66\textwidth}
+   \lstinputlisting[firstline=12, lastline=21]{records.tex}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{Two unnamed tuples (left) and corresponding named records (right).}
+\label{fig:records}
+\end{figure}
+
+Some example proofs that the proof engineer used \toolname for
+can be found in the proof engineer's repository.\footnote{Link withheld for double-blind review.}
+The proof engineer used \toolname to port anonymous tuples produced by \company's compiler
+to named records, as shown in the example in Figure~\ref{fig:records}.
+
+We implemented a search procedure for the proof engineer to automatically configure the proof term transformation to an equivalence
+between nested tuples and named records.
+The search procedure triggered automatically when the proof engineer called the \lstinline{Repair} command.
+%It set \A to be the record type and \B to be the tuple.
+The configuration it found for the record type was straightforward: identity for \lstinline{Eta},
+the record constructor for \lstinline{DepConstr}, the record eliminator for \lstinline{DepElim}, and definitional \lstinline{Iota}.
+For the tuple, it set \lstinline{Eta} to expand and project, for example for \lstinline{Handshake}:
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+eta (H : Handshake) : Handshake := (fst H, snd H).
+\end{lstlisting}
+it set \lstinline{DepConstr} to apply the pair constructor:
+
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+dep_constr_0 (handshakeType : seq 32 bool) (messageNumber : seq 32 bool) :=(@\vspace{-0.04cm}@)
+  (handshakeType, messageNumber).
+\end{lstlisting}
+and it set \lstinline{DepElim} to eliminate over the pair:
+
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+dep_elim P (f: $\forall$ h m, P (dep_constr_0 h m)) (H : Handshake) : P (eta H) :=(@\vspace{-0.04cm}@)
+  prod_rect(@\vspace{-0.04cm}@)
+    (fun (p : seq 32 bool * seq 32 bool) => P (eta p))(@\vspace{-0.04cm}@)
+    (fun (h : seq 32 bool) (m : seq 32 bool) => f h m)(@\vspace{-0.04cm}@)
+    H.
+\end{lstlisting}
+For \lstinline{Connection}, it found similar \lstinline{Eta}, \lstinline{DepConstr}, and \lstinline{DepElim},
+except that \lstinline{Eta} included all nine projections, \lstinline{DepConstr} \textit{recursively} applied the
+pair constructor, and \lstinline{DepElim} \textit{recursively} eliminated the pair.
+This induced an equivalence between the nested tuple and record,
+which \toolname generated and proved automatically.
+
+\subsubsection{Example}
+Using this configuration, the proof engineer automatically ported this compiler-generated function:
+
+\begin{lstlisting}
+cork (c : Connection) : Connection :=(@\vspace{-0.04cm}@)
+  (fst c, (bvAdd _ (fst (snd c)) (bvNat _ 1), snd (snd c))).
+\end{lstlisting}
+to the corresponding function over records:
+
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+cork (c : (@\texttt{Record}@).Connection) : (@\texttt{Record}@).Connection := {|(@\vspace{-0.04cm}@)
+  clientAuthFlag := clientAuthFlag c; (@\hspace{0.43cm}@) corked := bvAdd _ (corked c) (bvNat _ 1);(@\vspace{-0.04cm}@)
+  corkedIO := corkedIO c; (@\hspace{2.36cm}@) handshake := handshake c;(@\vspace{-0.04cm}@)
+  isCachingEnabled := isCachingEnabled c; keyExchangeEPH := keyExchangeEPH c;(@\vspace{-0.04cm}@)
+  mode := mode c; (@\hspace{3.64cm}@) resumeFromCache := resumeFromCache c;(@\vspace{-0.04cm}@)
+  serverCanSendOCSP := serverCanSendOCSP c(@\vspace{-0.04cm}@)
+|}.
+\end{lstlisting}
+The proof engineer then wrote proofs that record, for example:
+
+\begin{lstlisting}
+Lemma corkLemma :(@\vspace{-0.04cm}@)
+  $\forall$ (c : (@\texttt{Record}@).Connection), corked c = bvNat 2 0 $\rightarrow$ corked (cork c) = bvNat 2 1.(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  intros []. simpl. intros H. subst. reflexivity.(@\vspace{-0.04cm}@)
+Defined.
+\end{lstlisting} % TODO better proof
+and then used \toolname to automatically port these back to proofs about the original function:
+
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+Lemma corkLemma :(@\vspace{-0.04cm}@)
+  $\forall$ (c : Connection), fst (snd c) = bvNat 2 0 $\rightarrow$ fst (snd (cork c)) = bvNat 2 1.
+\end{lstlisting} % TODO decompiler
+
+\subsubsection{Lessons}
+
+%but also to help write dependently typed functions.
+So far, the proof engineer has used at least three automatic configurations.
+Two had existed already, while the one for tuples and records was
+added in response to the proof engineer's needs.
+This search procedure was easy for us to implement. %using techniques from
+%the repair and reuse tools \textsc{Pumpkin Patch} and \textsc{Devoid}.
+Flexibility could be further improved by exposing an interface to allow proof engineers to
+write search procedures themselves.
+
+The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
+workflow using solver-aided tools at \company.
+The workflow for using \toolname itself was a bit nonstandard,
+and there was little need for tactic proofs about the compiler-generated functions and specifications.
+In the initial days, we worked closely with the proof engineer;
+later, the proof engineer worked independently and reached out occasionally by email or phone.
+\toolname was usable enough for this to work, but we found two challenges with workflow integration:
+the proof engineer sometimes could not distinguish between user errors and bugs in our code,
+and the proof engineer typically waited only about ten seconds at most for \toolname to return.
+Both observations informed improvements to \toolname, like better error messages, caching of transformed subterms,
+and the ability to set terms as opaque to \toolname.
+% TODO how long did compiling the file take?
 
 % TODO what does the tactic decompiler do for this? It's broken. Why?
 
