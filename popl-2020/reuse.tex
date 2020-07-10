@@ -99,14 +99,14 @@ That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be remove
 
 Viewing repair as transport is flexible enough to support changes in which the proof engineer adds or removes information.
 In that case, the equivalence along which the tool transports functions and proofs
-is an equivalence between \textit{refinements} ($\Sigma$ types).
-It is up to the proof engineer to supply the additional information in order to construct proofs about the refinement.
+is one between \textit{refinements} ($\Sigma$ types).
+It is up to the proof engineer to supply the additional information needed to construct proofs about the refinement.
 Consider an example from the proof reuse tool \textsc{Devoid}~\cite{Ringer2019}:
 changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
 Both \textsc{Devoid} and \toolname can repair proofs about lists to proofs about \textit{vectors of some length}, since:
 
 \begin{lstlisting}
-list T $\simeq$ $\Sigma$ (n : nat) . vector T n.
+list T $\simeq$ $\Sigma$(n : nat).vector T n.
 \end{lstlisting}
 This is enough to automatically repair a lemma about lists:
 

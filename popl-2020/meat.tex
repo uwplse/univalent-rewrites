@@ -22,6 +22,7 @@ and finally describes the additional work needed to go from this transformation 
 All terms that we introduce in this section are in CIC$_{\omega}$ (the core calculus of Coq) with primitive eliminators,
 the syntax for which is in Figure~\ref{fig:syntax}.
 The typing rules are standard.
+We assume the existence of an inductive type $\Sigma$ with constructor $\exists$ and projections $\pi_l$ and $\pi_r$.
 Throughout, we use $\vec{t}$ and $\{t_1, \ldots, t_n\}$ to denote lists of terms.
 
 \begin{figure}
@@ -64,7 +65,7 @@ each of which corresponds to one of the two goals, namely:
 \item \lstinline{Eta} and \lstinline{Iota} define how to transform $\eta$-expansion and $\iota$-reduction of constructors and eliminators, thereby producing well-typed terms (Section~\ref{sec:equality}).
 \end{enumerate}
 Each of these is defined in CIC$_{\omega}$ for any given equivalence.
-\textbf{Configure} passes this configuration to \textbf{Transform}.
+%\textbf{Configure} passes this configuration to \textbf{Transform}.
 The four parts of this configuration must be in relation to one another in a certain way in order for the proof
 term transformation to work correctly (Section~\ref{sec:art}).
 
@@ -80,7 +81,7 @@ subterms without changing the order or number of arguments.
 The two configuration parts responsible for preserving this are \lstinline{DepConstr}
 and \lstinline{DepElim} (\textit{dependent constructors} and \textit{eliminators}).
 These describe how to construct and eliminate \A and \B, wrapping the types with a common inductive structure.
-There must be the same number of dependent constructors and inductive hypotheses in dependent eliminators for \A and \B,
+There must be the same number of dependent constructors and cases in dependent eliminators for \A and \B,
 even if \A and \B are types with different numbers of constructors.
 
 \begin{figure}
@@ -123,7 +124,7 @@ while the dependent eliminator for \lstinline{New.list} swaps cases.
 
 These constructors and eliminators can be \textit{dependent}.
 One example of this arises from implementing the change from \lstinline{list T} to $\Sigma$\lstinline{(n : nat).vector T n}.
-The configuration \toolname discovers for this configures the dependent constructors to pack the index into an existential, for example (letting $\exists$ denote the constructor for $\Sigma$ types):
+The configuration \toolname discovers for this configures the dependent constructors to pack the index into an existential, for example:
 
 \begin{lstlisting}
 DepConstr(0, $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n :=(@\vspace{-0.04cm}@)
@@ -218,12 +219,13 @@ that way \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinlin
 Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ from each other.
 The structures of \lstinline{DepElim} over \A and \B are always the same, so if \A and \B have the same 
 inductive structure (if they are \textit{ornaments}~\cite{mcbride}),
-then if $\iota$-reduction is definitional over \lstinline{DepElim} on \A, it will also be definitional on \B.
+then if $\iota$-reduction is definitional over \lstinline{DepElim} on \A, it will be possible to choose
+\lstinline{DepElim} with definitional $\iota$ on \B.
 Otherwise, if \A and \B have different inductive structures, as with \lstinline{nat} and \lstinline{N},
 then definitional $\iota$ over one would become propositional $\iota$ over the other.
 For the case of \lstinline{nat} and \lstinline{N},
 the need for propositional $\iota$ was noted as far back as \citet{magaud2000changing}.
-What \lstinline{Iota} does in the configuration is encode this more generally.
+\lstinline{Iota} in the configuration encodes this more generally.
 
 \subsection{The Proof Term Transformation}
 \label{sec:generic}
@@ -301,14 +303,15 @@ The transformation then transforms the applications of the terms in the configur
 to applications of the terms in the configuration for \B.
 Reducing the result produces the output term defined over \B.
 
-For example, to update the append function \lstinline{++} from the left of Figure~\ref{fig:appswap1}, \toolname
-identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them.
+Figure~\ref{fig:appswap1} shows this with the list append function \lstinline{++} from Section~\ref{sec:overview}.
+To update the append function (top left), \toolname
+identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (bottom left).
 In this case, expansion works just by matching against \lstinline{Constr} and \lstinline{Elim}, 
 though this can be more difficult when \lstinline{DepConstr} and \lstinline{DepElim} over \A are dependent.
 After expansion, the transformation then recursively substitutes in \lstinline{New.list}
 for \lstinline{Old.list}, which moves \lstinline{DepConstr} and \lstinline{DepElim}
-to construct and eliminate over the updated type.
-Finally, this reduces to the term on the right of Figure~\ref{fig:appswap1}.
+to construct and eliminate over the updated type (bottom right).
+Finally, this reduces to a term with swapped constructors and cases (top right).
 
 The goal of the proof term transformation is to preserve equality up to transport along the equivalence $A \simeq B$,
 while no longer referring to the old specification.
@@ -425,8 +428,7 @@ Finally, since these form an equivalence, all ways of constructing or eliminatin
 So, as long as we are able to expand all implicit applications of \lstinline{DepConstr} and \lstinline{DepElim},
 \textsc{Dep-Constr} and \textsc{Dep-Elim} should preserve correctness of the transformation and cover all values and eliminations of \A and \B.
 
-To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules
-over \lstinline{DepElim}.
+To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules.
 For \lstinline{Eta}, we need it to have the same definitional behavior as the dependent eliminator:
 
 \begin{lstlisting}
@@ -497,7 +499,7 @@ Another challenge with implementing the proof term transformation is deciding wh
 That is, when the correctness criteria for a configuration hold and a subterm matches a rule, this suggests that \toolname \textit{can}
 run the transformation rule, but it does not necessarily mean that it \textit{should}.
 In some cases, repeatedly running a matching transformation rule would result in nontermination.
-For example, if our type \B is a refinement of our type \A, then we can always run \textsc{Equivalence}
+For example, if \B is a refinement of \A, then we can always run \textsc{Equivalence}
 over and over again, forever.
 %\textsc{Devoid} ruled out this case by simply prohibiting the case where \B refers to \A, but we found it sometimes
 %useful to support this case.
@@ -508,24 +510,23 @@ depends on intent.
 For example, our industrial proof engineer sometimes wished to port only some occurrences of \A,
 especially when \A was a tuple that could appear elsewhere
 with a different meaning.
-\toolname supports this for now using an interactive workflow.
+\toolname has some support for this using an interactive workflow.
 %We helped the proof engineer do this by interacting with \toolname using a particular workflow.
 %We plan to support this automatically using type-directed search in the future.
 
 \paragraph{Reaching Real Proof Engineers}
 Many of our design decisions in implementing \toolname were informed by our partnership with
-an industrial proof engineer.
+an industrial proof engineer (see Section~\ref{sec:industry}).
 For example, we found that the proof engineer rarely had the patience to wait more than ten seconds
 for \toolname to port a function or proof.
 In response, we implemented aggressive caching (with an option to disable the cache), even caching intermediate subterms that
 we encounter in the course of running our proof term transformation.
-We also added an option to tell \toolname not to $\delta$-reduce certain terms or recurse into certain modules.
+We also added an option to tell \toolname not to $\delta$-reduce certain terms. %or recurse into certain modules.
 % set certain terms or modules as opaque to \toolname, to prevent unnecessary $\delta$-reduction.
 
 The experiences of proof engineers also informed features that we exposed.
-We implemented special search procedures to generate custom eliminators to make it easier to reason about
-types that we found common for certain search procedures.
-For example, \toolname generates a custom eliminator to reason about types refined by equalities like $\Sigma$\lstinline{(l : list T).length l = n}
+For example, we implemented special search procedures to generate custom eliminators to make it easier to reason about
+types refined by equalities like $\Sigma$\lstinline{(l : list T).length l = n}
 by breaking them into parts and reasoning separately about the projections.
 These features along with our tactic decompiler helped with integration into proof engineering workflows.
 
