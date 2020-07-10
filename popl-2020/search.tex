@@ -33,7 +33,7 @@ Some workflows were unanticipated and informed design changes in \toolname.
 \begin{minipage}{0.48\textwidth}
    \lstinputlisting[firstline=10, lastline=17]{replica.tex}
 \end{minipage}
-\vspace{-0.3cm}
+\vspace{-0.4cm}
 \caption{A simple language (left) and the same language with two swapped constructors (right).}
 \label{fig:replica}
 \end{figure}
@@ -45,12 +45,13 @@ The proof engineer had a simple language represented by an inductive type \lstin
 as well as some definitions and proofs about the language.
 The proof engineer swapped two constructors in the term language.
 
-We used \toolname to automatically configure the proof term transformation to move this constructor,
-then transform all of the functions and proofs about the language.
+We used \toolname to automatically configure the proof term transformation to swap these constructors,
+then repair all of the functions and proofs.
 We also succeeded at more difficult variants of this,
-like swapping two constructors with the same type, renaming all of the constructors,
+like swapping constructors with the same type, renaming all of the constructors,
+permuting more than two constructors,
 or permuting and renaming constructors at the same time.
-In all cases, with just a bit of human guidance, \toolname was able to repair the functions and proofs.
+In all cases, with a bit of human guidance, \toolname repaired the functions and proofs.
 
 \subsubsection{Configuration}
 
@@ -62,7 +63,7 @@ The only nontrivial part is that \lstinline{DepConstr} over the updated type per
 dep_constr_0 (H : Z) : Term := (@\codediff{Int}@) H.(@\vspace{-0.04cm}@)
 dep_constr_1 (H H0 : Term) : Term := (@\codediff{Eq}@) H H0.
 \end{lstlisting}
-so that they align with the constructors of the original type.
+so that they align with the original constructors.
 The eliminator similarly permutes cases:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
@@ -77,9 +78,8 @@ This included functions about \lstinline{Term}, as well as a large record \lstin
 plus a proof about that record:
 
 \begin{lstlisting}
-Theorem eval_eq_true_or_false:(@\vspace{-0.04cm}@)
-  $\forall$ (L : EpsilonLogic) env (t1 t2 : Term),(@\vspace{-0.04cm}@)
-    L.eval env (Eq t1 t2) = L.vTrue $\vee$ L.eval env (Eq t1 t2) = L.vFalse.
+Theorem eval_eq_true_or_false : $\forall$ (L : EpsilonLogic) env (t1 t2 : Term),(@\vspace{-0.04cm}@)
+  L.eval env (Eq t1 t2) = L.vTrue $\vee$ L.eval env (Eq t1 t2) = L.vFalse.
 \end{lstlisting}
 \toolname automatically updated all of these. For the inductive proof, it produced
 a new inductive proof that used the induction principle with the swapped constructors.
@@ -87,8 +87,7 @@ It also discovered all other 23 type-correct permutations of constructors, all a
 prove the appropriate equivalence and use to update functions and proofs.
 It presented the desired transformation as the first option in the list, so that all we had to do
 was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this change.
-It was also able to handle more advanced changes like renaming constructors, permuting multiple constructors at once,
-and doing both at the same time.
+It was also able to handle the more advanced variants of this change.
 
 \subsubsection{Lessons}
 
@@ -218,14 +217,13 @@ The updated \toolname example automates this last step.
 %The workflow for this was a bit different than it was with \textsc{Devoid}.
 To handle this, first, we used a custom eliminator \toolname generated to combine the list functions
 with length invariants, and to combine the list proofs with the proofs about those length invariants.
-This gave us a proof of this lemma:
+This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths):
 
 \begin{lstlisting}
 Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
   (v1: $\Sigma$(l1: (@\codediff{list A}@)).(@\codediff{length}@) l1 = n) (v2: $\Sigma$(l2: (@\codediff{list B}@)).(@\codediff{length}@) l2 = n),(@\vspace{-0.04cm}@)
     zip_with pair n v1 v2 = zip n v1 v2.
 \end{lstlisting}
-with functions \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths.
 We then ran \lstinline{Repair module} using the first
 configuration, which proved this lemma:
 
@@ -249,10 +247,10 @@ with functions \lstinline{zip_with} and \lstinline{zip} operating directly over 
 
 %\paragraph{Configuration \& Flexibility}
 Implementing the first configuration was straightforward.
-It also simplified the transformation from \textsc{Devoid} %by removing the need for special rules for handling eliminators and constructors
+%It also simplified the transformation from \textsc{Devoid} %by removing the need for special rules for handling eliminators and constructors
 %by adding and removing arguments, and for special handling of non-primitive projections,
 %as that work is done in the configuration.
-by moving all of the interesting work into the search procedure for the configuration.
+%by moving all of the interesting work into the search procedure for the configuration.
 Implementing the second configuration was less straightforward,
 especially when it came to understanding the behaviors of equalities.
 There are still some open challenges in correctly defining \lstinline{Iota} to port any arbitrary
@@ -302,7 +300,7 @@ dep_constr_0 : N := 0%N.(@\vspace{-0.04cm}@)
 dep_constr_1 : N $\rightarrow$ N := N.succ.
 \end{lstlisting}
 Similarly, the Coq standard library included precisely the eliminator we wanted, one that behaves
-like the eliminator over unary natural numbers:
+like the eliminator over \lstinline{nat}:
 
 \begin{lstlisting}
 dep_elim P (pO : P dep_constr_0) (pS : $\forall$n, P n $\rightarrow$ P (dep_constr_1 n)) (n : N) : P n :=(@\vspace{-0.04cm}@)
@@ -435,7 +433,7 @@ that would have otherwise been difficult.
 \begin{minipage}{0.66\textwidth}
    \lstinputlisting[firstline=12, lastline=21]{records.tex}
 \end{minipage}
-\vspace{-0.3cm}
+\vspace{-0.5cm}
 \caption{Two unnamed tuples (left) and corresponding named records (right).}
 \label{fig:records}
 \end{figure}
