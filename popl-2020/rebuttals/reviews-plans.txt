@@ -124,8 +124,6 @@ A, L411: "The transformation replaces rewrites by reflexivity...".
 
 Action: Make sure clarification of matching adds a pointer here that helps with this.
 
-L424: with expansion are you refering to, δ-unfolding of constants?
-
 L521: The heterogeneous equality between P and Q should be in 
     `A -> Type` and `B -> Type`. Likewise, the equality between
     the partially applied dependent eliminators should be in 
