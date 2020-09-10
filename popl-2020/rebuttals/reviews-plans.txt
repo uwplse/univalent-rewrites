@@ -1,3 +1,15 @@
+--- Claims ---
+
+B: The title and introduction set expectations way too high.  This paper's approach is fundamentally limited to tackling a tiny fraction of the space of proof evolutions people will want in practice.
+
+B: First, I was really frustrated by the paper's lack of explicit clarity about scope.  I'm tempted to make it a shepherding requirement that the title be changed, say to mention "data type isomorphisms".  There are just so many necessary proof evolutions that don't fit this technique.  The paper acknowledges cases of adding *new* constructors to inductive types, but that's only the beginning.  The broader case is intentionally changing the generality of a data type, to more or less generality.  We might also (much more frequently, in my experience) change definitions of logical predicates, to make them weaker, stronger, or neither, then needing to update proofs accordingly.  In my experience with research projects using Coq, yes, we might occasionally need to replace a type with an isomorphic one, and we can indeed benefit from tool support to help, but this would tend to happen on the scale of one every few months, rather than other kinds of changes on the scale of one every few hours (in the exploratory stage of a research project, at least).
+
+Actions:
+1. Weaken claims in title
+2. Weaken claims in introduction
+3. Weaken claims in related work
+4. Weaken claims in Section 3
+
 --- Matching ---
 
 A: The presentation is quite informal: as a result it is unclear
@@ -9,7 +21,7 @@ A: The presentation is quite informal: as a result it is unclear
   like a very non-trival program transformation, but it is not formally 
   described how this is achieved.
 
-A. The example proof repairs are mainly renamings and constructor 
+A: The example proof repairs are mainly renamings and constructor 
   permutations, along with ornamentation (that was alredy part of 
   the Devoid tool). The new change of representation example of 
   unary natural to binary natural numbers stumbles upon 
@@ -20,149 +32,7 @@ A. The example proof repairs are mainly renamings and constructor
   to define the Iota correctly. I could not understand the problems
   in detail due to the above item.
 
-Actions: 
-1. Explain matching more explicitly and prominently
-2. Explain 6.2 matching
-3. Be explicit about incompleteness of matching
-4. Give a more complex example of matching
-
---- Scope ---
-
-A: The presentation is quite informal: as a result it is unclear
-  exactly in which situations the repair is going to work and
-  produce well-typed results. Worse, it is not clear from the 
-  current description how the more complex transformations are 
-  performed. For example, the generalization of a binder for vector 
-  indexes in section 6.2 and passing along of equality proofs looks 
-  like a very non-trival program transformation, but it is not formally 
-  described how this is achieved.
-
-A. The example proof repairs are mainly renamings and constructor 
-  permutations, along with ornamentation (that was alredy part of 
-  the Devoid tool). The new change of representation example of 
-  unary natural to binary natural numbers stumbles upon 
-  incompleteness of the proof repair procedure and requires 
-  crafting proof terms in a specific way for the machinery to work.
-  Similarly, the example in section 6.2 requires quite some trickery
-  with equalities and the authors note that open challenges remain
-  to define the Iota correctly. I could not understand the problems
-  in detail due to the above item.
-
-A. Finally, it is unclear how adding or removing a constructor argument
-  or a constructor could be handled in a variant of this setting which
-  intrinsically relies on equivalences. This limitation in the scope
-  of the tool is not an essential point though.
-
-Actions:
-1. Link to artifact throughout
-2. Give rudamentary construction
-3. Implement and provide examples of adding constructors and adding hypotheses
-4. If time, evaluate a case like adding constructors or adding hypotheses
-5. Clarify what changes we have considered but not yet implemented, implemented but not yet evaluated, and both implemented and evaluated
-6. Make it clear that we provide no guarantees for non-isomorphic changes we are yet to consider
-
---- Formalization ---
-
-A: The presentation is quite informal: as a result it is unclear
-  exactly in which situations the repair is going to work and
-  produce well-typed results. Worse, it is not clear from the 
-  current description how the more complex transformations are 
-  performed. For example, the generalization of a binder for vector 
-  indexes in section 6.2 and passing along of equality proofs looks 
-  like a very non-trival program transformation, but it is not formally 
-  described how this is achieved.
-
-A. The example proof repairs are mainly renamings and constructor 
-  permutations, along with ornamentation (that was alredy part of 
-  the Devoid tool). The new change of representation example of 
-  unary natural to binary natural numbers stumbles upon 
-  incompleteness of the proof repair procedure and requires 
-  crafting proof terms in a specific way for the machinery to work.
-  Similarly, the example in section 6.2 requires quite some trickery
-  with equalities and the authors note that open challenges remain
-  to define the Iota correctly. I could not understand the problems
-  in detail due to the above item.
-
-Actions:
-1. Consider formalizing matching
-2. Clarify and maybe prove under what assumptions the transformation is sound and complete
-3. Clarify matching is separate to move the undecidable subproblem away from the rest
-
---- 6.2 ---
-
-A. The example proof repairs are mainly renamings and constructor 
-  permutations, along with ornamentation (that was alredy part of 
-  the Devoid tool). The new change of representation example of 
-  unary natural to binary natural numbers stumbles upon 
-  incompleteness of the proof repair procedure and requires 
-  crafting proof terms in a specific way for the machinery to work.
-  Similarly, the example in section 6.2 requires quite some trickery
-  with equalities and the authors note that open challenges remain
-  to define the Iota correctly. I could not understand the problems
-  in detail due to the above item.
-
-Actions:
-1. Fix the Iota text (figure out this configuration for sure)
-
---- Line by Line ---
-
-A, L340: In case the number of constructors differs, can one
-  build a configuration then? E.g. if one wanted to move between:
-
-  Ind I := A | B  and Ind J := makeJ : bool.
-
-  I guess one can build an equivalence and appropriate eliminators
-  here, just not using the natural ones, and making a choice to
-  send `makeJ true` to `A` or `B`?
-
-Action: Consider including this example.
-
-A, L411: "The transformation replaces rewrites by reflexivity...".
-  The same should be done for conversions that are implicit in
-  the proof term in general and a priori not handled in general 
-  by the transformation. Maybe you can point this out here.
-
-Action: Make sure clarification of matching adds a pointer here that helps with this.
-
-L521: The heterogeneous equality between P and Q should be in 
-    `A -> Type` and `B -> Type`. Likewise, the equality between
-    the partially applied dependent eliminators should be in 
-    much more complex types. This informal use of the equality 
-    up-to equivalence `t ≡_{A ≃ B} t'` makes me uneasy as it 
-    is not a well-defined notion here. Likewise, there is
-    no proof that these properties hold.
-
-L535: Does this means that this typing judgement should hold?
-  The dependent eliminator and eta rule you presented L363 and
-  L390 verify that typing rule. However calling it η is a bit
-  strange in the case of vectors: it is the eta-rule of the
-  sigma-type used to pack the indices and the vector. Whereas
-  an eta rule for the vector type would be something like an 
-  expansion function:
-  
-  fun (v : vector A n) => match v with vhead => vhead | vcons a v => vcons a v.
-   
-  Such an η-expansion for sum types however does not allow 
-  to expand a vector to "apply a constructor to an eliminator" (L384),
-  unless the system also enjoys commuting conversions (and CIC does not).
-  
-  In the end the eta functions you describe L535 allow to transport
-  an elimination of conclusion `forall v : Σ n, vector A n, P v` 
-  to `forall v : Σ n, vector A n, P (∃ (pi1 v) (pi2 v))`, right?
-  
-L540: You should mention that $\vect{f}$ are the motives of the 
-    eliminator. You are missing a parenthesis line 544.
-
-  It would be good to provide a proof sketch that shows why the
-  definitions of Iota and Eta allow to derive an equivalence.
-    
-  As I can see now, the translation can use Iota in any proof 
-  where `DepElim (DepConstr ...)` is mentioned to mimick the 
-  unfolding behavior of the eliminator.
-
-L569: What does it mean to "refold constants in constructors"?
-
-L571: It is unclear what you refer to as "the precondition" here.
+A, L571: It is unclear what you refer to as "the precondition" here.
   You should say that you see the `_ ↑ _` judgement as a function
   here and you are trying to apply it to the original proof term
   to produce a translated term.
@@ -192,28 +62,13 @@ repair will not be able to see this. This example shows
 that the intuition that constructors are the only way to construct
 object in a given type does not exactly apply under contexts.
 
-L733: rather than refold, simpl should unfold constants no?
-
-L888: The provided `eta` rule has a quite different flavor than 
+A, L888: The provided `eta` rule has a quite different flavor than 
   previous ones, now quantifying over indices and an equalilty proof
   along with the vector. How does this fit in the general framework?
   IIUC: in a configuration, Eta A should be of type A -> A and this
   does not seem to follow that pattern.
 
-L1151: I'm wondering what e-graphs and congruence closure algorithms
-  have to do with type-directed proof search? Can you be more specific?
-  You further this point L1195 but I do not see how e-graphs
-  would be able to scale to convertibility of terms: i.e. wouldn't
-  expansion rules that would allow the proof term transformation to
-  apply generally be the β, ι reduction rules of definitional equality?
-  Constructing explicitly the e-graph representing a "quotient"
-  by β, ι equivalence is likely going to be prohibitive.
-  At some points you mention user-provided rewrites can help tame
-  this expansion problem: what would be the shapes of these rewrites?
-
-Questions for the response period
----------------------------------
-- I am very curious about the way you handle free variables in
+A: I am very curious about the way you handle free variables in
   the equivalences. A basic issue is the parameter types A of the
   `list A ≃ Σ n, vector A n` equivalence. In general will you 
   transform all instances of lists to corresponding instances of 
@@ -223,7 +78,109 @@ Questions for the response period
   universally quantified configurations that can apply to many instantiations
   of the same type family?
 
-- A more tricky case is the equivalence in section
+Actions: 
+1. Explain matching more explicitly and prominently
+2. Explain 6.2 matching
+3. Be explicit about incompleteness of matching
+4. Give a more complex example of matching
+5. Clarify "the precondition" and the paragraph around it
+6. Consider the example given for L571
+7. Consider the comment about intuition at the end of the comment for L571 and whether it's applicable
+8. Clarify that parameters and indices are implicit in the transformation, and that matching infers them
+
+--- Scope ---
+
+A: The presentation is quite informal: as a result it is unclear
+  exactly in which situations the repair is going to work and
+  produce well-typed results. Worse, it is not clear from the 
+  current description how the more complex transformations are 
+  performed. For example, the generalization of a binder for vector 
+  indexes in section 6.2 and passing along of equality proofs looks 
+  like a very non-trival program transformation, but it is not formally 
+  described how this is achieved.
+
+A: The example proof repairs are mainly renamings and constructor 
+  permutations, along with ornamentation (that was alredy part of 
+  the Devoid tool). The new change of representation example of 
+  unary natural to binary natural numbers stumbles upon 
+  incompleteness of the proof repair procedure and requires 
+  crafting proof terms in a specific way for the machinery to work.
+  Similarly, the example in section 6.2 requires quite some trickery
+  with equalities and the authors note that open challenges remain
+  to define the Iota correctly. I could not understand the problems
+  in detail due to the above item.
+
+A: Finally, it is unclear how adding or removing a constructor argument
+  or a constructor could be handled in a variant of this setting which
+  intrinsically relies on equivalences. This limitation in the scope
+  of the tool is not an essential point though.
+
+B: First, I was really frustrated by the paper's lack of explicit clarity about scope.  I'm tempted to make it a shepherding requirement that the title be changed, say to mention "data type isomorphisms".  There are just so many necessary proof evolutions that don't fit this technique.  The paper acknowledges cases of adding *new* constructors to inductive types, but that's only the beginning.  The broader case is intentionally changing the generality of a data type, to more or less generality.  We might also (much more frequently, in my experience) change definitions of logical predicates, to make them weaker, stronger, or neither, then needing to update proofs accordingly.  In my experience with research projects using Coq, yes, we might occasionally need to replace a type with an isomorphic one, and we can indeed benefit from tool support to help, but this would tend to happen on the scale of one every few months, rather than other kinds of changes on the scale of one every few hours (in the exploratory stage of a research project, at least).
+
+Actions:
+1. Link to artifact throughout
+2. Give rudamentary construction
+3. Implement and provide examples of adding constructors and adding hypotheses
+4. If time, evaluate a case like adding constructors or adding hypotheses
+5. Clarify what changes we have considered but not yet implemented, implemented but not yet evaluated, and both implemented and evaluated
+6. Make it clear that we provide no guarantees for non-isomorphic changes we are yet to consider
+7. Consider predicate examples
+8. Maybe revisit the positive example
+
+--- Formalization ---
+
+A: The presentation is quite informal: as a result it is unclear
+  exactly in which situations the repair is going to work and
+  produce well-typed results. Worse, it is not clear from the 
+  current description how the more complex transformations are 
+  performed. For example, the generalization of a binder for vector 
+  indexes in section 6.2 and passing along of equality proofs looks 
+  like a very non-trival program transformation, but it is not formally 
+  described how this is achieved.
+
+A: The example proof repairs are mainly renamings and constructor 
+  permutations, along with ornamentation (that was alredy part of 
+  the Devoid tool). The new change of representation example of 
+  unary natural to binary natural numbers stumbles upon 
+  incompleteness of the proof repair procedure and requires 
+  crafting proof terms in a specific way for the machinery to work.
+  Similarly, the example in section 6.2 requires quite some trickery
+  with equalities and the authors note that open challenges remain
+  to define the Iota correctly. I could not understand the problems
+  in detail due to the above item.
+
+A, L521: The heterogeneous equality between P and Q should be in 
+    `A -> Type` and `B -> Type`. Likewise, the equality between
+    the partially applied dependent eliminators should be in 
+    much more complex types. This informal use of the equality 
+    up-to equivalence `t ≡_{A ≃ B} t'` makes me uneasy as it 
+    is not a well-defined notion here. Likewise, there is
+    no proof that these properties hold.
+
+Actions:
+1. Consider formalizing matching
+2. Clarify and maybe prove under what assumptions the transformation is sound and complete
+3. Clarify matching is separate to move the undecidable subproblem away from the rest
+4. Clarify the metatheory is univalent
+5. Consider fixing a particular implementation of a univalent metatheory
+6. Clarify the particular example on line 521
+7. Clarify the notation for equality up to transport
+8. If no proof, clarify the statement about the metatheory is just a specification
+
+--- 6.2 ---
+
+A: The example proof repairs are mainly renamings and constructor 
+  permutations, along with ornamentation (that was alredy part of 
+  the Devoid tool). The new change of representation example of 
+  unary natural to binary natural numbers stumbles upon 
+  incompleteness of the proof repair procedure and requires 
+  crafting proof terms in a specific way for the machinery to work.
+  Similarly, the example in section 6.2 requires quite some trickery
+  with equalities and the authors note that open challenges remain
+  to define the Iota correctly. I could not understand the problems
+  in detail due to the above item.
+
+A: A more tricky case is the equivalence in section
   6.2.1. Here you move lemma on vectors on some length to vectors
   at a particular length. This really changes the meaning of the lemma
   as there is no equivalence between `Σ n, vect A n` and `vect A m` 
@@ -235,43 +192,113 @@ Questions for the response period
   How is this achieved? Nothing in the proof repair transformation 
   hints at the fact that binders can be added like this.
 
+Actions:
+1. Fix the Iota text (figure out this configuration for sure)
+2. Clarify where the new arguments come from in 6.2 more explicitly
+3. Link to case studies
+4. Fix case study Eta unification problems
 
+--- 6.4 ---
+
+B: The industry engineer's use case seems different enough from what the paper's introduction leads us to expect that I wonder if it's really representative enough.
+
+Actions:
+1. Clarify what each case study shows
+2. Make more explicit that the proof engineer also used some other configurations
+3. Include more repair case studies, maybe
+4. Fix introduction so as not to misrepresent this somehow
+5. Explain the context of the solver-aided language and tuples (ask Val about this)
+
+--- Tactics ---
+
+B: The story for coming up with readable proof scripts, and for supporting good software-engineering practices in general, seems weak and preliminary.
+
+Actions:
+1. Make this more explicit
+2. Discuss version control, or clarify with Val
+3. Continue to improve the tactic decompiler
+
+--- Line by Line ---
+
+A, L340: In case the number of constructors differs, can one
+  build a configuration then? E.g. if one wanted to move between:
+
+  Ind I := A | B  and Ind J := makeJ : bool.
+
+  I guess one can build an equivalence and appropriate eliminators
+  here, just not using the natural ones, and making a choice to
+  send `makeJ true` to `A` or `B`?
+
+Action: Consider including this example.
+
+A, L411: "The transformation replaces rewrites by reflexivity...".
+  The same should be done for conversions that are implicit in
+  the proof term in general and a priori not handled in general 
+  by the transformation. Maybe you can point this out here.
+
+Action: Make sure clarification of matching adds a pointer here that helps with this.
+
+A, L535: Does this means that this typing judgement should hold?
+  The dependent eliminator and eta rule you presented L363 and
+  L390 verify that typing rule. However calling it η is a bit
+  strange in the case of vectors: it is the eta-rule of the
+  sigma-type used to pack the indices and the vector. Whereas
+  an eta rule for the vector type would be something like an 
+  expansion function:
+  
+  fun (v : vector A n) => match v with vhead => vhead | vcons a v => vcons a v.
+   
+  Such an η-expansion for sum types however does not allow 
+  to expand a vector to "apply a constructor to an eliminator" (L384),
+  unless the system also enjoys commuting conversions (and CIC does not).
+  
+  In the end the eta functions you describe L535 allow to transport
+  an elimination of conclusion `forall v : Σ n, vector A n, P v` 
+  to `forall v : Σ n, vector A n, P (∃ (pi1 v) (pi2 v))`, right?
+
+Action: Clarify this is about eta for sigma types, not vectors---and clarify the confusions here.
+  
+A, L540: You should mention that $\vect{f}$ are the motives of the 
+    eliminator. 
+
+Action: Do this.
+
+A, L540: It would be good to provide a proof sketch that shows why the
+  definitions of Iota and Eta allow to derive an equivalence.
+    
+  As I can see now, the translation can use Iota in any proof 
+  where `DepElim (DepConstr ...)` is mentioned to mimick the 
+  unfolding behavior of the eliminator.
+
+Action: Do this.
+
+A, L569: What does it mean to "refold constants in constructors"?
+A, L733: rather than refold, simpl should unfold constants no?
+
+Action: Cite this, and explain it's like `simpl` but fancier; or omit if too confusing.
+
+A, L1151: I'm wondering what e-graphs and congruence closure algorithms
+  have to do with type-directed proof search? Can you be more specific?
+  You further this point L1195 but I do not see how e-graphs
+  would be able to scale to convertibility of terms: i.e. wouldn't
+  expansion rules that would allow the proof term transformation to
+  apply generally be the β, ι reduction rules of definitional equality?
+  Constructing explicitly the e-graph representing a "quotient"
+  by β, ι equivalence is likely going to be prohibitive.
+
+Action: Explain.
+
+B: Obligatory hardball question: what happens when we are transforming sets of related types simultaneously?
+
+Action: Explain.
+
+---
 
 Review #61B
 ===========================================================================
 
-Overall merit
--------------
-C. Weak Reject
-
-Reviewer expertise
-------------------
-X. Expert
-
-Paper summary
--------------
-Evolving software code bases is hard enough, and there is extra work for accompanying mechanized proofs.  This paper presents an approach to updating proofs automatically to compensate for certain changes.  Specifically, the key transformation handles replacement of one data type with another that is proved isomorphic in a certain way.  An implementation for Coq in a tool Carrot has been built and evaluated on a number of examples, including by a third party.
-
-Strengths
----------
-+ Automated help for proof evolution is a very important area, as we hope to see greater real-world adoption of proof assistants.
-+ The core idea based on isomorphisms seems general, well-chosen, and usable to build a very predictable transformation (in contrast to many more heuristic approaches we can imagine).
-+ The anecdotes of use by an industry engineer are interesting and rarely found in this kind of paper.  Thanks for taking the time to run that kind of "pilot".
-+ Very clear presentation
-
-Weaknesses
-----------
-- The title and introduction set expectations way too high.  This paper's approach is fundamentally limited to tackling a tiny fraction of the space of proof evolutions people will want in practice.
-- The story for coming up with readable proof scripts, and for supporting good software-engineering practices in general, seems weak and preliminary.
-- The industry engineer's use case seems different enough from what the paper's introduction leads us to expect that I wonder if it's really representative enough.
-
 Comments for author
 -------------------
-First, I was really frustrated by the paper's lack of explicit clarity about scope.  I'm tempted to make it a shepherding requirement that the title be changed, say to mention "data type isomorphisms".  There are just so many necessary proof evolutions that don't fit this technique.  The paper acknowledges cases of adding *new* constructors to inductive types, but that's only the beginning.  The broader case is intentionally changing the generality of a data type, to more or less generality.  We might also (much more frequently, in my experience) change definitions of logical predicates, to make them weaker, stronger, or neither, then needing to update proofs accordingly.  In my experience with research projects using Coq, yes, we might occasionally need to replace a type with an isomorphic one, and we can indeed benefit from tool support to help, but this would tend to happen on the scale of one every few months, rather than other kinds of changes on the scale of one every few hours (in the exploratory stage of a research project, at least).
-
-OK, so I got that out of my system.  Isomorphism-based replacement is well-motivated and aesthetically satisfying.  This paper may very well be a good fit at POPL, when evaluated within that scope.  I believe it also makes sense to understand this new tool Carrot as a generalization of Devoid, from prior work, which was specialized to the case of algebraic ornaments a la Conor McBride.
-
-Obligatory hardball question: what happens when we are transforming sets of related types simultaneously?
 
 # Generating tactic scripts from repaired proof terms
 

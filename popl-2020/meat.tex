@@ -331,7 +331,6 @@ univalent parametricity framework~\cite{tabareau2017equivalences}.
 Coq ensures that all terms that plugins produce are well-typed; for now, %as with \textsc{Devoid},
 the proof engineer must vet the transformed specifications herself to ensure that they specify the expected behavior.
 
-
 \begin{figure}
 \begin{minipage}{0.49\textwidth}
 \begin{lstlisting}
@@ -442,7 +441,7 @@ Each \lstinline{Iota} needs to prove and rewrite along the simplification or ref
 \begin{lstlisting}
 Iota(A) :(@\vspace{-0.04cm}@)
   $\forall$ P $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
-    Q (DepElim((@\codediff{DepConstr(j, A) $\vec{x}$}@), P) $\vec{f}$ $\rightarrow$ (@\vspace{-0.04cm}@)
+    Q (DepElim((@\codediff{DepConstr(j, A) $\vec{x}$}@), P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
     Q ((@\codediff{$\vec{f}$[j]}@) ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)
 \end{lstlisting}
 where each \lstinline{IH}$_i$ is each recursive occurrence of \A in the eliminator case,
