@@ -217,7 +217,8 @@ The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewr
 that way \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinline{N}.
 
 Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ from each other.
-The structures of \lstinline{DepElim} over \A and \B are always the same, so if \A and \B have the same 
+The transformation requires that \lstinline{DepElim} over \A and over \B always have the same inductive structure
+as each other, so if \A and \B themselves have the same 
 inductive structure (if they are \textit{ornaments}~\cite{mcbride}),
 then if $\iota$-reduction is definitional over \lstinline{DepElim} on \A, it will be possible to choose
 \lstinline{DepElim} with definitional $\iota$ on \B.
