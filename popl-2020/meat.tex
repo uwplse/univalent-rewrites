@@ -489,7 +489,7 @@ This problem is exactly why \citet{tabareau2019marriage} speculated that convert
 like we do with \lstinline{Iota} may, in general, be intractable.
 
 In practice, we find that unification is sometimes not enough to identify an implicit application of one of the configuration terms.
-Each of our search procedures for automatic configuration in turn implements rewrite rules that tell \toolname
+Each of our search procedures for automatic configuration in turn implements custom unification heuristics that tell \toolname
 how to identify and expand these implicit applications before applying the transformation.
 In the worst case, proof engineers can provide hints to \toolname in the form of explicit annotations.
 
