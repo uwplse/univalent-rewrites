@@ -117,6 +117,8 @@ A: Finally, it is unclear how adding or removing a constructor argument
 
 B: First, I was really frustrated by the paper's lack of explicit clarity about scope.  I'm tempted to make it a shepherding requirement that the title be changed, say to mention "data type isomorphisms".  There are just so many necessary proof evolutions that don't fit this technique.  The paper acknowledges cases of adding *new* constructors to inductive types, but that's only the beginning.  The broader case is intentionally changing the generality of a data type, to more or less generality.  We might also (much more frequently, in my experience) change definitions of logical predicates, to make them weaker, stronger, or neither, then needing to update proofs accordingly.  In my experience with research projects using Coq, yes, we might occasionally need to replace a type with an isomorphic one, and we can indeed benefit from tool support to help, but this would tend to happen on the scale of one every few months, rather than other kinds of changes on the scale of one every few hours (in the exploratory stage of a research project, at least).
 
+B, Line 829: "One ongoing challenge is defining and discovering useful configurations to support adding new constructors."  Yes, sounds really important to scale to most real use cases.
+
 Actions:
 1. Link to artifact throughout
 2. Give rudamentary construction
@@ -167,6 +169,14 @@ Actions:
 7. Clarify the notation for equality up to transport
 8. If no proof, clarify the statement about the metatheory is just a specification
 
+--- 6.1 ---
+
+A: The paragraph at line 798 describes a number of cases of permuting/renaming constructors.  At least one of these, "renaming all constructors", seems to actually have zero effect on Coq's internal representations of proof terms, so it's not too impressive as a refactoring.  In general, all of these could be handled by a much simpler tool that only renames constructors globally and tweaks argument order to eliminators, though such examples make fine regression tests.
+
+Actions:
+1. Show an example that cannot be handled by a very simple tool (honestly, did this person even read the overview section?)
+2. Or clarify context (not meant to be impressive)
+
 --- 6.2 ---
 
 A: The example proof repairs are mainly renamings and constructor 
@@ -192,6 +202,8 @@ A: A more tricky case is the equivalence in section
   How is this achieved? Nothing in the proof repair transformation 
   hints at the fact that binders can be added like this.
 
+B: Section 6.2.3 leaves me unclear on whether Carrot generates these dependent-types-oriented configurations automatically.  It doesn't sound like it, but somehow I had gotten the opposite impression earlier.
+
 Actions:
 1. Fix the Iota text (figure out this configuration for sure)
 2. Clarify where the new arguments come from in 6.2 more explicitly
@@ -202,6 +214,8 @@ Actions:
 
 B: The industry engineer's use case seems different enough from what the paper's introduction leads us to expect that I wonder if it's really representative enough.
 
+B: The industrial engineer's scenario doesn't sound so compelling to me.  He doesn't seem to be using Carrot to evolve a development over time, but instead to counteract the design decisions of an automated Coq-code generator... presumably developed at his own company.  I mean, isn't it a globally good idea to use records instead of tuples when targeting Coq?  Shouldn't the code generator be fixed?  Combine this reaction with the fact that the tuples-to-records connection is relatively simple, and I'm not too excited by the example. 
+
 Actions:
 1. Clarify what each case study shows
 2. Make more explicit that the proof engineer also used some other configurations
@@ -209,14 +223,57 @@ Actions:
 4. Fix introduction so as not to misrepresent this somehow
 5. Explain the context of the solver-aided language and tuples (ask Val about this)
 
---- Tactics ---
+--- Tactics and Workflow ---
 
 B: The story for coming up with readable proof scripts, and for supporting good software-engineering practices in general, seems weak and preliminary.
 
+B: I have more concerns about generation of tactic scripts from proof terms, to paste back into source files.  Fig. 2 already shows excessive provision of explicit arguments in rewrites.  Even within the limited vocabulary of tactics that are considered, we already get scripts that are not pleasant to read.
+
+B: I wonder how hard it would be to formulate an analogous repair procedure directly on tactics.  Something along these lines seems essential to preserve little coding flourishes chosen to aid readability.  Even just preserving comments would be a step forward.
+
+B: Later discussion leaves compatibility with highly automated proof scripts as future work.  Personally, I'm skeptical that very-manual proof scripting can scale to broad industrial use, so, yes, please do keep looking into that kind of extension.  I would expect it can only be done with repair that looks at your old tactic script.
+
+B: Line 733 points out that sometimes the decompiler produces invalid proof scripts, which doesn't sound like much fun for the user.  This seems like one of many senses in which the tactic decompiler is on much less satisfying footing than the proof-term transformation itself.
+
+B: The workflow discussed in Section 6.4 doesn't sound so ergonomic.  Which version of the proof scripts is checked into version control?  Do we translate the checked-in version before modifying it, then translate in the other direction before committing?  How does this play nicely with any manual edits made within the same source files?  Is there some other way this all stays compatible with good software-engineering practices, or is it only practical for one-off exercises?
+
+B: You describe your industrial engineer's experience in terms of transform code, edit code, transform code again.  How does that play with version control?
+
 Actions:
-1. Make this more explicit
+1. Make this story more explicit (prototype for suggestions)
 2. Discuss version control, or clarify with Val
-3. Continue to improve the tactic decompiler
+3. Continue to improve the tactic decompiler:
+  a. Custom tactics & decision procedures
+  b. Comment & format preservaton
+  c. Removing additional arguments to apply and rewrite
+  d. Repair command
+  e. Looking directly at old tactic scripts instead of just taking tactics as arguments
+  f. Improving performance
+  g. Custom tactics that aren't decision procedures
+4. Adjust examples with improvements
+
+--- Search ---
+
+B: Do you automate proofs such as appear in Fig. 3, for round-tripping laws?  Your configuration generators do it for specific cases?
+
+B: Section 6.2.3 leaves me unclear on whether Carrot generates these dependent-types-oriented configurations automatically.  It doesn't sound like it, but somehow I had gotten the opposite impression earlier.
+
+B: Which heuristics have you implemented for building configurations automatically?  Are they just for constructor renaming/permutation and conversion between tuples and records?  Around line 276, you write that you have built four procedures, including two for dependent types, but it's not clear to me there what are the *procedures* rather than just concrete examples.
+
+Actions:
+1. Clarify section & retraction are generated automatically for configurations much more explicitly
+2. Clarify the four configurations much more explicitly
+
+--- Readability ---
+
+B: More involved refactorings seem to accrete use of additional rules that only hold propositionally.  Do we build up toward rather unwieldy proof terms?  Can you compose and cancel out these casts over time?  (And I'm curious to see what the proof scripts look like.)
+
+B: Do you have evidence about retaining readability of proof scripts (or even proof terms) over multiple rounds of refactoring, especially when eta or iota wind up implemented propositionally and not definitionally?
+
+Actions:
+1. Maybe cancel out rewrites in implementation
+2. Discuss somewhere
+3. Show examples discussed in response
 
 --- Line by Line ---
 
@@ -292,59 +349,31 @@ B: Obligatory hardball question: what happens when we are transforming sets of r
 
 Action: Explain.
 
----
+B: Oh, by the way, will your translation get in trouble if an eliminator is only partially applied?s
 
-Review #61B
-===========================================================================
+Action: Clarify eta somewhere.
 
-Comments for author
--------------------
+B: Fig. 6 could use a bit more explanation.  I think even Coq experts will be confused on how to map it to their own understandings of Gallina.  The fact that it comes from a cited paper isn't enough to ensure everyone is familiar with its conventions.
 
-# Generating tactic scripts from repaired proof terms
+Action: Explain.
 
-I have more concerns about generation of tactic scripts from proof terms, to paste back into source files.  Fig. 2 already shows excessive provision of explicit arguments in rewrites.  Even within the limited vocabulary of tactics that are considered, we already get scripts that are not pleasant to read.
+B: Line 481 says "there can be infinitely many equivalences that correspond to a given change in specification, only some of which are useful (consider refining any A by a proof of unit)".  Wouldn't it be impossible to generate the equivalence for any A with more than one distinct element?
 
-I wonder how hard it would be to formulate an analogous repair procedure directly on tactics.  Something along these lines seems essential to preserve little coding flourishes chosen to aid readability.  Even just preserving comments would be a step forward.
+Action: Clarify and link to proof. 
 
-More involved refactorings seem to accrete use of additional rules that only hold propositionally.  Do we build up toward rather unwieldy proof terms?  Can you compose and cancel out these casts over time?  (And I'm curious to see what the proof scripts look like.)
+B, Line 554: "Proving the entire correctness criteria" should be "Proving all of the correctness criteria" or something.
 
-Later discussion leaves compatibility with highly automated proof scripts as future work.  Personally, I'm skeptical that very-manual proof scripting can scale to broad industrial use, so, yes, please do keep looking into that kind of extension.  I would expect it can only be done with repair that looks at your old tactic script.
+Action: Fix.
 
-Do you automate proofs such as appear in Fig. 3, for round-tripping laws?  Your configuration generators do it for specific cases?
+B, Line 617: "thanks the realization that" is missing "to".
 
-Line 733 points out that sometimes the decompiler produces invalid proof scripts, which doesn't sound like much fun for the user.  This seems like one of many senses in which the tactic decompiler is on much less satisfying footing than the proof-term transformation itself.
+Action: Fix.
 
-# On the selection and details of case studies
+B, Line 926: "From that, port proofs over unary" is probably missing "we".  Currently it reads like a command to the reader!  (Like a textbook explaining an exercise.)
 
-The paragraph at line 798 describes a number of cases of permuting/renaming constructors.  At least one of these, "renaming all constructors", seems to actually have zero effect on Coq's internal representations of proof terms, so it's not too impressive as a refactoring.  In general, all of these could be handled by a much simpler tool that only renames constructors globally and tweaks argument order to eliminators, though such examples make fine regression tests.
+Action: Fix.
 
-Oh, by the way, will your translation get in trouble if an eliminator is only partially applied?
+B, Line 1112: "The proof refactoring tool Levity [Bourke et al. 2012] has, like Carrot, seen industrial use. Unlike Carrot, it focuses on a specific refactoring task, whereas Carrot is configurable to many different kinds of changes."  I would call this statement disingenuous, in a way that highlights the miscalibrated framing of the paper.  Carrot also has extremely narrow scope within refactoring, though probably one with more dimensions of variation, yes.
 
-Section 6.2.3 leaves me unclear on whether Carrot generates these dependent-types-oriented configurations automatically.  It doesn't sound like it, but somehow I had gotten the opposite impression earlier.
-
-The workflow discussed in Section 6.4 doesn't sound so ergonomic.  Which version of the proof scripts is checked into version control?  Do we translate the checked-in version before modifying it, then translate in the other direction before committing?  How does this play nicely with any manual edits made within the same source files?  Is there some other way this all stays compatible with good software-engineering practices, or is it only practical for one-off exercises?
-
-The industrial engineer's scenario doesn't sound so compelling to me.  He doesn't seem to be using Carrot to evolve a development over time, but instead to counteract the design decisions of an automated Coq-code generator... presumably developed at his own company.  I mean, isn't it a globally good idea to use records instead of tuples when targeting Coq?  Shouldn't the code generator be fixed?  Combine this reaction with the fact that the tuples-to-records connection is relatively simple, and I'm not too excited by the example.
-
-# Suggestions on presentation
-
-Fig. 6 could use a bit more explanation.  I think even Coq experts will be confused on how to map it to their own understandings of Gallina.  The fact that it comes from a cited paper isn't enough to ensure everyone is familiar with its conventions.
-
-Line 481 says "there can be infinitely many equivalences that correspond to a given change in specification, only some of which are useful (consider refining any A by a proof of unit)".  Wouldn't it be impossible to generate the equivalence for any A with more than one distinct element?
-
-Line 554: "Proving the entire correctness criteria" should be "Proving all of the correctness criteria" or something.
-
-Line 617: "thanks the realization that" is missing "to".
-
-Line 829: "One ongoing challenge is defining and discovering useful configurations to support adding new constructors."  Yes, sounds really important to scale to most real use cases.
-
-Line 926: "From that, port proofs over unary" is probably missing "we".  Currently it reads like a command to the reader!  (Like a textbook explaining an exercise.)
-
-Line 1112: "The proof refactoring tool Levity [Bourke et al. 2012] has, like Carrot, seen industrial use. Unlike Carrot, it focuses on a specific refactoring task, whereas Carrot is configurable to many different kinds of changes."  I would call this statement disingenuous, in a way that highlights the miscalibrated framing of the paper.  Carrot also has extremely narrow scope within refactoring, though probably one with more dimensions of variation, yes.
-
-Questions for the response period
----------------------------------
-1. Which heuristics have you implemented for building configurations automatically?  Are they just for constructor renaming/permutation and conversion between tuples and records?  Around line 276, you write that you have built four procedures, including two for dependent types, but it's not clear to me there what are the *procedures* rather than just concrete examples.
-2. You describe your industrial engineer's experience in terms of transform code, edit code, transform code again.  How does that play with version control?
-3. Do you have evidence about retaining readability of proof scripts (or even proof terms) over multiple rounds of refactoring, especially when eta or iota wind up implemented propositionally and not definitionally?
+Action: Clarify, but also, this comment is needlessly rude.
 
