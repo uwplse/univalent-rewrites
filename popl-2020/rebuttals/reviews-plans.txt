@@ -7,8 +7,9 @@ B: First, I was really frustrated by the paper's lack of explicit clarity about 
 Actions:
 1. Weaken claims in title (done)
 2. Weaken claims in introduction
-3. Weaken claims in related work (done)
-4. Weaken claims in Section 3
+3. Weaken claims in abstract (done)
+4. Weaken claims in related work (done)
+5. Weaken claims in Section 3
 
 --- Matching ---
 
