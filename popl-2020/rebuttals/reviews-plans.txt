@@ -128,6 +128,7 @@ Actions:
 6. Make it clear that we provide no guarantees for non-isomorphic changes we are yet to consider
 7. Consider predicate examples
 8. Maybe revisit the positive example
+9. When done with artifact, form release and replace all artifact links with release links
 
 --- Formalization ---
 
@@ -358,8 +359,5 @@ B: Fig. 6 could use a bit more explanation.  I think even Coq experts will be co
 
 Action: Explain.
 
-B: Line 481 says "there can be infinitely many equivalences that correspond to a given change in specification, only some of which are useful (consider refining any A by a proof of unit)".  Wouldn't it be impossible to generate the equivalence for any A with more than one distinct element?
-
-Action: Clarify and link to proof. 
 
 

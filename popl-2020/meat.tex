@@ -396,7 +396,7 @@ Section~\ref{sec:search} shows some useful example configurations.
 The configuration instantiates the proof term transformation to a particular equivalence between \A and \B.
 Choosing an equivalence is a bit of an art:
 there can be infinitely many equivalences that correspond to a 
-given change in specification, only some of which are useful (consider refining any \A by a proof of \lstinline{unit}).
+given change in specification, only some of which are useful (for example, \href{https://github.com/uwplse/ornamental-search/blob/master/plugin/coq/playground/refine_unit.v}{refine_unit.v} proves that any \A is equivalent to \lstinline{unit} refined by \A).
 Beyond that, even once we have chosen an equivalence, we could define many possible configurations that correspond
 to the equivalence, some of which will produce functions and proofs that are more useful or efficient than others
 (consider \lstinline{DepElim} converting through several intermediate types).
