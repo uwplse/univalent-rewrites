@@ -20,7 +20,7 @@ The key to supporting proof repair is to build a proof reuse
 tool that can handle that additional challenge (Section~\ref{sec:time}).
 \end{quote}
 
-\subsection{Repair is Transport with a Twist}
+\subsection{Repair Across Equivalences (Transport with a Twist)}
 \label{sec:repair}
 
 \begin{figure}
@@ -37,9 +37,8 @@ tool that can handle that additional challenge (Section~\ref{sec:time}).
 \label{fig:equivalence}
 \end{figure}
 
-Proof repair corresponds to a particular kind of proof reuse called \textit{transport},
-with the twist that the specification about which we are reusing proofs may cease to exist.
-Transport is proof reuse across \textit{type equivalences}~\cite{univalent2013homotopy},
+The changes in response to which \toolname repairs proofs correspond to
+\textit{type equivalences}~\cite{univalent2013homotopy},
 or pairs of functions that map between two types and are mutual inverses.
 Figure~\ref{fig:equivalence} shows a type equivalence between the two versions of \lstinline{list}
 from Section~\ref{sec:overview}, Figure~\ref{fig:listswap} that \toolname discovered and proved automatically.
@@ -49,6 +48,8 @@ When such a type equivalence between two types exists, we say those types are \t
 Old.list $\simeq$ New.list
 \end{lstlisting}
 
+Proof repair across type equivalences corresponds to a particular kind of proof reuse called \textit{transport},
+with the twist that the specification about which we are reusing proofs may cease to exist.
 A transport method takes an input term $t$ and produces an output term $t'$ that is \textit{equal up to transport}
 along an equivalence $A \simeq B$ (denoted $t \equiv_{A \simeq B} t'$).
 Informally, equality up to transport means that if $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
@@ -97,7 +98,7 @@ That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be remove
 \label{fig:listtovect}
 \end{figure}
 
-Viewing repair as transport is flexible enough to support changes in which the proof engineer adds or removes information.
+This view of a particular kind of proof repair as transport is flexible enough to support some changes in which the proof engineer adds or removes information.
 In that case, the equivalence along which the tool transports functions and proofs
 is one between \textit{refinements} ($\Sigma$ types).
 It is up to the proof engineer to supply the additional information needed to construct proofs about the refinement.
@@ -139,7 +140,7 @@ Practically, when the proof engineer changes specifications to refer to \lstinli
 to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists (see Section~\ref{sec:dep}).
 \toolname makes it easy to separate out that proof obligation, then automates the rest.
 
-\subsection{\textsc{Carrot}: A Tool for Proof Repair}
+\subsection{\textsc{Carrot}: A Tool for Repair Across Equivalences}
 \label{sec:time}
 
 \begin{figure}

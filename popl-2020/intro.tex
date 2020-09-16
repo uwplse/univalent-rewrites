@@ -36,7 +36,7 @@ We make progress on two open challenges in \textit{proof repair}, the problem of
 to changes in programs or specifications:
 
 \begin{enumerate}
-\item Proof repair tools support limited classes of changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
+\item Proof repair tools support very limited classes of changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
 of changes~\cite{robert2018, wibergh2019}, and these are not informed by the needs of proof engineers~\cite{replica}.
 \item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018}.
 \end{enumerate}
@@ -63,11 +63,12 @@ The result is a flexible proof repair tool that:
 \item supports changes informed by proof engineers and not supported by other repair tools, and
 \item produces tactic scripts as part of better workflow integration.
 \end{enumerate}
-\toolname can support changes like porting non-dependent types to certain dependent types
+\toolname can support certain structural changes like porting non-dependent types to certain dependent types
 and changing inductive structure---anything described by an equivalence or refinement with a certain form
 detailed in Section~\ref{sec:key2}.
 
-Our main technical advances are techniques for transforming proof terms directly to repair broken proofs, while our decompiler up to the tactic level is important for usability in Coq.
+Our main technical advances are techniques for transforming proof terms directly to repair broken proofs, 
+while our decompiler up to the tactic level is important for usability in Coq.
 We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname:
 
 \begin{enumerate}
