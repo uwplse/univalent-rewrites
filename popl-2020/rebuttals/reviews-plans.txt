@@ -274,6 +274,7 @@ Actions:
 1. Maybe cancel out rewrites in implementation
 2. Discuss somewhere
 3. Show examples discussed in response
+4. Fix optimizations from DEVOID
 
 --- Line by Line ---
 
