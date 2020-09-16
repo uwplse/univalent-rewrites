@@ -331,11 +331,6 @@ A, L540: It would be good to provide a proof sketch that shows why the
 
 Action: Do this.
 
-A, L569: What does it mean to "refold constants in constructors"?
-A, L733: rather than refold, simpl should unfold constants no?
-
-Action: Cite this, and explain it's like `simpl` but fancier; or omit if too confusing.
-
 A, L1151: I'm wondering what e-graphs and congruence closure algorithms
   have to do with type-directed proof search? Can you be more specific?
   You further this point L1195 but I do not see how e-graphs
@@ -351,7 +346,7 @@ B: Obligatory hardball question: what happens when we are transforming sets of r
 
 Action: Explain.
 
-B: Oh, by the way, will your translation get in trouble if an eliminator is only partially applied?s
+B: Oh, by the way, will your translation get in trouble if an eliminator is only partially applied?
 
 Action: Clarify eta somewhere.
 
