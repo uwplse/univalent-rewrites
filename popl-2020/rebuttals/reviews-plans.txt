@@ -362,18 +362,6 @@ B: Line 481 says "there can be infinitely many equivalences that correspond to a
 
 Action: Clarify and link to proof. 
 
-B, Line 554: "Proving the entire correctness criteria" should be "Proving all of the correctness criteria" or something.
-
-Action: Fix.
-
-B, Line 617: "thanks the realization that" is missing "to".
-
-Action: Fix.
-
-B, Line 926: "From that, port proofs over unary" is probably missing "we".  Currently it reads like a command to the reader!  (Like a textbook explaining an exercise.)
-
-Action: Fix.
-
 B, Line 1112: "The proof refactoring tool Levity [Bourke et al. 2012] has, like Carrot, seen industrial use. Unlike Carrot, it focuses on a specific refactoring task, whereas Carrot is configurable to many different kinds of changes."  I would call this statement disingenuous, in a way that highlights the miscalibrated framing of the paper.  Carrot also has extremely narrow scope within refactoring, though probably one with more dimensions of variation, yes.
 
 Action: Clarify, but also, this comment is needlessly rude.

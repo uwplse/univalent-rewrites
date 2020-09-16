@@ -284,7 +284,7 @@ or the result of shifting left and not adding anything (\lstinline{xO}).
 This allows for a fast addition function, found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we use \toolname to derive a slow binary
 addition function that does not refer to \lstinline{nat}.
-From that, port proofs over unary addition to binary addition,
+From that, we port proofs over unary addition to binary addition,
 removing all references to \lstinline{nat}, and show that they hold over fast binary addition too.
 
 \subsubsection{Configuration}
