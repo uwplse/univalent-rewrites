@@ -4,12 +4,8 @@ B: The title and introduction set expectations way too high.  This paper's appro
 
 B: First, I was really frustrated by the paper's lack of explicit clarity about scope.  I'm tempted to make it a shepherding requirement that the title be changed, say to mention "data type isomorphisms".  There are just so many necessary proof evolutions that don't fit this technique.  The paper acknowledges cases of adding *new* constructors to inductive types, but that's only the beginning.  The broader case is intentionally changing the generality of a data type, to more or less generality.  We might also (much more frequently, in my experience) change definitions of logical predicates, to make them weaker, stronger, or neither, then needing to update proofs accordingly.  In my experience with research projects using Coq, yes, we might occasionally need to replace a type with an isomorphic one, and we can indeed benefit from tool support to help, but this would tend to happen on the scale of one every few months, rather than other kinds of changes on the scale of one every few hours (in the exploratory stage of a research project, at least).
 
-Actions:
-1. Weaken claims in title (done)
-2. Weaken claims in introduction (WIP, hard to know what this reviewer wants)
-3. Weaken claims in abstract (done)
-4. Weaken claims in related work (done)
-5. Weaken claims in Section 3 (done)
+Actions left:
+- Weaken claims in introduction (WIP, hard to know what this reviewer wants)
 
 --- Matching ---
 
