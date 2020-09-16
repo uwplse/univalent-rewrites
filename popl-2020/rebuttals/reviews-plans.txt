@@ -7,7 +7,7 @@ B: First, I was really frustrated by the paper's lack of explicit clarity about 
 Actions:
 1. Weaken claims in title
 2. Weaken claims in introduction
-3. Weaken claims in related work
+3. Weaken claims in related work (done)
 4. Weaken claims in Section 3
 
 --- Matching ---
@@ -362,7 +362,4 @@ B: Line 481 says "there can be infinitely many equivalences that correspond to a
 
 Action: Clarify and link to proof. 
 
-B, Line 1112: "The proof refactoring tool Levity [Bourke et al. 2012] has, like Carrot, seen industrial use. Unlike Carrot, it focuses on a specific refactoring task, whereas Carrot is configurable to many different kinds of changes."  I would call this statement disingenuous, in a way that highlights the miscalibrated framing of the paper.  Carrot also has extremely narrow scope within refactoring, though probably one with more dimensions of variation, yes.
-
-Action: Clarify, but also, this comment is needlessly rude.
 
