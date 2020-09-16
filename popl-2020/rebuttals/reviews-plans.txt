@@ -355,9 +355,6 @@ B: Oh, by the way, will your translation get in trouble if an eliminator is only
 
 Action: Clarify eta somewhere.
 
-B: Fig. 6 could use a bit more explanation.  I think even Coq experts will be confused on how to map it to their own understandings of Gallina.  The fact that it comes from a cited paper isn't enough to ensure everyone is familiar with its conventions.
-
-Action: Explain.
 
 
 
