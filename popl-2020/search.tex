@@ -144,7 +144,7 @@ list T $\simeq$ $\Sigma$(n : nat).vector T n
 The configuration it found for \lstinline{list} was simple: identity for \lstinline{Eta},
 the list constructors for \lstinline{DepConstr}, the list eliminator for \lstinline{DepElim},
 and definitional \lstinline{Iota}.
-For \lstinline{vector}, it set \lstinline{Eta} to expand the input:
+For \lstinline{vector}, it set \lstinline{Eta} to $\eta$-expand $\Sigma$ types:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
 eta (T : Type) (s : $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n := $\exists$ ($\pi_l$ s) ($\pi_r$ s).

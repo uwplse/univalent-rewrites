@@ -273,26 +273,6 @@ A, L411: "The transformation replaces rewrites by reflexivity...".
   by the transformation. Maybe you can point this out here.
 
 Action: Make sure clarification of matching adds a pointer here that helps with this.
-
-A, L535: Does this means that this typing judgement should hold?
-  The dependent eliminator and eta rule you presented L363 and
-  L390 verify that typing rule. However calling it η is a bit
-  strange in the case of vectors: it is the eta-rule of the
-  sigma-type used to pack the indices and the vector. Whereas
-  an eta rule for the vector type would be something like an 
-  expansion function:
-  
-  fun (v : vector A n) => match v with vhead => vhead | vcons a v => vcons a v.
-   
-  Such an η-expansion for sum types however does not allow 
-  to expand a vector to "apply a constructor to an eliminator" (L384),
-  unless the system also enjoys commuting conversions (and CIC does not).
-  
-  In the end the eta functions you describe L535 allow to transport
-  an elimination of conclusion `forall v : Σ n, vector A n, P v` 
-  to `forall v : Σ n, vector A n, P (∃ (pi1 v) (pi2 v))`, right?
-
-Action: Clarify this is about eta for sigma types, not vectors---and clarify the confusions here.
   
 A, L540: You should mention that $\vect{f}$ are the motives of the 
     eliminator. 
