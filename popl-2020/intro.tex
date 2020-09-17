@@ -36,8 +36,8 @@ We make progress on two open challenges in \textit{proof repair}, the problem of
 to changes in programs or specifications:
 
 \begin{enumerate}
-\item While there are many ways proofs need to be repaired, one common need is respond to a changed type definition.
-In this space, existing tools support very limited classes of changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
+\item While there are many ways proofs need to be repaired, one need is to respond to a changed type definition.
+Existing tools support very limited classes of these changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
 of changes~\cite{robert2018, wibergh2019}, and these are not informed by the needs of proof engineers~\cite{replica}.
 \item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018}.
 \end{enumerate}
@@ -61,7 +61,7 @@ and a prototype decompiler from proof terms back to tactics.
 The result is a flexible proof repair tool that: 
 
 \begin{enumerate}
-\item supports changes in types informed by proof engineers and not supported by other repair tools, and
+\item supports changes in types informed by proof engineers and not supported by other tools, and
 \item produces tactic scripts as part of better workflow integration.
 \end{enumerate}
 \toolname can support certain structural changes like porting non-dependent types to certain dependent types
