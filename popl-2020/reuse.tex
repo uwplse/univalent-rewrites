@@ -37,8 +37,8 @@ tool that can handle that additional challenge (Section~\ref{sec:time}).
 \label{fig:equivalence}
 \end{figure}
 
-The changes in response to which \toolname repairs proofs correspond to
-\textit{type equivalences}~\cite{univalent2013homotopy},
+\toolname supports a particular kind of repair: proof repair in response to certain changes in types.
+These changes in types correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
 or pairs of functions that map between two types and are mutual inverses.
 Figure~\ref{fig:equivalence} shows a type equivalence between the two versions of \lstinline{list}
 from Section~\ref{sec:overview}, Figure~\ref{fig:listswap} that \toolname discovered and proved automatically.
@@ -186,12 +186,19 @@ then configures \textbf{Transform} using that equivalence.
 to induct over \lstinline{New.list}, and finally
 \textbf{Decompile} produces the tactic script in Figure~\ref{fig:auto}.
 
-There are currently four search procedures for automatic configuration implemented in \toolname:
-one for porting tuples to records, two for porting non-dependent types to certain dependent types, 
-and one for permuting and renaming constructors.
-All of these are informed by the needs of real proof engineers.
-Manual configuration makes it possible for the proof engineer to directly configure the tool to a particular equivalence
-for which no search procedure is yet implemented.
+There are currently four search procedures for automatic configuration implemented in \toolname,
+all informed by the needs of real proof engineers:
+
+\begin{enumerate}
+\item porting between tuples and records,
+\item renaming and permuting constructors of inductive types,
+\item porting along algebraic ornaments to types at \textit{some} index (from \textsc{Devoid}), and
+\item unpacking types at \textit{some} index to a \textit{particular} index.
+\end{enumerate}
+All four search procedures generate equivalence proofs as in Figure~\ref{fig:equivalence} automatically (\href{https://github.com/uwplse/ornamental-search/blob/master/plugin/src/automation/search/search.ml}{search.ml} and \href{https://github.com/uwplse/ornamental-search/blob/master/plugin/src/automation/search/equivalence.ml}{equivalence.ml}),
+then configure (\href{https://github.com/uwplse/ornamental-search/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) the transformation to those equivalences.
+When a search procedure for a particular equivalence is not yet implemented, manual configuration makes it possible
+for the proof engineering to directly configure the transformation to a particular equivalence.
 Section~\ref{sec:search} shows examples of both workflows as applied to real proof reuse and repair scenarios.
 
 

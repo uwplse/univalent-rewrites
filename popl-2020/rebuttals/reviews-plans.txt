@@ -241,18 +241,6 @@ Actions:
   g. Custom tactics that aren't decision procedures
 4. Adjust examples with improvements
 
---- Search ---
-
-B: Do you automate proofs such as appear in Fig. 3, for round-tripping laws?  Your configuration generators do it for specific cases?
-
-B: Section 6.2.3 leaves me unclear on whether Carrot generates these dependent-types-oriented configurations automatically.  It doesn't sound like it, but somehow I had gotten the opposite impression earlier.
-
-B: Which heuristics have you implemented for building configurations automatically?  Are they just for constructor renaming/permutation and conversion between tuples and records?  Around line 276, you write that you have built four procedures, including two for dependent types, but it's not clear to me there what are the *procedures* rather than just concrete examples.
-
-Actions:
-1. Clarify section & retraction are generated automatically for configurations much more explicitly
-2. Clarify the four configurations much more explicitly
-
 --- Readability ---
 
 B: More involved refactorings seem to accrete use of additional rules that only hold propositionally.  Do we build up toward rather unwieldy proof terms?  Can you compose and cancel out these casts over time?  (And I'm curious to see what the proof scripts look like.)
