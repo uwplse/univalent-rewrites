@@ -160,7 +160,7 @@ Actions:
 
 --- 6.1 ---
 
-A: The paragraph at line 798 describes a number of cases of permuting/renaming constructors.  At least one of these, "renaming all constructors", seems to actually have zero effect on Coq's internal representations of proof terms, so it's not too impressive as a refactoring.  In general, all of these could be handled by a much simpler tool that only renames constructors globally and tweaks argument order to eliminators, though such examples make fine regression tests.
+B: The paragraph at line 798 describes a number of cases of permuting/renaming constructors.  At least one of these, "renaming all constructors", seems to actually have zero effect on Coq's internal representations of proof terms, so it's not too impressive as a refactoring.  In general, all of these could be handled by a much simpler tool that only renames constructors globally and tweaks argument order to eliminators, though such examples make fine regression tests.
 
 Actions:
 1. Show an example that cannot be handled by a very simple tool (honestly, did this person even read the overview section?)
@@ -198,6 +198,7 @@ Actions:
 2. Clarify where the new arguments come from in 6.2 more explicitly
 3. Link to case studies
 4. Fix case study Eta unification problems
+5. Make sure generalized eta makes sense with formalization
 
 --- 6.4 ---
 
