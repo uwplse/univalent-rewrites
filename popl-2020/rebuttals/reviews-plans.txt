@@ -236,10 +236,9 @@ Actions:
   a. Custom tactics & decision procedures
   b. Comment & format preservaton
   c. Removing additional arguments to apply and rewrite
-  d. Repair command
-  e. Looking directly at old tactic scripts instead of just taking tactics as arguments
-  f. Improving performance
-  g. Custom tactics that aren't decision procedures
+  d. Looking directly at old tactic scripts instead of just taking tactics as arguments
+  e. Improving performance
+  f. Custom tactics that aren't decision procedures
 4. Adjust examples with improvements
 
 --- Readability ---
@@ -255,17 +254,6 @@ Actions:
 4. Fix optimizations from DEVOID
 
 --- Line by Line ---
-
-A, L340: In case the number of constructors differs, can one
-  build a configuration then? E.g. if one wanted to move between:
-
-  Ind I := A | B  and Ind J := makeJ : bool.
-
-  I guess one can build an equivalence and appropriate eliminators
-  here, just not using the natural ones, and making a choice to
-  send `makeJ true` to `A` or `B`?
-
-Action: Consider including this example.
 
 A, L411: "The transformation replaces rewrites by reflexivity...".
   The same should be done for conversions that are implicit in
