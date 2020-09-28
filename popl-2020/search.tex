@@ -73,7 +73,7 @@ where \lstinline{Term_rect} is the eliminator over the old version of \lstinline
 
 \subsubsection{Example}
 
-We used \toolname to automatically update the functions and proofs in \lstinline{Swap.v} from the \textsc{Replica} benchmark.
+We used \toolname to automatically update the functions and proofs in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{\lstinline{Swap.v}} from the \textsc{Replica} benchmark.
 This included functions about \lstinline{Term}, as well as a large record \lstinline{EpsilonLogic} that encoded the semantics of the language,
 plus a proof about that record:
 
@@ -180,7 +180,7 @@ and the same type escaping the sigma type, in our example:
 $\Sigma$(s : $\Sigma$(m : nat).vector T m).$\pi_l$ s = n $\simeq$ vector T n
 \end{lstlisting}
 By composition with the initial equivalence, this transports proofs
-across the equivalence we	 want:
+across the equivalence we want:
 
 \begin{lstlisting}
 $\Sigma$(l : list T).length l = n $\simeq$ vector T n
@@ -207,7 +207,7 @@ and \lstinline{Iota} does not change.
 
 \subsubsection{Example}
 
-The expanded example from the \textsc{Devoid} paper is in \lstinline{Example.v}.
+The expanded example from the \textsc{Devoid} paper is in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}.
 The \textsc{Devoid} example ported a list \lstinline{zip} function,
 a \lstinline{zip_with} function, and a proof \lstinline{zip_with_is_zip} relating the two
 functions from lists to vectors of some length.
@@ -290,7 +290,7 @@ removing all references to \lstinline{nat}, and show that they hold over fast bi
 \subsubsection{Configuration}
 We configured this manually using the \lstinline{Configure} command,
 which takes the configuration as an argument.
-The result is in \lstinline{nonorn.v}.
+The result is in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{\lstinline{nonorn.v}}.
 The configuration for \lstinline{nat} was straightforward.
 For \lstinline{N}, we used functions from the Coq standard library that
 behaved like the \lstinline{nat} constructors:

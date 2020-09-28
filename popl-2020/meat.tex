@@ -2,7 +2,7 @@
 \label{sec:key2}
 
 At the heart of \toolname is a configurable proof term transformation for transporting
-proofs across equivalences. 
+proofs across equivalences (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/lift.ml}{lift.ml}). 
 This proof term transformation is a generalization of the proof term transformation from 
 \textsc{Devoid}~\cite{Ringer2019}, which solved this problem for a particular class of equivalences.
 \toolname moves the reasoning specific to that class of equivalences into the configuration. 
@@ -489,7 +489,7 @@ This problem is exactly why \citet{tabareau2019marriage} speculated that convert
 like we do with \lstinline{Iota} may, in general, be intractable.
 
 In practice, we find that unification is sometimes not enough to identify an implicit application of one of the configuration terms.
-Each of our search procedures for automatic configuration in turn implements custom unification heuristics that tell \toolname
+Each of our search procedures for automatic configuration in turn implements custom unification heuristics (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) that tell \toolname
 how to identify and expand these implicit applications before applying the transformation.
 In the worst case, proof engineers can provide hints to \toolname in the form of explicit annotations.
 
@@ -503,7 +503,7 @@ For example, if \B is a refinement of \A, then we can always run \textsc{Equival
 over and over again, forever.
 %\textsc{Devoid} ruled out this case by simply prohibiting the case where \B refers to \A, but we found it sometimes
 %useful to support this case.
-We thus include some simple termination checks in our code.
+We thus include some simple termination checks in our code (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftrules.ml}{liftrules.ml}).
 
 Even when termination is guaranteed, whether to run a matching transformation rule
 depends on intent.
@@ -521,11 +521,13 @@ For example, we found that the proof engineer rarely had the patience to wait mo
 for \toolname to port a function or proof.
 In response, we implemented aggressive caching (with an option to disable the cache), even caching intermediate subterms that
 we encounter in the course of running our proof term transformation.
-We also added an option to tell \toolname not to $\delta$-reduce certain terms. %or recurse into certain modules.
+We also added a cache to tell \toolname not to $\delta$-reduce certain terms.
+These caches are implemented in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/cache/caching.ml}{caching.ml}.
+%or recurse into certain modules.
 % set certain terms or modules as opaque to \toolname, to prevent unnecessary $\delta$-reduction.
 
 The experiences of proof engineers also informed features that we exposed.
-For example, we implemented special search procedures to generate custom eliminators to make it easier to reason about
+For example, we implemented special search procedures to generate custom eliminators (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/smartelim.ml}{smartelim.ml}) to make it easier to reason about
 types refined by equalities like $\Sigma$\lstinline{(l : list T).length l = n}
 by breaking them into parts and reasoning separately about the projections.
 These features along with our tactic decompiler helped with integration into proof engineering workflows.
