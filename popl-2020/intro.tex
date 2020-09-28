@@ -37,7 +37,7 @@ to changes in programs or specifications:
 
 \begin{enumerate}
 \item While there are many ways proofs need to be repaired, one need is to respond to a changed type definition.
-Existing tools support very limited classes of these changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
+Existing work supports very limited classes of these changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
 of changes~\cite{robert2018, wibergh2019}, and these are not informed by the needs of proof engineers~\cite{replica}.
 \item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018}.
 \end{enumerate}
@@ -53,8 +53,7 @@ and the result can handle many different kinds of changes (Section~\ref{sec:key2
 \item The transformed proof terms can then be translated back to tactic scripts (Section~\ref{sec:decompiler}).
 \end{enumerate}
 
-These insights informed our design of 
-\toolname\footnote{Real name withheld for double-blind review.} (Configurable Approach to Repairing and Refactoring Outdated Tactics), a plugin for Coq 8.8.
+These insights informed our design of \toolname, an extension to the \textsc{Pumpkin Patch} proof repair plugin suite for Coq 8.8.
 \toolname combines a configurable proof term transformation,
 search procedures to configure the proof term transformation,
 and a prototype decompiler from proof terms back to tactics.
@@ -69,14 +68,14 @@ and changing inductive structure---anything described by an equivalence with a c
 detailed in Section~\ref{sec:key2}.
 
 Our main technical advances are techniques for transforming proof terms directly to repair broken proofs, 
-while our decompiler up to the tactic level is important for usability in Coq.
+while our decompiler up to tactics is important for usability in Coq.
 We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname:
 
 \begin{enumerate}
 \item can support variants of a benchmark from a user study of Coq proof engineers,
 \item can simplify dependently-typed programming, %automating manual steps from previous work,
 \item can help proof engineers port functions and proofs from unary to binary numbers, and
-\item has helped an industrial proof engineer integrate Coq with a company workflow and write proofs about an implementation of the TLS Handshake Protocol.
+\item has helped an industrial proof engineer at Galois integrate Coq with a company workflow and write proofs about an implementation of the TLS Handshake Protocol.
 \end{enumerate}
 %Our experiences drive ideas (Section~\ref{sec:discussion}) that open the door to better proof engineering tools.
 
