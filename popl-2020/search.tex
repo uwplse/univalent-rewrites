@@ -55,7 +55,7 @@ In all cases, with a bit of human guidance, \toolname repaired the functions and
 
 \subsubsection{Configuration}
 
-The configuration this used handles permuting and renaming constructors of inductive types.
+The automatic configuration this used handles permuting and renaming constructors of inductive types.
 This is one of the simplest configurations.
 The only nontrivial part is that \lstinline{DepConstr} over the updated type permutes back the constructors, in our example:
 
@@ -114,24 +114,23 @@ Each variant of the \textsc{Replica} benchmark took \toolname less than 5 second
 \label{sec:dep}
 
 The proof term transformation in \toolname is based on the proof term transformation from
-the \textsc{Devoid} proof reuse tool.
-\textsc{Devoid} is a proof reuse tool for \textit{algebraic ornaments}, which describe relations
+\textsc{Devoid}, an earlier version of \toolname.
+\textsc{Devoid} supported proof reuse across \textit{algebraic ornaments}, which describe relations
 between two inductive types, where one type is exactly the other type indexed by a fold~\cite{mcbride}.
 The standard example of this is the relation between a list and a
 length-indexed vector, like we saw in Figure~\ref{fig:listtovect} in Section~\ref{sec:key1}.
 
-We configured the generalized algorithm in \toolname to support algebraic ornaments, %like those found in \textsc{Devoid},
-and passed all of the regression tests from \textsc{Devoid}.
-%We found that this simplified the algorithm from \textsc{Devoid}.
-In addition, we added one more configuration to automate effort that had been manual in \textsc{Devoid}.
+With \toolname, we were able to not only support algebraic ornaments as in \textsc{Devoid},
+but also automate effort that had previously been manual.
 Several proof engineers including the industrial proof engineer, a Reddit user,
 and someone on the \lstinline{coq-club} message board contacted us expressing interest in using this functionality.
 %, though we do not yet know if the latter two ended up using \toolname. % TODO honestly ask
 
 \subsubsection{Configuration}
 
-We used two configurations to ease development with dependent types using algebraic ornaments.
-The first ports functions and proofs from the input type to the ornamented type at \textit{some} index,
+We used two automatic configurations to ease development with dependent types using algebraic ornaments.
+The first instantiates the proof term transformation to the tranformation from \textsc{Devoid}:
+it ports functions and proofs from the input type to the ornamented type at \textit{some} index,
 like $\Sigma$\lstinline{(n : nat).vector T n}.
 The second provides the missing link to get proofs at a \textit{particular} index, like \lstinline{vector T n};
 \textsc{Devoid} had left this to the proof engineer.
@@ -172,7 +171,7 @@ dep_elim (T : Type) (P : $\Sigma$(n : nat).vector T n $\rightarrow$ Type) (pnil 
 and it used definitional \lstinline{Iota}.
 %This configuration was enough to capture all of the search and lifting functionality from \textsc{Devoid}.
 
-To get from lists to vectors \textit{at a particular length}, we implemented one additional configuration.
+To get from lists to vectors \textit{at a particular length}, we used one additional automatic configuration.
 This configuration corresponds to the equivalence between sigma types at a particular projection
 and the same type escaping the sigma type, in our example:
 
@@ -246,13 +245,12 @@ with functions \lstinline{zip_with} and \lstinline{zip} operating directly over 
 \subsubsection{Lessons}
 
 %\paragraph{Configuration \& Flexibility}
-Implementing the first configuration was straightforward.
+Implementing the search procedure for the first configuration was straightforward.
 %It also simplified the transformation from \textsc{Devoid} %by removing the need for special rules for handling eliminators and constructors
 %by adding and removing arguments, and for special handling of non-primitive projections,
 %as that work is done in the configuration.
 %by moving all of the interesting work into the search procedure for the configuration.
-Implementing the second configuration was less straightforward,
-especially when it came to understanding the behaviors of equalities.
+Implementing the search procedure for the second configuration was less straightforward.
 It is still an open challenge to define complete unification heuristics to port any arbitrary proof
 along the second configuration in either direction,
 though this does not impact the case study.
@@ -262,12 +260,11 @@ The result was a simplified workflow from \textsc{Devoid} that automated steps
 that had previously been manual.
 %\toolname implemented some additional automation to generate eliminators that help separate out this additional information
 %for repair. 
-The tactic decompiler successfully generated tactic scripts to write dependently typed
-functions that carry proofs about length invariants,
-but struggled at generating tactic scripts for proofs relating those invariants due to poor motive inference with the \lstinline{induction} tactic.
-This is to some degree unsurprising, since these proofs
-were very difficult for us to write by hand.
-Still, additional effort is needed to improve tactic integration with dependent types.
+The tactic decompiler suggested tactics that helped us write tactic proofs ourselves that had been
+prohibitively difficult for us to write by hand.
+However, the suggested tactics did need massaging, as the decompiler struggled with motive inference
+for induction with dependent types.
+Additional effort is needed to further improve tactic integration with dependent types.
 % TODO how long did compiling the file take?
 
 \subsection{Unary and Binary Numbers}
