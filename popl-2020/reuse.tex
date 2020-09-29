@@ -2,8 +2,9 @@
 \label{sec:key1}
 
 \toolname is a tool for \textit{proof repair}.
-Proof repair is the problem of updating a broken proof in response to a change in a program or specification~\cite{PGL-045, pumpkinpatch}.
-We can view this as a form of 
+Proof repair is the problem of updating a broken proof in response to a change in a program or specification~\cite{PGL-045, pumpkinpatch}---in the
+case of \toolname, a change in a type definition that corresponds to an equivalence (Section~\ref{sec:scope}).
+We can view proof repair as a form of 
 \textit{proof reuse}~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}, % TODO consider citation list
 or reusing proofs about one specification (say, from another library, or from within the same proof development)
 to derive proofs about another specification.
@@ -20,8 +21,8 @@ The key to supporting proof repair is to build a proof reuse
 tool that can handle that additional challenge (Section~\ref{sec:time}).
 \end{quote}
 
-\subsection{Proof Repair Across Type Equivalences is Transport with a Twist}
-\label{sec:repair}
+\subsection{Scope: Type Equivalences}
+\label{sec:scope}
 
 \begin{figure}
 \codeauto{%
@@ -37,8 +38,8 @@ tool that can handle that additional challenge (Section~\ref{sec:time}).
 \label{fig:equivalence}
 \end{figure}
 
-\toolname supports a particular kind of repair: proof repair in response to certain changes in types.
-These changes in types correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
+\toolname supports a particular kind of repair: proof repair in response to certain changes in type definitions.
+In particular, these changes in type definitions must correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
 or pairs of functions that map between two types and are mutual inverses.
 Figure~\ref{fig:equivalence} shows a type equivalence between the two versions of \lstinline{list}
 from Section~\ref{sec:overview}, Figure~\ref{fig:listswap} that \toolname discovered and proved automatically.
@@ -47,6 +48,80 @@ When such a type equivalence between two types exists, we say those types are \t
 \begin{lstlisting}
 Old.list $\simeq$ New.list
 \end{lstlisting}
+
+Despite the fact that \toolname requires changes to correspond to type equivalences,
+\toolname can in fact handle some changes in which the proof engineer adds or removes information.
+The trick is that, in that case, \toolname repairs proofs along an equivalence between
+between \textit{refinements} ($\Sigma$ types).
+It is up to the proof engineer to supply the additional information needed to construct proofs about the refinement
+(the corresponding projection of the $\Sigma$ type).
+
+In general, for any change in type definition, there is always \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/trivial.v}{a trivial equivalence} between $\Sigma$ types.
+But this trivial equivalence is not useful for proof engineers, since it requires as much information from the proof engineer as just
+writing the new proof from scratch.
+The key to handling changes that add or remove information usefully is to separate the new information from redundant old information, 
+and include only the new information in the correpsonding projection of the $\Sigma$ type.
+
+\begin{figure}
+\begin{minipage}{0.40\textwidth}
+   \lstinputlisting[firstline=1, lastline=4]{listtovect.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.58\textwidth}
+   \lstinputlisting[firstline=6, lastline=9]{listtovect.tex}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{A vector (right) is a list (left) indexed by its length.}
+\label{fig:listtovect}
+\end{figure}
+
+Consider, for example, changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
+An early version of \toolname called \textsc{Devoid}~\cite{Ringer2019} could repair proofs about lists to proofs about \textit{vectors of some length}, since:
+
+\begin{lstlisting}
+list T $\simeq$ $\Sigma$(n : nat).vector T n.
+\end{lstlisting}
+This is enough to automatically repair a lemma about lists:
+
+\begin{lstlisting}
+$\forall$ {A B} (l1 : list A) (l2 : list B),(@\vspace{-0.04cm}@)
+  zip_with pair l1 l2 = zip l1 l2.
+\end{lstlisting}
+to a lemma about vectors of some length:
+
+\begin{lstlisting}
+$\forall$ {A B} (l1 : (@\codediff{$\Sigma$(n : nat).vector A n}@)) (l2 : (@\codediff{$\Sigma$(n : nat).vector B n}@)),(@\vspace{-0.04cm}@)
+  zip_with pair l1 l2 = zip l1 l2.
+\end{lstlisting}
+recursively updating dependencies \lstinline{zip} and \lstinline{zip_with}.
+It is not enough, however, to help the proof engineer get from that to a proof about vectors \textit{of a particular length}:
+
+\begin{lstlisting}
+$\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\codediff{vector B n}@)),(@\vspace{-0.04cm}@)
+  zip_with pair (@\codediff{n}@) l1 l2 = zip (@\codediff{n}@) l1 l2.
+\end{lstlisting}
+
+\textsc{Devoid} leaves this step to the proof engineer.
+\toolname, in contrast, can handle this step as well.
+The key is to repair functions and proofs across this equivalence:
+
+\begin{lstlisting}
+$\Sigma$(l : list T).length l = n $\simeq$ vector T n.
+\end{lstlisting}
+Practically, when the proof engineer changes specifications to refer to \lstinline{vector} instead of \lstinline{list},
+to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists (see Section~\ref{sec:dep}).
+\toolname makes it easy to separate out that proof obligation, then automates the rest.
+
+Formally, the scope of changes that \toolname can handle is all changes that can be described by a configuration that
+we will define in Section~\ref{sec:configurable}.
+This does not solve the problem of determining when \toolname can handle changes \textit{usefully}---for that,
+we rely on examples, feedback from proof engineers, and case studies.
+Section~\ref{sec:search} shows some case studies using \toolname to repair real proofs
+informed by the needs of proof engineers.
+% TODO show an example when it is not possible to define this
+
+\subsection{Proof Repair Across Type Equivalences is Transport with a Twist}
+\label{sec:repair}
 
 Proof repair across type equivalences corresponds to a particular kind of proof reuse called \textit{transport},
 with the twist that the specification about which we are reusing proofs may cease to exist.
@@ -84,61 +159,6 @@ to generate a new proof of \lstinline{rev_app_distr} defined over equivalent \ls
 Furthermore, it did so in a way that removed all references to \lstinline{Old.list}, both in the proof
 and in its dependencies.
 That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be removed.
-
-\begin{figure}
-\begin{minipage}{0.40\textwidth}
-   \lstinputlisting[firstline=1, lastline=4]{listtovect.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.58\textwidth}
-   \lstinputlisting[firstline=6, lastline=9]{listtovect.tex}
-\end{minipage}
-\vspace{-0.3cm}
-\caption{A vector (right) is a list (left) indexed by its length.}
-\label{fig:listtovect}
-\end{figure}
-
-This view of a particular kind of proof repair as transport is flexible enough to support some changes in which the proof engineer adds or removes information.
-In that case, the equivalence along which the tool transports functions and proofs
-is one between \textit{refinements} ($\Sigma$ types).
-It is up to the proof engineer to supply the additional information needed to construct proofs about the refinement.
-Consider an example from the proof reuse tool \textsc{Devoid}~\cite{Ringer2019}:
-changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
-Both \textsc{Devoid} and \toolname can repair proofs about lists to proofs about \textit{vectors of some length}, since:
-
-\begin{lstlisting}
-list T $\simeq$ $\Sigma$(n : nat).vector T n.
-\end{lstlisting}
-This is enough to automatically repair a lemma about lists:
-
-\begin{lstlisting}
-$\forall$ {A B} (l1 : list A) (l2 : list B),(@\vspace{-0.04cm}@)
-  zip_with pair l1 l2 = zip l1 l2.
-\end{lstlisting}
-to a lemma about vectors of some length:
-
-\begin{lstlisting}
-$\forall$ {A B} (l1 : (@\codediff{$\Sigma$(n : nat).vector A n}@)) (l2 : (@\codediff{$\Sigma$(n : nat).vector B n}@)),(@\vspace{-0.04cm}@)
-  zip_with pair l1 l2 = zip l1 l2.
-\end{lstlisting}
-recursively updating dependencies \lstinline{zip} and \lstinline{zip_with}.
-It is not enough, however, to help the proof engineer get from that to a proof about vectors \textit{of a particular length}:
-
-\begin{lstlisting}
-$\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\codediff{vector B n}@)),(@\vspace{-0.04cm}@)
-  zip_with pair (@\codediff{n}@) l1 l2 = zip (@\codediff{n}@) l1 l2.
-\end{lstlisting}
-
-\textsc{Devoid} leaves this step to the proof engineer.
-\toolname, in contrast, can handle this step as well.
-The key is to transport functions and proofs across this equivalence:
-
-\begin{lstlisting}
-$\Sigma$(l : list T).length l = n $\simeq$ vector T n.
-\end{lstlisting}
-Practically, when the proof engineer changes specifications to refer to \lstinline{vector} instead of \lstinline{list},
-to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists (see Section~\ref{sec:dep}).
-\toolname makes it easy to separate out that proof obligation, then automates the rest.
 
 \subsection{\textsc{Carrot}: A Tool for Proof Repair Across Type Equivalences}
 \label{sec:time}
