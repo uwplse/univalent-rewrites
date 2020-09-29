@@ -295,9 +295,9 @@ The transformation is parameterized over two equivalent types \A and \B (\textsc
 as well as the configuration terms, which appear in the transformation explicitly.
 It assumes fully $\eta$-expanded functions.
 
-The proof term transformation is perhaps deceptively simple because it moves the bulk of the work into the configuration,
+The proof term transformation is (perhaps deceptively) simple because it moves the bulk of the work into the configuration,
 and because it represents the configuration explicitly.
-Of course, real proof terms that correspond to proofs that typical proof engineers write in Coq do not look apply these configuration
+Of course, real proof terms that correspond to proofs that typical proof engineers write in Coq do not apply these configuration
 terms explicitly.
 \toolname does some additional work to get real proof terms into this format before running the transformation (Section~\ref{sec:unif}).
 It then runs the proof term transformation, which transports proofs across the equivalence that corresponds to the configuration 
