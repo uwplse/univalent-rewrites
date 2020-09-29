@@ -108,15 +108,14 @@ B: First, I was really frustrated by the paper's lack of explicit clarity about 
 B, Line 829: "One ongoing challenge is defining and discovering useful configurations to support adding new constructors."  Yes, sounds really important to scale to most real use cases.
 
 Actions:
-1. Link to artifact throughout
-2. Give rudamentary construction
-3. Implement and provide examples of adding constructors and adding hypotheses
-4. If time, evaluate a case like adding constructors or adding hypotheses
-5. Clarify what changes we have considered but not yet implemented, implemented but not yet evaluated, and both implemented and evaluated
-6. Make it clear that we provide no guarantees for non-isomorphic changes we are yet to consider
-7. Consider predicate examples
-8. Maybe revisit the positive example
-9. When done with artifact, form release and replace all artifact links with release links
+1. Give rudamentary construction
+2. Implement and provide examples of adding constructors and adding hypotheses
+3. If time, evaluate a case like adding constructors or adding hypotheses
+4. Clarify what changes we have considered but not yet implemented, implemented but not yet evaluated, and both implemented and evaluated
+5. Make it clear that we provide no guarantees for non-isomorphic changes we are yet to consider
+6. Consider predicate examples
+7. Maybe revisit the positive example
+8. When done with artifact, form release and replace all artifact links with release links
 
 --- Formalization ---
 
@@ -196,9 +195,8 @@ B: Section 6.2.3 leaves me unclear on whether Carrot generates these dependent-t
 Actions:
 1. Fix the Iota text (figure out this configuration for sure)
 2. Clarify where the new arguments come from in 6.2 more explicitly
-3. Link to case studies
-4. Fix case study Eta unification problems
-5. Make sure generalized eta makes sense with formalization
+3. Fix case study Eta unification problems
+4. Make sure generalized eta makes sense with formalization
 
 --- 6.4 ---
 
