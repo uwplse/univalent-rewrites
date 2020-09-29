@@ -67,14 +67,11 @@ A: I am very curious about the way you handle free variables in
   of the same type family?
 
 Actions: 
-1. Explain matching more explicitly and prominently
-2. Explain 6.2 matching
-3. Be explicit about incompleteness of matching
-4. Give a more complex example of matching
-5. Clarify "the precondition" and the paragraph around it
-6. Consider the example given for L571
-7. Consider the comment about intuition at the end of the comment for L571 and whether it's applicable
-8. Clarify that parameters and indices are implicit in the transformation, and that matching infers them
+1. Explain 6.2 matching
+2. Be explicit about incompleteness of matching
+3. Give a more complex example of matching
+4. Consider the example given for L571
+5. Consider the comment about intuition at the end of the comment for L571 and whether it's applicable
 
 --- Scope ---
 
@@ -192,10 +189,9 @@ A: A more tricky case is the equivalence in section
 B: Section 6.2.3 leaves me unclear on whether Carrot generates these dependent-types-oriented configurations automatically.  It doesn't sound like it, but somehow I had gotten the opposite impression earlier.
 
 Actions:
-1. Fix the Iota text (figure out this configuration for sure)
+1. Figure out this configuration for sure (for now just fixed Iota text in 6.2.3)
 2. Clarify where the new arguments come from in 6.2 more explicitly
-3. Fix case study Eta unification problems
-4. Make sure generalized eta makes sense with formalization
+3. Make sure generalized eta makes sense with formalization
 
 --- 6.4 ---
 

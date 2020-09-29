@@ -295,41 +295,23 @@ The transformation is parameterized over two equivalent types \A and \B (\textsc
 as well as the configuration terms, which appear in the transformation explicitly.
 It assumes fully $\eta$-expanded functions.
 
-The transformation is simple because it moves the bulk of the work into the configuration,
+The proof term transformation is perhaps deceptively simple because it moves the bulk of the work into the configuration,
 and because it represents the configuration explicitly.
-It does not fully describe the search procedure for transforming terms that \toolname implements.
-Before running the transformation, \toolname unifies the 
+Of course, real proof terms that correspond to proofs that typical proof engineers write in Coq do not look apply these configuration
+terms explicitly.
+\toolname does some additional work to get real proof terms into this format before running the transformation (Section~\ref{sec:unif}).
+It then runs the proof term transformation, which transports proofs across the equivalence that corresponds to the configuration 
+(Section~\ref{sec:transfspecif}).
+
+\subsubsection{From Transformation to Search Procedure: Unification Heuristics}
+\label{sec:unif}
+
+The transformation does not fully describe the search procedure for transforming terms that \toolname implements.
+Before running the transformation, \toolname \textit{unifies} the 
 input proof term with applications of the terms in the configuration for \A. 
 The transformation then transforms the applications of the terms in the configuration of \A
 to applications of the terms in the configuration for \B.
 Reducing the result produces the output term defined over \B.
-
-Figure~\ref{fig:appswap1} shows this with the list append function \lstinline{++} from Section~\ref{sec:overview}.
-To update the append function (top left), \toolname
-identifies implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and expands them (bottom left).
-In this case, expansion works just by matching against \lstinline{Constr} and \lstinline{Elim}, 
-though this can be more difficult when \lstinline{DepConstr} and \lstinline{DepElim} over \A are dependent.
-After expansion, the transformation then recursively substitutes in \lstinline{New.list}
-for \lstinline{Old.list}, which moves \lstinline{DepConstr} and \lstinline{DepElim}
-to construct and eliminate over the updated type (bottom right).
-Finally, this reduces to a term with swapped constructors and cases (top right).
-
-The goal of the proof term transformation is to preserve equality up to transport along the equivalence $A \simeq B$,
-while no longer referring to the old specification.
-That is, we need that $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
-%This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
-%with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
-The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
-to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
-The rest is straightforward.
-
-Note that this goal for correctness is metatheoretical:
-stating and proving that two terms are equal up to transport is in general not possible in a language like Coq
-without additional axioms, though it is in some cases realizable with an external tool like the
-univalent parametricity framework~\cite{tabareau2017equivalences}.
-\toolname does not yet generate these proofs as we were focused on building a usable tool with axiomatic freedom and few dependencies.
-Coq ensures that all terms that plugins produce are well-typed; for now, %as with \textsc{Devoid},
-the proof engineer must vet the transformed specifications herself to ensure that they specify the expected behavior.
 
 \begin{figure}
 \begin{minipage}{0.49\textwidth}
@@ -384,6 +366,52 @@ $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
 \label{fig:appswap1}
 \end{figure}
 
+Figure~\ref{fig:appswap1} shows this with the list append function \lstinline{++} from Section~\ref{sec:overview}.
+To update the append function (top left), \toolname
+unifies subterms of the input term with implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and substitutes
+in the configuration terms (bottom left).
+After expansion, the transformation then recursively substitutes in \lstinline{New.list}
+for \lstinline{Old.list}, which moves \lstinline{DepConstr} and \lstinline{DepElim}
+to construct and eliminate over the updated type (bottom right).
+Finally, this reduces to a term with swapped constructors and cases (top right).
+
+In this case, unification is straightforward, since \lstinline{DepConstr} and \lstinline{DepElim} correspond to
+\lstinline{Constr} and \lstinline{Elim} directly.
+This can be more challenging when configuration terms are dependent or have uninstantiated parameters.
+This is especially pronounced with definitional \lstinline{Eta} and \lstinline{Iota},
+which typically show up contracted in real code.
+This problem is exactly why \citet{tabareau2019marriage} speculated that converting definitional to propositional equalities
+like we do with \lstinline{Iota} may, in general, be intractable.
+
+To handle this, \toolname relies on \textit{unification heuristics} that tell \toolname how to unify subterms with applications of configuration terms, and how to instantiate parameters and dependent indices in those configuration subterms.
+The transformation in turn assumes that all parameters and indices are fixed.
+
+\toolname implements custom unification heuristics for each search procedure (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) as functions in OCaml that interact with type checking and equality in Coq.
+These unification heuristics are incomplete.
+\toolname falls back to Coq's unification for manual configuration and when these custom heuristics fail.
+When even Coq's unification is not enough, \toolname relies on proof engineers to provide hints
+in the form of explicit annotations.
+
+\subsubsection{Specifying Correct Transformation}
+\label{sec:transfspecif}
+
+The goal of the proof term transformation is to preserve equality up to transport along the equivalence $A \simeq B$,
+while no longer referring to the old specification.
+That is, we need that $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
+%This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
+%with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
+The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
+to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
+The rest is straightforward.
+
+Note that this goal for correctness is metatheoretical:
+stating and proving that two terms are equal up to transport is in general not possible in a language like Coq
+without additional axioms, though it is in some cases realizable with an external tool like the
+univalent parametricity framework~\cite{tabareau2017equivalences}.
+\toolname does not yet generate these proofs as we were focused on building a usable tool with axiomatic freedom and few dependencies.
+Coq ensures that all terms that plugins produce are well-typed; for now, %as with \textsc{Devoid},
+the proof engineer must vet the transformed specifications herself to ensure that they specify the expected behavior.
+
 \subsection{Specifying Correct Configuration}
 \label{sec:art}
 
@@ -425,7 +453,7 @@ with dependent constructors (respectively eliminators) of \B will preserve equal
 Furthermore, since CIC$_{\omega}$ is constructive, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
 and the \textit{only} way to eliminate an \A (respectively \B) is to apply its eliminator.
 Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and eliminators.
-So, as long as we are able to expand all implicit applications of \lstinline{DepConstr} and \lstinline{DepElim},
+So, as long as we are able to unify subterms with applications of \lstinline{DepConstr} and \lstinline{DepElim},
 \textsc{Dep-Constr} and \textsc{Dep-Elim} should preserve correctness of the transformation and cover all values and eliminations of \A and \B.
 
 To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules.
@@ -474,24 +502,6 @@ We use an existing command called \lstinline{Preprocess}~\cite{Ringer2019} to tu
 applications of eliminators.
 We handle non-primitive projections using \lstinline{Eta}, and we handle refolding of constants in constructors
 using \lstinline{DepConstr}.
-
-\paragraph{Matching Against Preconditions}
-
-%It is easy to \textit{describe} the proof term transformation, but it is much more difficult to implement it.
-%This is because
-The proof term transformation only describes what transformation rules are applicable when,
-but it does not describe how to actually check that the precondition holds.
-In many cases, this check is not purely syntactic---we really want to know if a term \textit{unifies}
-with an application of \lstinline{DepConstr}, for example, not whether it applies the term exactly.
-This is especially pronounced with definitional \lstinline{Eta} and \lstinline{Iota},
-which typically show up contracted in real code.
-This problem is exactly why \citet{tabareau2019marriage} speculated that converting definitional to propositional equalities
-like we do with \lstinline{Iota} may, in general, be intractable.
-
-In practice, we find that unification is sometimes not enough to identify an implicit application of one of the configuration terms.
-Each of our search procedures for automatic configuration in turn implements custom unification heuristics (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) that tell \toolname
-how to identify and expand these implicit applications before applying the transformation.
-In the worst case, proof engineers can provide hints to \toolname in the form of explicit annotations.
 
 \paragraph{Termination \& Intent}
 
