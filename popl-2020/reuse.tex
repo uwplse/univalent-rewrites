@@ -27,11 +27,11 @@ tool that can handle that additional challenge (Section~\ref{sec:time}).
 \begin{figure}
 \codeauto{%
 \begin{minipage}{0.48\textwidth}
-\lstinputlisting[firstline=1, lastline=15]{equivproof.tex}
+\lstinputlisting[firstline=1, lastline=16]{equivproof.tex}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
-\lstinputlisting[firstline=17, lastline=32]{equivproof.tex}
+\lstinputlisting[firstline=18, lastline=34]{equivproof.tex}
 \end{minipage}}
 \vspace{-0.3cm}
 \caption{Two functions between \lstinline{Old.list} and \lstinline{New.list} (top) that form an equivalence (bottom).}
@@ -48,17 +48,78 @@ When such a type equivalence between two types exists, we say those types are \t
 \begin{lstlisting}
 Old.list $\simeq$ New.list
 \end{lstlisting}
-\toolname further requires that the equivalences it supports can be described by a particular configuration that we will define in Section~\ref{sec:configurable}.
+\toolname further requires that the equivalences it supports can be described by a particular configuration that we will define in Section~\ref{sec:configurable}. For now, to give some intuition for what this configuration can handle, we include two more examples below
+(Sections~\ref{sec:ex1} and~\ref{sec:ex2}).
+
+\subsubsection{Factoring out Constructors}
+\label{sec:ex1}
+
+\begin{figure}
+\begin{minipage}{0.48\textwidth}
+\lstinputlisting[firstline=1, lastline=3]{equiv2.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\lstinputlisting[firstline=5, lastline=7]{equiv2.tex}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{The type \lstinline{J} (right) is \lstinline{I} (left) with \lstinline{A} and \lstinline{B} factored out to \lstinline{bool} (Coq standard library).}
+\label{fig:equivalence2}
+\end{figure}
+
+% TODO link to second equivalence here:
+For a slightly more complex example, consider the change from the type \lstinline{I} to the type \lstinline{J} in Figure~\ref{fig:equivalence}.
+\lstinline{J} can be viewed as \lstinline{I} with its two constructors \lstinline{A} and \lstinline{B} pulled out to a
+new hypothesis of type \lstinline{bool} for a single constructor.
+
+With \toolname, the proof engineer can repair functions and proofs about \lstinline{I} to instead use \lstinline{J},
+as long as she first tells \toolname (using the configuration we will explain in Section~\ref{sec:configurable}) which constructor of \lstinline{I} maps to \lstinline{true} and which maps to \lstinline{false}.
+This information about constructor mappings induces an equivalence:
+
+\begin{lstlisting}
+I $\simeq$ J
+\end{lstlisting}
+along which \toolname repairs functions and proofs.
+
+The file \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr_refactor.v} shows an example
+of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false.
+\toolname automatically repairs functions and proofs over \lstinline{I}, like:
+
+\begin{lstlisting}
+and (i1 i2 : I) : I := I_rec _ i2 B i1.(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+Theorem demorgan_1 : $\forall$ (i1 i2 : I), neg (and i1 i2) = or (neg i1) (neg i2).(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  intros i1 i2. induction i1; reflexivity.(@\vspace{-0.04cm}@)
+Defined.
+\end{lstlisting}
+to corresponding functions and proofs over \lstinline{J}, like:
+
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+and (j1 j2 : J) : J := J_rect _ (@\codediff{(fun (b : bool) => bool_rect _ j2 (makeJ false) b)}@) j1.(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+Theorem demorgan_1 : $\forall$ (j1 j2 : J), neg (and j1 j2) = or (neg j1) (neg j2).(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  intros j1 j2. induction j1 (@\codediff{as [b]. induction b as [ | ]}@); reflexivity.(@\vspace{-0.04cm}@)
+Defined.
+\end{lstlisting}
+These repaired functions and proofs refer to \lstinline{J} in place of \lstinline{I}.
+Otherwise, they behave the same way as the functions and proofs over \lstinline{I} up to the equivalence between
+\lstinline{I} and \lstinline{J}---Section~\ref{sec:repair} explains this intuition more formally.
+
+\subsubsection{Adding a Dependent Index}
+\label{sec:ex2}
 
 Despite the fact that \toolname requires changes to correspond to type equivalences,
 \toolname can in fact handle some changes in which the proof engineer adds or removes information.
-This is true whenever it is possible to express those changes as equivalences between \textit{refinements} ($\Sigma$ types).
+This is true when it is possible to express those changes as equivalences between \textit{refinements} ($\Sigma$ types).
 It is up to the proof engineer to supply the additional information needed to construct proofs about the refinement
 (the corresponding projection of the $\Sigma$ type).
 
 %In general, for any change in type definition, there is always \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/trivial.v}{a trivial equivalence} between $\Sigma$ types.
 %But this trivial equivalence is not useful for proof engineers, since it requires as much information from the proof engineer as just
 %writing the new proof from scratch.
+
 
 \begin{figure}
 \begin{minipage}{0.40\textwidth}
@@ -89,7 +150,7 @@ $\forall$ {A B} (l1 : list A) (l2 : list B),(@\vspace{-0.04cm}@)
 \end{lstlisting}
 to a lemma about vectors of some length:
 
-\begin{lstlisting}
+\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
 $\forall$ {A B} (l1 : (@\codediff{$\Sigma$(n : nat).vector A n}@)) (l2 : (@\codediff{$\Sigma$(n : nat).vector B n}@)),(@\vspace{-0.04cm}@)
   zip_with pair l1 l2 = zip l1 l2.
 \end{lstlisting}
@@ -102,7 +163,7 @@ $\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\coded
 \end{lstlisting}
 
 \textsc{Devoid} leaves this step to the proof engineer.
-\toolname, in contrast, can handle this step as well.
+\toolname, in contrast, can handle this step as well (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}).
 The key is to repair functions and proofs across this equivalence:
 
 \begin{lstlisting}
