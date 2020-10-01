@@ -213,8 +213,8 @@ $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n, DepElim((@\codediff{DepConstr(1, N)
 \end{lstlisting}
 no longer holds by reflexivity.
 The \lstinline{Iota} rules are exactly rewrites along proofs of the theorems above for the successor case.
-The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N},
-that way \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinline{N}.
+The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N}.
+That way, \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinline{N}.
 
 Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ from each other.
 The transformation requires that \lstinline{DepElim} over \A and over \B always have the same inductive structure
