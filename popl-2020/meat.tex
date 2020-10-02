@@ -250,8 +250,8 @@ the need for propositional $\iota$ was noted as far back as \citet{magaud2000cha
   { \Gamma \vdash \mathrm{Eta}(A) \Uparrow \mathrm{Eta}(B) }
 
 \inferrule[Iota]
-  { \Gamma \vdash q_A \Uparrow q_B \\ \Gamma \vdash t_A \Uparrow t_B }
-  { \Gamma \vdash \mathrm{Iota}(j,\ A,\ q_A,\ t_A) \Uparrow \mathrm{Iota}(j,\ B,\ q_B,\ t_B) }
+  { \Gamma \vdash q_A \Uparrow q_B \\ \Gamma \vdash \vec{t_A} \Uparrow \vec{t_B} }
+  { \Gamma \vdash \mathrm{Iota}(j,\ A,\ q_A)\ \vec{t_A} \Uparrow \mathrm{Iota}(j,\ B,\ q_B)\ \vec{t_B}) }
 
 \inferrule[Equivalence]
   { \\ }
@@ -412,7 +412,7 @@ univalent parametricity framework~\cite{tabareau2017equivalences}.
 Coq ensures that all terms that plugins produce are well-typed; for now, %as with \textsc{Devoid},
 the proof engineer must vet the transformed specifications herself to ensure that they specify the expected behavior.
 
-\subsection{Specifying Correct Configuration}
+\subsection{Specifying Correct Configurations}
 \label{sec:art}
 
 Both when designing a search procedure for an automatic configuration and when
@@ -429,62 +429,93 @@ Beyond that, even once we have chosen an equivalence, we could define many possi
 to the equivalence, some of which will produce functions and proofs that are more useful or efficient than others
 (consider \lstinline{DepElim} converting through several intermediate types).
 
-Thankfully, once the art is done, we at least understand what it means for it to be \textit{correct art}.
-The correctness criteria for the configuration relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}
+\begin{figure}
+\begin{lstlisting}
+(* --- Equivalence --- *)(@\vspace{-0.04cm}@)
+f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }(@\vspace{-0.04cm}@)
+g : B $\rightarrow$ A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }(@\vspace{-0.04cm}@)
+section : $\forall$ (a : A), g (f a) = a.(@\vspace{-0.04cm}@)
+retraction : $\forall$ (b : B), f (g b) = b.(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+dep_constr_ok : $\forall$ j, DepConstr(j, A) $\equiv_{A \simeq B}$ DepConstr(j, B).(@\vspace{-0.04cm}@)
+dep_elim_ok : $\forall$ (a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type)},(@\vspace{-0.04cm}@)
+  a $\equiv_{A \simeq B}$ b $\rightarrow$ P $\equiv_{A \simeq B}$ Q $\rightarrow$ DepElim(a, P) $\equiv_{A \simeq B}$ DepElim(b, Q).(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+(* --- Equality --- *)(@\vspace{-0.04cm}@)
+eta_ok (A) : $\forall$ (a : A) (P : A $\rightarrow$ Type) $\vec{f}$, DepElim(a, P) $\vec{f}$ : P (Eta(A) a).(@\vspace{-0.04cm}@)
+eta_ok (B) : $\forall$ (b : B) (P : B $\rightarrow$ Type) $\vec{f}$, DepElim(b, P) $\vec{f}$ : P (Eta(B) b).(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+iota_ok (j, A) :(@\vspace{-0.04cm}@)
+  $\forall$ (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+    Q (DepElim(DepConstr(j, A) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
+    Q ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)(@\vspace{-0.04cm}@)
+  := Iota(A, j, Q).(@\vspace{-0.04cm}@)
+iota_ok (j, B) :(@\vspace{-0.04cm}@)
+  $\forall$ (P : B $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, B) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+    Q (DepElim(DepConstr(j, B) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
+    Q ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)(@\vspace{-0.04cm}@)
+  := Iota(B, j, Q).
+\end{lstlisting}
+\vspace{-0.3cm}
+\caption{Correctness criteria for a configuration \lstinline{(DepConstr, DepElim), (Eta, Iota)} to ensure that the transformation
+preserves equivalence (top) coherently with equality (bottom). Throughout, $\vec{f}$, $\vec{x}$, and $\vec{\mathtt{IH}}$ represent
+eliminator cases, constructor arguments, and inductive hypotheses, respectively.}
+\label{fig:spec}
+\end{figure} % TODO sigs for Iota here are not quite correct---Q is not bound
+
+Thankfully, once the art is done, we can specify what it means for it to be \textit{correct art}.
+Figure~\ref{fig:spec} specifies the correctness criteria for any given configuration (assuming a univalent metatheory in which equality up
+to transport is defined).
+These correctness criteria relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}
 in a way that preserves equivalence (Section~\ref{sec:equivalence}) coherently with equality (Section~\ref{sec:equality}).
 
-To preserve equivalence, we need that \lstinline{DepElim} and \lstinline{DepConstr} together induce an equivalence between \A and \B,
-formed by one function that eliminates \A and constructs \B, and another function that eliminates \B and constructs \A:
-
-\begin{lstlisting}
-f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }(@\vspace{-0.04cm}@)
-g : B $\rightarrow$ A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
-\end{lstlisting}
-In addition, we need that:
-
-\begin{enumerate}
-\item $\forall$ \lstinline{j}, \lstinline{DepConstr(j, A)} $\equiv_{A \simeq B}$ \lstinline{DepConstr(j, B)}, and
-\item $\forall$ \lstinline{(a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type)},\\ \lstinline{a} $\equiv_{A \simeq B}$ \lstinline{b} $\rightarrow$ \lstinline{P} $\equiv_{A \simeq B}$ \lstinline{Q} $\rightarrow$ \lstinline{DepElim(a, P)} $\equiv_{A \simeq B}$ \lstinline{DepElim(b, Q)}.
-\end{enumerate}
+\paragraph{Equivalence}
+To preserve equivalence (Figure~\ref{fig:spec}, top), \lstinline{DepConstr} and \lstinline{DepElim} must together induce an equivalence between \A and \B.
+That is, \lstinline{section} and \lstinline{retraction} must hold for two functions \lstinline{f} and \lstinline{g},
+where \lstinline{f} uses \lstinline{DepElim} to eliminate \A and \lstinline{DepConstr} to construct \B, and \lstinline{g} uses 
+\lstinline{DepElim} to eliminate \B and \lstinline{DepConstr} to construct \A.
+\lstinline{DepConstr} over \B must be equal to \lstinline{DepConstr} over \A up to transport along the induced equivalence (\lstinline{dep_constr_ok}), 
+and similarly for \lstinline{DepElim} (\lstinline{dep_elim_ok}).
 This had previously been proven on the change from \lstinline{list T} to $\Sigma$\lstinline{(n : nat).vector T n)} in the 
 univalent parametricity framework\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}---we build on that intuition.
-That these are equal up to transport along the equivalence means that replacing dependent constructors (respectively eliminators) of \A
-with dependent constructors (respectively eliminators) of \B will preserve equality up to transport for those subterms.
+
+\paragraph{Equality}
+To ensure coherence with equality (Figure~\ref{fig:spec}, bottom),
+\lstinline{Eta} and \lstinline{Iota} must correctly prove the $\eta$ and $\iota$ rules.
+That is, \lstinline{Eta} must have the same definitional behavior as the dependent eliminator (\lstinline{eta_ok}).
+Each \lstinline{Iota} must prove and rewrite along the simplification (formally, \textit{refolding}~\cite{boutillier:tel-01054723}) behavior that corresponds to a case of the dependent eliminator (\lstinline{iota_ok}).
+
+\paragraph{Intuition for Correctness}
+The correctness criteria for equivalence make it possible for the transformation
+to avoid applying \lstinline{f} and \lstinline{g} explicitly---instead porting terms from \A directly to \B.
+Intuitively, \lstinline{dep_constr_ok} and \lstinline{dep_elim_ok} guarantee that the transformation
+correctly transports dependent constructors and dependent eliminators,
+as doing so will preserve equality up to transport for those subterms.
 Furthermore, since CIC$_{\omega}$ is constructive, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
 and the \textit{only} way to eliminate an \A (respectively \B) is to apply its eliminator.
 Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and eliminators.
 So, as long as we are able to unify subterms with applications of \lstinline{DepConstr} and \lstinline{DepElim},
 \textsc{Dep-Constr} and \textsc{Dep-Elim} should preserve correctness of the transformation and cover all values and eliminations of \A and \B.
 
-To ensure coherence with equality, we need \lstinline{Eta} and \lstinline{Iota} to correctly prove the $\eta$ and $\iota$ rules.
-For \lstinline{Eta}, we need it to have the same definitional behavior as the dependent eliminator:
+The correctness criteria for equality then make it possible for the transformation to
+avoid applying \lstinline{section} and \lstinline{retraction} explicitly.
+Intuitively, this is because the configuration terms together induce proofs of \lstinline{section}
+and \lstinline{retraction}.
+A sketch of the proof of \lstinline{section} is as follows (\lstinline{retraction} is similar):
+Induct using \lstinline{DepElim} over \A.
+For each case $i$, the proof obligation is to show that \lstinline{g b} is equal to \lstinline{g} at \lstinline{DepConstr(b, i)} applied to the non-inductive arguments (by definition of \lstinline{f}).
+Define this as a motive \lstinline{Q}.
+Refold to rewrite along each inductive hypothesis (\lstinline{iota_ok}) using \lstinline{Iota(A, i, Q)} applied to each \lstinline{DepConstr} over \B (the cases of the definition of \lstinline{f}), with reflexivity as the base case. % TODO check this
 
-\begin{lstlisting}
-DepElim(a, P) { f$_0$, ..., f$_n$ } : P (Eta(A) a)
-\end{lstlisting}
-and similarly for \B.
-
-Each \lstinline{Iota} needs to prove and rewrite along the simplification (formally, \textit{refolding}~\cite{boutillier:tel-01054723}) behavior that corresponds to a case of the dependent eliminator, in other words: % TODO do we need eta here?
-
-\begin{lstlisting}
-Iota(A) :(@\vspace{-0.04cm}@)
-  $\forall$ P $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
-    Q (DepElim((@\codediff{DepConstr(j, A) $\vec{x}$}@), P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
-    Q ((@\codediff{$\vec{f}$[j]}@) ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)
-\end{lstlisting}
-where each \lstinline{IH}$_i$ is each recursive occurrence of \A in the eliminator case,
-and similarly for \B.
-Together, these induce proofs of \lstinline{section} and \lstinline{retraction} (by induction) that show \lstinline{f} and \lstinline{g}
-are mutual inverses and so form an equivalence.
-The intuition here is that preserving the reduction behavior
-of the eliminators and constructors should be sufficient, since again those are the only ways we can construct or eliminate our types.
-
-\textbf{Configure} implements search procedures that discover functions \lstinline{f} and \lstinline{g} for certain classes of
-equivalences, and also
-generate proofs \lstinline{section} and \lstinline{retraction} that these functions form an equivalence.
-Proving all of the correctness criteria for a given configuration requires either a special framework~\cite{tabareau2017equivalences}
+\paragraph{Generating Proofs of Correctness}
+The intuition above is what
+\textbf{Configure} uses to implement search procedures that generate functions \lstinline{f} and \lstinline{g} for the classes of equivalences
+that correspond to automatic configuration (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/search.ml}{search.ml}), and also
+generate proofs \lstinline{section} and \lstinline{retraction} that these functions form an equivalence (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/equivalence.ml}{equivalence.ml}).
+To minimize dependencies, \toolname does not produce proofs of \lstinline{dep_constr_ok} and \lstinline{dep_elim_ok} directly,
+as doing so would require either a special framework~\cite{tabareau2017equivalences}
 or a univalent type theory~\cite{univalent2013homotopy}.
-Thankfully, the proof engineer does not need to prove the correctness criteria for a configuration in order to use \toolname.
+Thankfully, the proof engineer does not need to prove these in order to use \toolname.
 Rather, the correctness criteria simply need to hold in order for the transformation to work.
 
 \subsection{The Tool}
