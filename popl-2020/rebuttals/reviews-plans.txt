@@ -67,11 +67,9 @@ A: I am very curious about the way you handle free variables in
   of the same type family?
 
 Actions: 
-1. Explain 6.2 matching
-2. Be explicit about incompleteness of matching
-3. Give a more complex example of matching
-4. Consider the example given for L571
-5. Consider the comment about intuition at the end of the comment for L571 and whether it's applicable
+1. Give a more complex example of matching
+2. Consider the example given for L571
+3. Consider the comment about intuition at the end of the comment for L571 and whether it's applicable
 
 --- Scope ---
 
@@ -107,11 +105,10 @@ B, Line 829: "One ongoing challenge is defining and discovering useful configura
 Actions:
 1. Implement and provide examples of adding constructors and adding hypotheses
 2. If time, evaluate a case like adding constructors or adding hypotheses
-3. Clarify what changes we have considered but not yet implemented, implemented but not yet evaluated, and both implemented and evaluated
-4. Make it clear that we provide no guarantees for non-isomorphic changes we are yet to consider
-5. Consider predicate examples
-6. Maybe revisit the positive example
-7. When done with artifact, form release and replace all artifact links with release links
+3. Consider predicate examples
+4. Maybe revisit the positive example
+5. Anonymize code!
+6. Consider more formal classification & John email
 
 --- Formalization ---
 
@@ -144,14 +141,10 @@ A, L521: The heterogeneous equality between P and Q should be in
     no proof that these properties hold.
 
 Actions:
-1. Consider formalizing matching
-2. Clarify and maybe prove under what assumptions the transformation is sound and complete
-3. Clarify matching is separate to move the undecidable subproblem away from the rest
-4. Clarify the metatheory is univalent
-5. Consider fixing a particular implementation of a univalent metatheory
-6. Clarify the particular example on line 521
-7. Clarify the notation for equality up to transport
-8. If no proof, clarify the statement about the metatheory is just a specification
+1. Clarify and maybe prove under what assumptions the transformation is sound and complete
+2. Consider fixing a particular implementation of a univalent metatheory
+3. Clarify the particular example on line 521
+4. Clarify the notation for equality up to transport
 
 --- 6.1 ---
 
@@ -160,6 +153,7 @@ B: The paragraph at line 798 describes a number of cases of permuting/renaming c
 Actions:
 1. Show an example that cannot be handled by a very simple tool (honestly, did this person even read the overview section?)
 2. Or clarify context (not meant to be impressive)
+3. Or just skip this one and note it briefly somewhere
 
 --- 6.2 ---
 
@@ -226,7 +220,7 @@ Actions:
 1. Make this story more explicit (prototype for suggestions)
 2. Discuss version control, or clarify with Val
 3. Continue to improve the tactic decompiler:
-  a. Custom tactics & decision procedures
+  a. Custom tactics & decision procedures (WIP)
   b. Comment & format preservaton
   c. Removing additional arguments to apply and rewrite
   d. Looking directly at old tactic scripts instead of just taking tactics as arguments
@@ -255,11 +249,6 @@ A, L411: "The transformation replaces rewrites by reflexivity...".
 
 Action: Make sure clarification of matching adds a pointer here that helps with this.
   
-A, L540: You should mention that $\vect{f}$ are the motives of the 
-    eliminator. 
-
-Action: Do this.
-
 A, L540: It would be good to provide a proof sketch that shows why the
   definitions of Iota and Eta allow to derive an equivalence.
     
@@ -283,10 +272,6 @@ Action: Explain.
 B: Obligatory hardball question: what happens when we are transforming sets of related types simultaneously?
 
 Action: Explain.
-
-B: Oh, by the way, will your translation get in trouble if an eliminator is only partially applied?
-
-Action: Clarify eta somewhere.
 
 
 
