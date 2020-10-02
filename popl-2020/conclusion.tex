@@ -8,7 +8,7 @@ and has supported benchmarks common in the proof engineering community.
 
 Moving forward, our goal is to make proofs easier to repair and reuse regardless of proof engineering expertise.
 We want to reach more proof engineers, and we want \toolname to integrate seamlessly with Coq.
-We conclude with a discussion of some of the challenges that remain.
+We conclude with a discussion of some challenges that remain.
 
 % encountered in scaling up the \toolname proof term 
 %transformation (Section~\ref{sec:problems}), and how we believe ideas from the rewrite system and constraint
@@ -26,10 +26,9 @@ This can lead to confusing or undesired behavior, especially when there are mult
 The ideal would be a type-directed search procedure.
 \item \textbf{Nontermination}: Naively applying the transformation can result in nontermination when the output type refers to the input type.
 \toolname includes termination checks, but these termination checks are ad-hoc and do not capture every potentially nonterminating use case.
-\item \textbf{Custom Unification Heuristics}: \toolname with manual configuration is not always smart enough to match the appropriate rule in the proof term
-transformation without the proof engineer manually expanding the input term.
-Proof engineers would benefit from the ability to add custom unification heuristics to \toolname
-and expand the input terms automatically.
+\item \textbf{Custom Unification Heuristics}: \toolname with manual configuration is not always smart enough to automatically unify subterms of proof terms with
+configuration terms.
+Proof engineers would benefit from the ability to add custom unification heuristics to \toolname.
 \end{enumerate}
 We hope to solve all three of these challenges elegantly and efficiently using \textit{e-graphs}~\cite{egraph1},
 a data structure that is used in the constraint solver and rewrite system communities for managing equivalences.
@@ -43,7 +42,7 @@ In cubical type theory, this adaptation is simple~\cite{egraph6}; we hope to rep
 
 Beyond that, we believe that the biggest gains will come from continuing to improve the prototype decompiler.
 Two particularly helpful features would be support for common search procedures and support for custom tactics---both
-supported by work in progress.
+in progress.
 Some improvements could come from better tactics themselves---like better handling of explicitly passed 
 motives in the \lstinline{induction} tactic, or a more structured tactic language.
 With that, we believe that the future of seamless and powerful proof repair and reuse for all is within reach.

@@ -1,7 +1,7 @@
-\section{Case Studies: \textsc{Carrot} Four Ways}
+\section{Case Studies: \textsc{Pumpkin P}i Four Ways}
 \label{sec:search}
 
-This section explains four case studies for \toolname, building from the simplest to the most complex:
+This section explains four case studies for \toolname, building from the simple to complex:
 
 \begin{enumerate}
 \item We use \toolname to support multiple variants of a repair benchmark from a user study of Coq proof engineers (Section~\ref{sec:replica}).
@@ -18,7 +18,7 @@ In all, we found the following:
 was simple to write, and handled an entire class of equivalences corresponding to real use cases.
 Manual configuration was possible but challenging for an interesting use case.
 \item \toolname had good enough workflow integration to support real use cases.
-The tactic decompiler was far from perfect, but showed promising early results with clear paths to improvements.
+The tactic decompiler showed promising early results with clear paths to improvements.
 Some workflows were unanticipated and informed design changes in \toolname.
 \end{enumerate}
 
@@ -101,12 +101,12 @@ One ongoing challenge is defining and discovering useful configurations to suppo
 The isolated change was simple enough that \toolname would not have been necessary
 for updating the proofs for the initial change---keeping the tactics the same would have also worked.
 %This is a property of the particular proofs that we had access to;
-As we saw in Section~\ref{sec:overview}, even for simple changes, this is not always true.
+As we saw in Sections~\ref{sec:overview} and~\ref{sec:key1}, even for simple changes, this is not always true.
 More advanced variants of this benchmark that involved also renaming constructors did necessitate \toolname,
 and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
 The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
 its dependencies, four variants of the \textsc{Replica} benchmark,
-and testing a large and ambiguous permutation of a type \lstinline{Enum} with 30 constructors of identical types,
+and testing a large and ambiguous permutation of a 30 constructor \lstinline{Enum},
 took \toolname less than 90 seconds total. % TODO specs, reproduction
 Each variant of the \textsc{Replica} benchmark took \toolname less than 5 seconds. % TODO specs, reproduction
 
@@ -214,7 +214,7 @@ It then manually ported those proofs to proofs over vectors at a particular leng
 The updated \toolname example automates this last step.
 
 %The workflow for this was a bit different than it was with \textsc{Devoid}.
-To handle this, first, we used a custom eliminator \toolname generated to combine the list functions
+To handle this, we used a custom eliminator \toolname generated to combine the list functions
 with length invariants, and to combine the list proofs with the proofs about those length invariants.
 This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths):
 
@@ -277,8 +277,8 @@ We have realized a classic example~\cite{magaud2000changing}  of this with \tool
 updating unary to binary natural numbers.
 
 In Coq, a binary number \lstinline{N} (see Section~\ref{sec:key2}, Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
-is either 1 (\lstinline{xH}), the result of shifting left and adding 1 (\lstinline{xI}),
-or the result of shifting left and not adding anything (\lstinline{xO}).
+is either 1 (\lstinline{xH}), or the result of shifting left and adding 1 (\lstinline{xI})
+or nothing (\lstinline{xO}).
 This allows for a fast addition function, found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we use \toolname to derive a slow binary
 addition function that does not refer to \lstinline{nat}.
@@ -297,8 +297,7 @@ behaved like the \lstinline{nat} constructors:
 dep_constr_0 : N := 0%N.(@\vspace{-0.04cm}@)
 dep_constr_1 : N $\rightarrow$ N := N.succ.
 \end{lstlisting}
-Similarly, the Coq standard library included precisely the eliminator we wanted, one that behaves
-like the eliminator over \lstinline{nat}:
+and an eliminator from the Coq standard library that behaves like the \lstinline{nat} eliminator:
 
 \begin{lstlisting}
 dep_elim P (pO : P dep_constr_0) (pS : $\forall$n, P n $\rightarrow$ P (dep_constr_1 n)) (n : N) : P n :=(@\vspace{-0.04cm}@)
@@ -380,15 +379,13 @@ Qed.
 It was enough to implement this transformation that had previously been its own tool
 just by writing a configuration with \lstinline{Iota}. 
 
-The entire file took under a second for us to compile using \toolname.
-We did not need tactic integration, since we
-wanted compatibility with a faster version of the function.
-We did note that supporting custom eliminators like \lstinline{N.peano_rect} would be a simple way
-to improve the tactic decompiler.
+The file took under a second for us to compile using \toolname.
+We did not need tactic suggestions for this workflow,
+but we did note that supporting custom eliminators like \lstinline{N.peano_rect} would be a simple way
+to improve the decompiler.
 The most difficult part was manually expanding proofs about \lstinline{nat}
-to explicitly apply \lstinline{Iota}.
-This is because there is not yet any way for manual configuration to supply custom matching functions,
-and unification was not enough.
+to apply \lstinline{Iota},
+as there is not yet a way to supply custom unification heuristics for manual configuration.
 We discuss ideas for this in Sections~\ref{sec:related} and~\ref{sec:discussion}.
 
 \subsection{Industrial Use}
@@ -438,8 +435,8 @@ that would have otherwise been difficult.
 
 Some example proofs that the proof engineer used \toolname for
 can be found in a branch of the proof engineer's repository.\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}}
-The proof engineer used \toolname to port anonymous tuples produced by \company's compiler
-to named records, as shown in the example in Figure~\ref{fig:records}.
+The proof engineer used \toolname to port anonymous tuples produced by \company' compiler
+to named records, as in the example in Figure~\ref{fig:records}.
 
 We implemented a search procedure for the proof engineer to automatically configure the proof term transformation to an equivalence
 between nested tuples and named records.
