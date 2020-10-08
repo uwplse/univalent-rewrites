@@ -177,12 +177,11 @@ and how we imagine the decompiler continuing to evolve from there.
 The mini decompiler reasons about tactics one subterm at a time, and produces simple tactic scripts.
 To produce a more natural set of tactics, \textbf{Decompile} operates in two passes: first it runs something similar to the mini decompiler, and then it modifies those tactics to produce a more natural proof script.
 For example, the second pass cancels out sequences of \lstinline{intros} and \lstinline{revert} tactics.
-The second pass can also take suggested tactics or parts of the old proof script from the proof engineer as input---and there
-is ongoing work using this functionality to iteratively replace tactics with custom tactics and decision procedures,
-checking the result as the second pass recurses.
-When done, this will further improve usability,
-as custom tactics and decision procedures are common in some proof engineering styles.
-Further improvements could come from preserving comments and indentation.
+The second pass can also take suggested tactics (for example, part of the old version of the proof script) from the proof engineer as hints,
+then iteratively replace tactics with those hints, checking the result as the second pass recurses.
+This makes it possible for the tactic scripts \toolname suggests to include custom tactics and decision procedures.
+Further improvements could come from preserving comments and indentation, or automatically using information from the old 
+version of the proof script.
 
 \paragraph{Induction and Rewriting}
 The mini decompiler includes more predictable versions of \lstinline{rewrite} and \lstinline{induction}
