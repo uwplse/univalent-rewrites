@@ -134,8 +134,8 @@ fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
 - (@\codesimb{intro y0.}@)
   (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
   + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@)(@\vspace{-0.04cm}@)
-    (@\codesimd{reflexivity.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{reflexivity.}@)
+    (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
+  + (@\codesime{auto.}@)
 \end{lstlisting}
 \end{minipage}
 \vspace{-0.3cm}
@@ -149,7 +149,7 @@ While the mini decompiler is very simple, only a few small changes are needed
 to move this from CIC$_{\omega}$ to Coq.
 Furthermore, the result can already handle some of the example proofs \toolname has produced.
 The generated proof term of \lstinline{rev_app_distr} with swapped list constructors from Section~\ref{sec:overview},
-for example, consists only of induction, rewriting, simplification, and reflexivity.
+for example, consists only of induction, rewriting, simplification, and reflexivity (solved by \lstinline{auto}).
 Figure~\ref{fig:rainbow} shows the proof term for the base case of \lstinline{rev_app_distr} 
 alongside the decompiled tactic script that \toolname produces.
 This script is fairly low-level and close to the proof term, but it is already something that the proof engineer
@@ -157,7 +157,7 @@ can step through piece by piece to understand, modify, and maintain.
 There are very few differences from the mini decompiler needed to produce this,
 for example handling of rewrites in both directions (\lstinline{eq_ind_r} as opposed to \lstinline{eq_ind}),
 simplifying to handle motive inference for rewrites,
-and turning applications of \lstinline{eq_refl} into reflexivity.
+and turning applications of \lstinline{eq_refl} into reflexivity or \lstinline{auto}.
 
 In fact, since \toolname uses an existing command to translate pattern matching and fixpoints to eliminators,
 \textit{all} of the proof terms that \toolname produces will use induction and rewriting instead.
