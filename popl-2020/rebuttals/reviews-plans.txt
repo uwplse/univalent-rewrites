@@ -220,12 +220,11 @@ Actions:
 1. Make this story more explicit (prototype for suggestions)
 2. Discuss version control, or clarify with Val
 3. Continue to improve the tactic decompiler:
-  a. Custom tactics & decision procedures (WIP)
-  b. Comment & format preservaton
-  c. Removing additional arguments to apply and rewrite
-  d. Looking directly at old tactic scripts instead of just taking tactics as arguments
-  e. Improving performance
-  f. Custom tactics that aren't decision procedures
+  a. Comment & format preservaton
+  b. Removing additional arguments to apply and rewrite
+  c. Looking directly at old tactic scripts instead of just taking tactics as arguments
+  d. Improving performance
+  e. Custom tactics that aren't decision procedures
 4. Adjust examples with improvements
 
 --- Readability ---
