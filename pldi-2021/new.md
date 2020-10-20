@@ -112,6 +112,11 @@ Zach had an interesting framing idea for this about it being less ad-hoc or what
 I think the best thing to do here might be to include the table in the introduction, then reference it again later.
 But may be hard to pull off.
 
+# Tactics
+
+RanDair is working on some more second pass automation, once he finishes the refactor.
+This may help with the presentation of tactic proofs in the paper.
+
 
 
 
