@@ -117,6 +117,10 @@ But may be hard to pull off.
 RanDair is working on some more second pass automation, once he finishes the refactor.
 This may help with the presentation of tactic proofs in the paper.
 
+# Bugs
+
+Fixed the regression bug that made terms explode with projections of existentials for algebraic ornaments.
+One of the reviewers mentioned this case so it may be worth mentioning custom simplifiers in addition to custom unifiers.
 
 
 
