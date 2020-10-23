@@ -64,21 +64,27 @@ The result is a flexible proof repair tool that:
 \item produces suggested tactic scripts as part of better workflow integration.
 \end{enumerate}
 
-\begin{figure}
+\begin{figure*}
 \small
   \begin{tabular}{|l|c|c|c|}
     \hline
     \textbf{Class of Changes} & \textbf{Configuration} & \textbf{Examples} & \textbf{Other Tools} \\
     \hline
-    TODO & TODO & TODO & TODO\\
+    Permuting \& Renaming Constructors & Automatic & TODO & TODO\\
+    Algebraic Ornaments & Automatic & TODO & TODO\\
+    Unpacking Sigma Types & Automatic & TODO & TODO\\
+    Tuples \& Records & Automatic & TODO & TODO\\
+    Factoring out Constructors & Manual & TODO & TODO\\
+    Adding new Constructors & Manual & TODO & TODO\\
+    Switching Representations & Manual & TODO & TODO\\
     \hline
   \end{tabular}
   \caption{Some example changes using \toolname.}
 \label{fig:changes}
-\end{figure}
+\end{figure*}
 
 Table~\ref{fig:changes} describes some example changes using \toolname, the amount of automation present for that class of changes,
-and what other tools can support that class of changes.
+and what other proof refactoring and repair tools we are aware of can support those changes.
 In general, \toolname can support any change described by deconstructed type equivalence that we call a \textit{configuration} (Section~\ref{sec:key2}).
 The configuration expresses to the proof term transformation how to translate functions and proofs defined over the old version of a type
 to instead refer only to the new version, and how to do so in a way that does not break definitional equality.
