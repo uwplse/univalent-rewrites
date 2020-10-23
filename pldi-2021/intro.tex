@@ -50,25 +50,45 @@ The key to supporting proof repair is to build a proof reuse
 tool that can handle that additional challenge (Section~\ref{sec:key1}). 
 \item A configurable proof term transformation can be used to build such a proof repair tool,
 and the result can handle many different kinds of changes (Section~\ref{sec:key2}).
-\item The transformed proof terms can then be translated back to tactic scripts (Section~\ref{sec:decompiler}).
+\item The transformed proof terms can then be translated back to suggested tactic scripts (Section~\ref{sec:decompiler}).
 \end{enumerate}
 
 These insights informed our design of \toolname, an extension to the \textsc{Pumpkin Patch} proof repair plugin suite for Coq 8.8.
 \toolname combines a configurable proof term transformation,
 search procedures to configure the proof term transformation,
-and a prototype decompiler from proof terms back to tactics.
+and a prototype decompiler from proof terms back to suggested tactics.
 The result is a flexible proof repair tool that: 
 
 \begin{enumerate}
 \item supports changes in types informed by proof engineers and not supported by other tools, and
-\item produces tactic scripts as part of better workflow integration.
+\item produces suggested tactic scripts as part of better workflow integration.
 \end{enumerate}
-\toolname can support certain structural changes like porting non-dependent types to certain dependent types
-and changing inductive structure---anything described by an equivalence with a certain form
-detailed in Section~\ref{sec:key2}.
 
-Our main technical advances are techniques for transforming proof terms directly to repair broken proofs, 
-while our decompiler up to tactics is important for usability in Coq.
+\begin{figure}
+\small
+  \begin{tabular}{|l|c|c|c|}
+    \hline
+    \textbf{Class of Changes} & \textbf{Configuration} & \textbf{Examples} & \textbf{Other Tools} \\
+    \hline
+    TODO & TODO & TODO & TODO\\
+    \hline
+  \end{tabular}
+  \caption{Some example changes using \toolname.}
+\label{fig:changes}
+\end{figure}
+
+Table~\ref{fig:changes} describes some example changes using \toolname, the amount of automation present for that class of changes,
+and what other tools can support that class of changes.
+In general, \toolname can support any change described by deconstructed type equivalence that we call a \textit{configuration} (Section~\ref{sec:key2}).
+The configuration expresses to the proof term transformation how to translate functions and proofs defined over the old version of a type
+to instead refer only to the new version, and how to do so in a way that does not break definitional equality.
+To further improve automation, \toolname contains search procedures that automatically discover configurations and prove the
+equivalences they induce for certain classes of changes (\textit{automatic configuration}).
+Otherwise, \toolname can take a configuration as input directly from the proof engineer (\textit{manual configuration}).
+It is thanks to the configuration that the \toolname transformation can support a flexible class of changes relative to other proof refactoring and repair tools within a unified framework.
+
+Our main technical advances are techniques for transforming proof terms directly to repair broken proofs in response to changes
+in type definitions,  while our decompiler up to tactics is important for usability in Coq.
 We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname:
 
 \begin{enumerate}
