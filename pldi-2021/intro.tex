@@ -1,0 +1,81 @@
+\section{Introduction}
+
+Program verification with interactive theorem provers has come a long way since its inception,
+especially when it comes to the scale of programs that can be verified.
+The seL4~\cite{Klein2009} verified operating system kernel, for example,
+is the effort of a team of proof engineers over more than twenty years and spanning more than
+a million lines of proof.
+Given historical critique of verification~\cite{DeMillo1977} (emphasis ours):
+
+\begin{quote}
+A \textit{sufficiently fanatical researcher}
+might be willing to devote \textit{two or 
+three years} to verifying a significant 
+piece of software if he could be 
+assured that the software would remain stable.
+\end{quote}
+we can conclude that, since 1977, either verification has become much easier,
+or our researchers have become much more fanatical. Unfortunately, not all has changed (emphasis still ours):
+
+\begin{quote}
+But real-life programs need to 
+be maintained and modified. 
+There is \textit{no reason to believe} that verifying a modified program is any 
+easier than verifying the original the 
+first time around.
+\end{quote}
+Tools that can automatically refactor or repair proofs~\cite{wibergh2019, WhitesidePhD, Dietrich2013, adams2015, Bourke12, Roe2016, robert2018, pumpkinpatch}
+give us reason to believe that verifying a modified program can sometimes be easier than verifying the original the first time
+around, even when proof engineers do not follow good development processes,
+or when change occurs outside of proof engineers' control~\cite{PGL-045}.
+Still, maintaining verified programs can be challenging: it means keeping not just the programs, but also the
+specifications and proofs about those programs up-to-date.
+This remains so difficult that sometimes, even experts give up in the face of change~\cite{replica}.
+
+We make progress on two open challenges in \textit{proof repair}, the problem of automatically updating proofs in response
+to changes in programs or specifications:
+
+\begin{enumerate}
+\item While there are many ways proofs need to be repaired, one need is to respond to a changed type definition.
+Existing work supports very limited classes of these changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
+of changes~\cite{robert2018, wibergh2019}, and these are not informed by the needs of proof engineers~\cite{replica}.
+\item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018}.
+\end{enumerate}
+Our progress towards these challenges leverages three key insights:
+
+\begin{enumerate}
+\item Proof repair is a form of proof reuse---reusing proofs about one specification to derive proofs about another specification---with 
+the additional challenge that one of the specifications may cease to exist.
+The key to supporting proof repair is to build a proof reuse
+tool that can handle that additional challenge (Section~\ref{sec:key1}). 
+\item A configurable proof term transformation can be used to build such a proof repair tool,
+and the result can handle many different kinds of changes (Section~\ref{sec:key2}).
+\item The transformed proof terms can then be translated back to tactic scripts (Section~\ref{sec:decompiler}).
+\end{enumerate}
+
+These insights informed our design of \toolname, an extension to the \textsc{Pumpkin Patch} proof repair plugin suite for Coq 8.8.
+\toolname combines a configurable proof term transformation,
+search procedures to configure the proof term transformation,
+and a prototype decompiler from proof terms back to tactics.
+The result is a flexible proof repair tool that: 
+
+\begin{enumerate}
+\item supports changes in types informed by proof engineers and not supported by other tools, and
+\item produces tactic scripts as part of better workflow integration.
+\end{enumerate}
+\toolname can support certain structural changes like porting non-dependent types to certain dependent types
+and changing inductive structure---anything described by an equivalence with a certain form
+detailed in Section~\ref{sec:key2}.
+
+Our main technical advances are techniques for transforming proof terms directly to repair broken proofs, 
+while our decompiler up to tactics is important for usability in Coq.
+We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname:
+
+\begin{enumerate}
+\item can support variants of a benchmark from a user study of Coq proof engineers,
+\item can simplify dependently-typed programming, %automating manual steps from previous work,
+\item can help proof engineers port functions and proofs from unary to binary numbers, and
+\item has helped an industrial proof engineer at Galois integrate Coq with a company workflow and write proofs about an implementation of the TLS Handshake Protocol.
+\end{enumerate}
+%Our experiences drive ideas (Section~\ref{sec:discussion}) that open the door to better proof engineering tools.
+

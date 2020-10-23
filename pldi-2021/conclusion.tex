@@ -1,0 +1,52 @@
+\section{Conclusions \& Future Work}
+\label{sec:discussion}
+
+We showed how to combine a configurable proof term transformation with a tactic decompiler to build \toolname,
+a proof repair and reuse tool that is flexible and useful for real proof engineering scenarios.
+\toolname has helped an industrial proof engineer integrate Coq with a company workflow,
+and has supported benchmarks common in the proof engineering community.
+
+Moving forward, our goal is to make proofs easier to repair and reuse regardless of proof engineering expertise.
+We want to reach more proof engineers, and we want \toolname to integrate seamlessly with Coq.
+We conclude with a discussion of some challenges that remain.
+
+% encountered in scaling up the \toolname proof term 
+%transformation (Section~\ref{sec:problems}), and how we believe ideas from the rewrite system and constraint
+%solver communities can address those challenges and improve the state of the art in proof engineering (Section~\ref{sec:egraph}).
+%Our hope is to inspire research communities to come together and open the door to better tools for proof reuse and repair.
+
+\paragraph{Future Work}
+
+We encountered three challenges in scaling up the \toolname transformation:
+
+\begin{enumerate}
+\item \textbf{Multiple Equivalences}: Deciding when to run the transformation rules is left to the implementation.
+\toolname automates the most basic case of this: changing \textit{every} occurrence of \A to \B.
+This can lead to confusing or undesired behavior, especially when there are multiple matching equivalences for a subterm.
+The ideal would be a type-directed search procedure.
+\item \textbf{Nontermination}: Naively applying the transformation can result in nontermination when the output type refers to the input type.
+\toolname includes termination checks, but these termination checks are ad-hoc and do not capture every potentially nonterminating use case.
+\item \textbf{Custom Unification Heuristics}: \toolname with manual configuration is not always smart enough to automatically unify subterms of proof terms with
+configuration terms.
+Proof engineers would benefit from the ability to add custom unification heuristics to \toolname.
+\end{enumerate}
+We hope to solve all three of these challenges elegantly and efficiently using \textit{e-graphs}~\cite{egraph1},
+a data structure that is used in the constraint solver and rewrite system communities for managing equivalences.
+E-graphs are built specifically to deal with multiple equivalences,
+remove the burden of ad-hoc reasoning about termination,
+and make it simple for anyone to extend a system with new
+rewrite rules---even ones that can call out to external procedures~\cite{egraph5} 
+like unification heuristics implemented in OCaml.
+The one hurdle is to adapt them to use a univalent definition of equality.
+In cubical type theory, this adaptation is simple~\cite{egraph6}; we hope to repurpose this insight.
+
+Beyond that, we believe that the biggest gains will come from continuing to improve the prototype decompiler.
+Two particularly helpful feature would be preserving indentation and comments, and automatically using information from the old 
+version of the proof script.
+Some improvements could come from better tactics themselves---like better handling of explicitly passed 
+motives in the \lstinline{induction} tactic, or a more structured tactic language.
+With that, we believe that the future of seamless and powerful proof repair and reuse for all is within reach.
+We hope you will join us in bringing it to life.
+
+
+
