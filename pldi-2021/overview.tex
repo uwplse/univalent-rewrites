@@ -1,7 +1,7 @@
 \section{A Simple Motivating Example}
 \label{sec:overview}
 
-\begin{figure}
+\begin{figure*}
 \begin{minipage}{0.46\textwidth}
    \lstinputlisting[firstline=1, lastline=3]{listswap.tex}
 \end{minipage}
@@ -12,7 +12,7 @@
 \vspace{-0.3cm}
 \caption{The updated \lstinline{list} (right) is the old \lstinline{list} (left) with its two constructors swapped (\codediff{orange}).}
 \label{fig:listswap}
-\end{figure}
+\end{figure*}
 
 The \toolname extension to the \textsc{Pumpkin Patch} plugin suite is available on Github.\footnote{\url{https://github.com/uwplse/pumpkin-pi}}
 Consider a simple example of using this extension: fixing broken list proofs after swapping the two list constructors (Figure~\ref{fig:listswap}).
@@ -61,12 +61,12 @@ We can even repair the entire list module from the Coq standard library all at o
 command; the results of this are in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{\lstinline{Swap.v}}.
 When we are done, we can get rid of \lstinline{Old.list} entirely.
 
-\begin{figure}
+\begin{figure*}
 \codeauto{\lstinputlisting{overviewproof.tex}}
 \vspace{-0.3cm}
 \caption{The automatically (denoted by $\codeauto{light blue}$) repaired proof of \lstinline{rev_app_distr} that \toolname produces.}
 \label{fig:auto}
-\end{figure} % TODO revisit all generated tactic proofs with final decompiler
+\end{figure*} % TODO revisit all generated tactic proofs with final decompiler
 
 The key to success here is taking advantage of Coq's structured proof term language:
 Coq compiles every proof script to a proof term in a language called Gallina that is based on the calculus of inductive 

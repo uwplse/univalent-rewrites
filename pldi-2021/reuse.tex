@@ -24,7 +24,7 @@ tool that can handle that additional challenge (Section~\ref{sec:time}).
 \subsection{Scope: Type Equivalences}
 \label{sec:scope}
 
-\begin{figure}
+\begin{figure*}
 \codeauto{%
 \begin{minipage}{0.48\textwidth}
 \lstinputlisting[firstline=1, lastline=16]{equivproof.tex}
@@ -36,7 +36,7 @@ tool that can handle that additional challenge (Section~\ref{sec:time}).
 \vspace{-0.3cm}
 \caption{Two functions between \lstinline{Old.list} and \lstinline{New.list} (top) that form an equivalence (bottom).}
 \label{fig:equivalence}
-\end{figure}
+\end{figure*}
 
 \toolname supports a particular kind of repair: proof repair in response to certain changes in type definitions.
 In particular, these changes in type definitions must correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
@@ -54,7 +54,7 @@ Old.list $\simeq$ New.list
 \subsubsection{Factoring out Constructors}
 \label{sec:ex1}
 
-\begin{figure}
+\begin{figure*}
 \begin{minipage}{0.48\textwidth}
 \lstinputlisting[firstline=1, lastline=3]{equiv2.tex}
 \end{minipage}
@@ -65,7 +65,7 @@ Old.list $\simeq$ New.list
 \vspace{-0.3cm}
 \caption{The type \lstinline{J} (right) is \lstinline{I} (left) with \lstinline{A} and \lstinline{B} factored out to \lstinline{bool} (Coq standard library).}
 \label{fig:equivalence2}
-\end{figure}
+\end{figure*}
 
 % TODO link to second equivalence here:
 For a slightly more complex example, consider the change from the type \lstinline{I} to the type \lstinline{J} in Figure~\ref{fig:equivalence2}.
@@ -121,7 +121,7 @@ It is up to the proof engineer to supply the additional information needed to co
 %writing the new proof from scratch.
 
 
-\begin{figure}
+\begin{figure*}
 \begin{minipage}{0.40\textwidth}
    \lstinputlisting[firstline=1, lastline=4]{listtovect.tex}
 \end{minipage}
@@ -132,7 +132,7 @@ It is up to the proof engineer to supply the additional information needed to co
 \vspace{-0.3cm}
 \caption{A vector (right) is a list (left) indexed by its length.}
 \label{fig:listtovect}
-\end{figure}
+\end{figure*}
 
 Practically, the key to handling changes that add or remove information usefully is to separate the new information from redundant old information, 
 and include only the new information in the correpsonding projection of the $\Sigma$ type.
@@ -217,10 +217,10 @@ Furthermore, it did so in a way that removed all references to \lstinline{Old.li
 and in its dependencies.
 That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be removed.
 
-\subsection{\textsc{Pumpkin P}i: A Tool for Proof Repair Across Type Equivalences}
+\subsection{\textsc{Carrot}: A Tool for Proof Repair Across Type Equivalences}
 \label{sec:time}
 
-\begin{figure}
+\begin{figure*}
 \begin{minipage}{0.52\textwidth}
 \includegraphics[width=\linewidth]{workflowa.pdf}
 \end{minipage}
@@ -232,7 +232,7 @@ That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be remove
 \vspace{-0.4cm}
 \caption{The two possible workflows for \toolname, using either automatic (left) or manual (right) configuration.}
 \label{fig:system}
-\end{figure}
+\end{figure*}
 
 \toolname implements this transport with a twist using a proof term transformation.
 The proof term transformation implements transport across equivalences,

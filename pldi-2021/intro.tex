@@ -53,7 +53,7 @@ and the result can handle many different kinds of changes (Section~\ref{sec:key2
 \item The transformed proof terms can then be translated back to suggested tactic scripts (Section~\ref{sec:decompiler}).
 \end{enumerate}
 
-These insights informed our design of \toolname, an extension to the \textsc{Pumpkin Patch} proof repair plugin suite for Coq 8.8.
+These insights informed our design of \toolname,\footnote{Name changed for double-blind.} a proof repair tool for Coq 8.8.
 \toolname combines a configurable proof term transformation,
 search procedures to configure the proof term transformation,
 and a prototype decompiler from proof terms back to suggested tactics.
@@ -96,24 +96,18 @@ automatic or manual configuration (Config.), example changes in that class (Exam
 \label{fig:changes}
 \end{figure*} % TODO cite wb paper
 
-Table~\ref{fig:changes} shows that \toolname can support a flexible class of changes relative to other proof refactoring and repair tools 
-within a unified framework (see Section~\ref{sec:related} for more discussion of related tools).
-In general, \toolname can support any change described by deconstructed type equivalence that we call a \textit{configuration} (Section~\ref{sec:key2}).
+Table~\ref{fig:changes} shows that \toolname can support a flexible class of changes within a unified framework.
+In general, \toolname can support any change described by a deconstructed type equivalence that we call a \textit{configuration} (Section~\ref{sec:key2}).
 The configuration expresses to the proof term transformation how to translate functions and proofs defined over the old version of a type
-to instead refer only to the new version, and how to do so in a way that does not break definitional equality.
+to refer only to the new version, and how to do so in a way that does not break definitional equality.
 To further improve usability, \toolname contains search procedures that automatically discover configurations and prove the
 equivalences they induce for certain classes of changes (\textit{automatic configuration}).
-Otherwise, \toolname can take a configuration as input directly from the proof engineer (\textit{manual configuration}).
+Otherwise, \toolname takes a configuration as input from the proof engineer (\textit{manual configuration}).
 
 Our main technical advances are techniques for transforming proof terms directly to repair broken proofs in response to changes
-in type definitions, while our prototype decompiler up to tactics is important for usability in Coq.
-We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname:
-
-\begin{enumerate}
-\item can support variants of a benchmark from a user study of Coq proof engineers,
-\item can simplify dependently-typed programming, %automating manual steps from previous work,
-\item can help proof engineers port functions and proofs from unary to binary numbers, and
-\item has helped an industrial proof engineer at Galois integrate Coq with a company workflow and write proofs about an implementation of the TLS Handshake Protocol.
-\end{enumerate}
+in types, while our prototype decompiler up to tactics is important for usability in Coq.
+We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname 1) can support a benchmark from a user study of Coq proof engineers, 2) can simplify dependently-typed programming, %automating manual steps from previous work,
+3) can help proof engineers port functions and proofs from unary to binary numbers, and
+4) has helped an industrial proof engineer at Galois integrate Coq with a company workflow and write proofs about an implementation of the TLS Handshake Protocol.
 %Our experiences drive ideas (Section~\ref{sec:discussion}) that open the door to better proof engineering tools.
 

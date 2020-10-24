@@ -84,7 +84,7 @@ These describe how to construct and eliminate \A and \B, wrapping the types with
 There must be the same number of dependent constructors and cases in dependent eliminators for \A and \B,
 even if \A and \B are types with different numbers of constructors.
 
-\begin{figure}
+\begin{figure*}
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
 DepConstr(0, list T) : list T :=(@\vspace{-0.04cm}@)
@@ -111,7 +111,7 @@ DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.0
 \vspace{-0.3cm}
 \caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}.}
 \label{fig:listconfig}
-\end{figure}
+\end{figure*}
 
 For the \lstinline{list} change from Section~\ref{sec:overview},
 the configuration that \toolname discovers uses the dependent constructors
@@ -165,7 +165,7 @@ $\eta$-expansion describes how to expand a term to apply a constructor to an eli
 and is important for defining dependent eliminators~\cite{nlab:eta-conversion}.
 $\iota$-reduction ($\beta$-reduction for inductive types) describes how to reduce an elimination of a constructor~\cite{nlab:beta-reduction}.
 
-\begin{figure}
+\begin{figure*}
 \begin{minipage}{0.48\textwidth}
    \lstinputlisting[firstline=1, lastline=8]{nattobin.tex}
 \end{minipage}
@@ -176,7 +176,7 @@ $\iota$-reduction ($\beta$-reduction for inductive types) describes how to reduc
 \vspace{-0.3cm}
 \caption{Unary (left) and binary (right) natural numbers.}
 \label{fig:nattobin}
-\end{figure}
+\end{figure*}
 
 The configuration for the change from \lstinline{list} to \lstinline{$\Sigma$(n : nat).vector T n} has propositional \lstinline{Eta}.
 To describe \lstinline{Eta}, it is enough to use the standard definition of $\eta$-expansion for $\Sigma$:
@@ -231,7 +231,7 @@ the need for propositional $\iota$ was noted as far back as \citet{magaud2000cha
 \subsection{The Proof Term Transformation}
 \label{sec:generic}
 
-\begin{figure}
+\begin{figure*}
 \begin{mathpar}
 \mprset{flushleft}
 \small
@@ -287,7 +287,7 @@ the need for propositional $\iota$ was noted as far back as \citet{magaud2000cha
 \vspace{-0.3cm}
 \caption{Proof term transformation for transporting terms across an equivalence $A \simeq B$ described by configuration \lstinline{((DepConstr, DepElim), (Eta, Iota))}.}
 \label{fig:final}
-\end{figure}
+\end{figure*}
 
 Figure~\ref{fig:final} shows the proof term transformation $\Gamma \vdash t \Uparrow t'$ that forms the core of \toolname.
 %Like the transformation from \textsc{Devoid},
@@ -313,7 +313,7 @@ The transformation then transforms the applications of the terms in the configur
 to applications of the terms in the configuration for \B.
 Reducing the result produces the output term defined over \B.
 
-\begin{figure}
+\begin{figure*}
 \begin{minipage}{0.49\textwidth}
 \begin{lstlisting}
 (* 1: original term *)(@\vspace{-0.04cm}@)
@@ -364,7 +364,7 @@ $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
 \vspace{-0.3cm}
 \caption{Swapping cases of the append function, with names fully qualified only when needed for clarity, counterclockwise: 1) the input, 2) the term unified with the configuration, 3) the term ported to the updated type, and 4) the term reduced to the final output.}
 \label{fig:appswap1}
-\end{figure}
+\end{figure*}
 
 Figure~\ref{fig:appswap1} shows this with the list append function \lstinline{++} from Section~\ref{sec:overview}.
 To update the append function (top left), \toolname
@@ -429,7 +429,7 @@ Beyond that, even once we have chosen an equivalence, we could define many possi
 to the equivalence, some of which will produce functions and proofs that are more useful or efficient than others
 (consider \lstinline{DepElim} converting through several intermediate types).
 
-\begin{figure}
+\begin{figure*}
 \begin{lstlisting}
 (* --- Equivalence --- *)(@\vspace{-0.04cm}@)
 f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }(@\vspace{-0.04cm}@)
@@ -461,7 +461,7 @@ iota_ok (j, B) :(@\vspace{-0.04cm}@)
 preserves equivalence (top) coherently with equality (bottom). Throughout, $\vec{f}$, $\vec{x}$, and $\vec{\mathtt{IH}}$ represent
 eliminator cases, constructor arguments, and inductive hypotheses, respectively.}
 \label{fig:spec}
-\end{figure} % TODO sigs for Iota here are not quite correct---Q is not bound
+\end{figure*} % TODO sigs for Iota here are not quite correct---Q is not bound
 
 Thankfully, once the art is done, we can specify what it means for it to be \textit{correct art}.
 Figure~\ref{fig:spec} specifies the correctness criteria for any given configuration (assuming a univalent metatheory in which equality up
