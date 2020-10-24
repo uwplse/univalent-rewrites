@@ -1,4 +1,4 @@
-\section{Problem Definition: Proof Repair Across Type Equivalences}
+\section{Problem Definition}
 \label{sec:key1}
 
 \toolname is a tool for \textit{proof repair}.
@@ -27,11 +27,11 @@ tool that can handle that additional challenge (Section~\ref{sec:time}).
 \begin{figure*}
 \codeauto{%
 \begin{minipage}{0.48\textwidth}
-\lstinputlisting[firstline=1, lastline=16]{equivproof.tex}
+\lstinputlisting[firstline=1, lastline=14]{equivproof.tex}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
-\lstinputlisting[firstline=18, lastline=34]{equivproof.tex}
+\lstinputlisting[firstline=16, lastline=30]{equivproof.tex}
 \end{minipage}}
 \vspace{-0.3cm}
 \caption{Two functions between \lstinline{Old.list} and \lstinline{New.list} (top) that form an equivalence (bottom).}
@@ -54,18 +54,18 @@ Old.list $\simeq$ New.list
 \subsubsection{Factoring out Constructors}
 \label{sec:ex1}
 
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
+\begin{figure}
+\begin{minipage}{0.48\columnwidth}
 \lstinputlisting[firstline=1, lastline=3]{equiv2.tex}
 \end{minipage}
 \hfill
-\begin{minipage}{0.48\textwidth}
+\begin{minipage}{0.48\columnwidth}
 \lstinputlisting[firstline=5, lastline=7]{equiv2.tex}
 \end{minipage}
 \vspace{-0.3cm}
 \caption{The type \lstinline{J} (right) is \lstinline{I} (left) with \lstinline{A} and \lstinline{B} factored out to \lstinline{bool} (Coq standard library).}
 \label{fig:equivalence2}
-\end{figure*}
+\end{figure}
 
 % TODO link to second equivalence here:
 For a slightly more complex example, consider the change from the type \lstinline{I} to the type \lstinline{J} in Figure~\ref{fig:equivalence2}.
@@ -74,11 +74,7 @@ new hypothesis of type \lstinline{bool} for a single constructor.
 
 With \toolname, the proof engineer can repair functions and proofs about \lstinline{I} to instead use \lstinline{J},
 as long as she first tells \toolname (using the configuration we will explain in Section~\ref{sec:configurable}) which constructor of \lstinline{I} maps to \lstinline{true} and which maps to \lstinline{false}.
-This information about constructor mappings induces an equivalence:
-
-\begin{lstlisting}
-I $\simeq$ J
-\end{lstlisting}
+This information about constructor mappings induces an equivalence \lstinline{I }$\simeq$\lstinline{ J}
 along which \toolname repairs functions and proofs.
 
 The file \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr_refactor.v} shows an example
@@ -177,7 +173,7 @@ informed by the needs of proof engineers.
 
 % TODO show an example when it is not possible to define this
 
-\subsection{Proof Repair Across Type Equivalences is Transport with a Twist}
+\subsection{Transport with a Twist}
 \label{sec:repair}
 
 Proof repair across type equivalences corresponds to a particular kind of proof reuse called \textit{transport},
