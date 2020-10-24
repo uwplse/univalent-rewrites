@@ -66,17 +66,29 @@ The result is a flexible proof repair tool that:
 
 \begin{figure*}
 \small
-  \begin{tabular}{|l|c|c|c|}
+  \begin{tabular}{|l|l|l|l|}
     \hline
     \textbf{Class of Changes} & \textbf{Configuration} & \textbf{Examples} & \textbf{Other Tools} \\
     \hline
-    Permuting \& Renaming Constructors & Automatic & TODO & TODO\\
-    Algebraic Ornaments & Automatic & TODO & TODO\\
-    Unpacking Sigma Types & Automatic & TODO & TODO\\
-    Tuples \& Records & Automatic & TODO & TODO\\
-    Factoring out Constructors & Manual & TODO & TODO\\
-    Adding new Constructors & Manual & TODO & TODO\\
-    Switching Representations & Manual & TODO & TODO\\
+    \multirow[t]{3}{*}{Permuting Constructors} & \multirow[t]{3}{*}{Automatic} & Lists, Coq Standard Library (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \multirow[t]{3}{*}{TODO}\\
+     & & Modifying a Language, \textsc{REPLica} Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \\
+    & & Large Ambiguous Enum (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \\
+    \hline
+    \multirow[t]{2}{*}{Algebraic Ornaments} & \multirow[t]{2}{*}{Automatic} & Lists to Packed Vectors, hs-to-coq (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{Example.v}) & \multirow[t]{2}{*}{TODO}\\
+    & & Lists to Packed Vectors, Coq Standard Library (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/ListToVect.v}{ListToVect.v}) & \\
+    \hline
+    Unpacking Sigma Types & Automatic & Vectors of Particular Lengths, hs-to-coq (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{Example.v}) & TODO\\
+    \hline
+    \multirow[t]{3}{*}{Tuples \& Records} & \multirow[t]{3}{*}{Automatic} & Simple Records (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/minimal_records.v}{minimal\_records.v}) & \multirow[t]{3}{*}{TODO}\\
+    & & Parameterized Records (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/more_records.v}{more_records.v}) & \\
+    & & Industrial Use (\href{https://github.com/Ptival/saw-core-coq/tree/dump-wip}{saw-core-coq}) & \\
+    \hline
+    Adding new Constructors & Mixed & Extending a Language, \textsc{REPLica} Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add\_constr.v}) & TODO\\
+    \hline
+    Factoring out Constructors & Manual & External Requested Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr\_refactor.v}) & TODO\\
+    \hline
+    \multirow[t]{2}{*}{Changing Inductive Structure} & \multirow[t]{2}{*}{Manual} & Unary to Binary, Classic Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{nonorn.v}) & \multirow[t]{2}{*}{TODO}\\
+     & & Vectors to Finite Sets, External Requested Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/fin.v}{fin.v}) & \\
     \hline
   \end{tabular}
   \caption{Some example changes using \toolname.}
@@ -84,7 +96,7 @@ The result is a flexible proof repair tool that:
 \end{figure*}
 
 Table~\ref{fig:changes} describes some example changes using \toolname, the amount of automation present for that class of changes,
-and what other proof refactoring and repair tools we are aware of can support those changes.
+and what other tools we are aware of can support those changes in a way that is suitable for repair.
 In general, \toolname can support any change described by deconstructed type equivalence that we call a \textit{configuration} (Section~\ref{sec:key2}).
 The configuration expresses to the proof term transformation how to translate functions and proofs defined over the old version of a type
 to instead refer only to the new version, and how to do so in a way that does not break definitional equality.
@@ -94,7 +106,7 @@ Otherwise, \toolname can take a configuration as input directly from the proof e
 It is thanks to the configuration that the \toolname transformation can support a flexible class of changes relative to other proof refactoring and repair tools within a unified framework.
 
 Our main technical advances are techniques for transforming proof terms directly to repair broken proofs in response to changes
-in type definitions,  while our decompiler up to tactics is important for usability in Coq.
+in type definitions, while our prototype decompiler up to tactics is important for usability in Coq.
 We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname:
 
 \begin{enumerate}
