@@ -276,12 +276,12 @@ the need for propositional $\iota$ was noted as far back as \citet{magaud2000cha
 
 % Lamda
 \inferrule[Lam]
-  { \Gamma \vdash T \Uparrow T' \\\\ \Gamma,\ t : T \vdash b \Uparrow b' }
+  { \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
   {\Gamma \vdash \lambda (t : T).b \Uparrow \lambda (t : T').b'}
 
 % Product
 \inferrule[Prod]
-  { \Gamma \vdash T \Uparrow T' \\\\ \Gamma,\ t : T \vdash b \Uparrow b' }
+  { \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
   {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t : T').b'}
 \end{mathpar}
 \vspace{-0.3cm}
@@ -318,22 +318,16 @@ Reducing the result produces the output term defined over \B.
 \begin{lstlisting}
 (* 1: original term *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- (@\codediff{Elim}@)(@\vspace{-0.04cm}@)
-   (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
- {(@\vspace{-0.04cm}@)
+ (@\codediff{Elim}@) (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
    ($\lambda$ m . m),(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
-      (@\codediff{Constr}@)(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . (@\codediff{Constr}@)(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
  } m.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
 (* 2: after unifying (@\texttt{with}@) configuration *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- (@\codediff{DepElim}@)(@\vspace{-0.04cm}@)
-   (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
- {(@\vspace{-0.04cm}@)
+ (@\codediff{DepElim}@) (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
    ($\lambda$ m . m)(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
-      (@\codediff{DepConstr}@)(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . (@\codediff{DepConstr}@)(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
  } m.
 \end{lstlisting}
 \end{minipage}
@@ -342,22 +336,16 @@ $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
 \begin{lstlisting}
 (* 4: reduced to final term *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- (@\codediff{Elim}@)(@\vspace{-0.04cm}@)
-   (l, $\lambda$(l: New.list T).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
- {(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
-      (@\codediff{Constr}@)(0, New.list T) t (IHl m)),(@\vspace{-0.04cm}@)
+ (@\codediff{Elim}@) (l, $\lambda$(l: New.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . (@\codediff{Constr}@)(0, New.list T) t (IHl m)),(@\vspace{-0.04cm}@)
    ($\lambda$ m . m)(@\vspace{-0.04cm}@)
  } m.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
 (* 3: ported to New.list *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- DepElim(@\vspace{-0.04cm}@)
-   (l, $\lambda$(l: (@\codediff{New.list T}@)).list T $\rightarrow$ list T))(@\vspace{-0.04cm}@)
- {(@\vspace{-0.04cm}@)
+ DepElim (l, $\lambda$(l: (@\codediff{New.list T}@)).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
    ($\lambda$ m . m)(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m.(@\vspace{-0.04cm}@)
-      DepConstr(1, (@\codediff{New.list T}@)) t (IHl m))(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . DepConstr(1, (@\codediff{New.list T}@)) t (IHl m))(@\vspace{-0.04cm}@)
  } m.
 \end{lstlisting}
 \end{minipage}
@@ -438,23 +426,21 @@ section : $\forall$ (a : A), g (f a) = a.(@\vspace{-0.04cm}@)
 retraction : $\forall$ (b : B), f (g b) = b.(@\vspace{-0.04cm}@)
 (@\vspace{-0.04cm}@)
 dep_constr_ok : $\forall$ j, DepConstr(j, A) $\equiv_{A \simeq B}$ DepConstr(j, B).(@\vspace{-0.04cm}@)
-dep_elim_ok : $\forall$ (a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type)},(@\vspace{-0.04cm}@)
+dep_elim_ok : $\forall$ (a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type),(@\vspace{-0.04cm}@)
   a $\equiv_{A \simeq B}$ b $\rightarrow$ P $\equiv_{A \simeq B}$ Q $\rightarrow$ DepElim(a, P) $\equiv_{A \simeq B}$ DepElim(b, Q).(@\vspace{-0.04cm}@)
 (@\vspace{-0.04cm}@)
 (* --- Equality --- *)(@\vspace{-0.04cm}@)
 eta_ok (A) : $\forall$ (a : A) (P : A $\rightarrow$ Type) $\vec{f}$, DepElim(a, P) $\vec{f}$ : P (Eta(A) a).(@\vspace{-0.04cm}@)
 eta_ok (B) : $\forall$ (b : B) (P : B $\rightarrow$ Type) $\vec{f}$, DepElim(b, P) $\vec{f}$ : P (Eta(B) b).(@\vspace{-0.04cm}@)
 (@\vspace{-0.04cm}@)
-iota_ok (j, A) :(@\vspace{-0.04cm}@)
-  $\forall$ (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
-    Q (DepElim(DepConstr(j, A) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
-    Q ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)(@\vspace{-0.04cm}@)
-  := Iota(A, j, Q).(@\vspace{-0.04cm}@)
-iota_ok (j, B) :(@\vspace{-0.04cm}@)
-  $\forall$ (P : B $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, B) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
-    Q (DepElim(DepConstr(j, B) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
-    Q ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)(@\vspace{-0.04cm}@)
-  := Iota(B, j, Q).
+iota_ok (j, A) : $\forall$ (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+  Q (DepElim(DepConstr(j, A) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
+  Q ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)(@\vspace{-0.04cm}@)
+:= Iota(A, j, Q).(@\vspace{-0.04cm}@)
+iota_ok (j, B) : $\forall$ (P : B $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, B) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+  Q (DepElim(DepConstr(j, B) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
+  Q ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)(@\vspace{-0.04cm}@)
+:= Iota(B, j, Q).
 \end{lstlisting}
 \vspace{-0.3cm}
 \caption{Correctness criteria for a configuration \lstinline{(DepConstr, DepElim), (Eta, Iota)} to ensure that the transformation

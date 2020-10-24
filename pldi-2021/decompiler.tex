@@ -54,7 +54,7 @@ Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always ta
 Similarly, \lstinline{apply} applies only the function without inferring any arguments, and leaves those arguments to proof obligations.
 The implementation reasons about Ltac and so does not make these assumptions.
 
-\begin{figure}
+\begin{figure*}
 \begin{mathpar}
 \mprset{flushleft}
 \small
@@ -66,11 +66,11 @@ The implementation reasons about Ltac and so does not make these assumptions.
 
 \inferrule[Symmetry]
   { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{symmetry}.\ p } \\
+  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{symmetry}.\ p }
 
 \inferrule[Split]
   { \Gamma \vdash l \Rightarrow p \\ \Gamma \vdash r \Rightarrow q }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l r \Rightarrow \mathrm{split} \{ p, q \}.\ }
+  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l r \Rightarrow \mathrm{split} \{ p, q \}.\ }\\
 
 \inferrule[Left]
   { \Gamma \vdash H \Rightarrow p }
@@ -78,11 +78,11 @@ The implementation reasons about Ltac and so does not make these assumptions.
 
 \inferrule[Right]
   { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p } \\
+  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }
 
 \inferrule[Rewrite]
   { \Gamma \vdash H_1 : x = y \\ \Gamma \vdash H_2 \Rightarrow p }
-  { \Gamma \vdash \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{symmetry}.\ \mathrm{rewrite}\ P\ H_1.\ p }
+  { \Gamma \vdash \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{symmetry}.\ \mathrm{rewrite}\ P\ H_1.\ p }\\
 
 \inferrule[Induction]
   { \Gamma \vdash \vec{f} \Rightarrow \vec{p} }
@@ -99,7 +99,7 @@ The implementation reasons about Ltac and so does not make these assumptions.
 \vspace{-0.3cm}
 \caption{Qtac decompiler semantics.}
 \label{fig:someantics}
-\end{figure}
+\end{figure*}
 
 The semantics for the mini decompiler $\Gamma \vdash t \Rightarrow p$ are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
 As with the real decompiler, the mini decompiler defaults to the proof script
@@ -115,21 +115,19 @@ The remaining applications become apply tactics (\textsc{Apply}).
 In all cases, the decompiler recurses on the remaining body, breaking into cases when relevant, until no other preconditions match.
 At that point the \textsc{Base} case holds, and we are done.
 
-\begin{figure}
-\begin{minipage}{0.44\textwidth}
+\begin{figure*}
+\begin{minipage}{0.54\textwidth}
 \begin{lstlisting}
 fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
   (@\codesima{list_rect}@) _ _(@\vspace{-0.04cm}@)
     (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
-      (@\codesimc{eq_ind_r}@) _ (@\vspace{-0.04cm}@)
-        (@\codesimd{eq_refl}@)(@\vspace{-0.04cm}@)
-        (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+      (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
     (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
     (@\codesima{y0}@)
 \end{lstlisting}
 \end{minipage}
 \hfill
-\begin{minipage}{0.54\textwidth}
+\begin{minipage}{0.44\textwidth}
 \begin{lstlisting}
 - (@\codesimb{intro y0.}@)
   (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
@@ -143,7 +141,7 @@ fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
 \lstinline{rev_app_distr} from Section~\ref{sec:overview}, with corresponding terms and tactics 
 highlighted with the same color, and nothing else highlighted for clarity.}
 \label{fig:rainbow}
-\end{figure}
+\end{figure*}
 
 While the mini decompiler is very simple, only a few small changes are needed
 to move this from CIC$_{\omega}$ to Coq.
