@@ -14,8 +14,8 @@ three years} to verifying a significant
 piece of software if he could be 
 assured that the software would remain stable.
 \end{quote}
-we can conclude that, since 1977, either verification has become much easier,
-or our researchers have become much more fanatical. Unfortunately, not all has changed (emphasis still ours):
+we deduce that, since 1977, either verification has become much easier,
+or researchers have become much more fanatical. Unfortunately, not all has changed (emphasis still ours):
 
 \begin{quote}
 But real-life programs need to 
@@ -25,11 +25,9 @@ easier than verifying the original the
 first time around.
 \end{quote}
 Tools that can automatically refactor or repair proofs~\cite{wibergh2019, WhitesidePhD, Dietrich2013, adams2015, Bourke12, Roe2016, robert2018, pumpkinpatch}
-give us reason to believe that verifying a modified program can sometimes be easier than verifying the original the first time
-around, even when proof engineers do not follow good development processes,
+give us reason to believe that verifying a modified program \textit{can} sometimes be easier than verifying the original, even when proof engineers do not follow good development processes,
 or when change occurs outside of proof engineers' control~\cite{PGL-045}.
-Still, maintaining verified programs can be challenging: it means keeping not just the programs, but also the
-specifications and proofs about those programs up-to-date.
+Still, maintaining verified programs can be challenging: it means keeping not just the programs, but also specifications and proofs about those programs up-to-date.
 This remains so difficult that sometimes, even experts give up in the face of change~\cite{replica}.
 
 We make progress on two open challenges in \textit{proof repair}, the problem of automatically updating proofs in response
@@ -39,7 +37,8 @@ to changes in programs or specifications:
 \item While there are many ways proofs need to be repaired, one need is to respond to a changed type definition.
 Existing work supports very limited classes of these changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
 of changes~\cite{robert2018, wibergh2019}, and these are not informed by the needs of proof engineers~\cite{replica}.
-\item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018}.
+\item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018},
+and may impose additional proof obligations like proving relations corresponding to changes~\cite{Ringer2019}.
 \end{enumerate}
 Our progress towards these challenges leverages three key insights:
 
@@ -53,7 +52,7 @@ and the result can handle many different kinds of changes (Section~\ref{sec:key2
 \item The transformed proof terms can then be translated back to suggested tactic scripts (Section~\ref{sec:decompiler}).
 \end{enumerate}
 
-These insights informed our design of \toolname,\footnote{Name changed for double-blind.} a proof repair tool for Coq 8.8.
+These insights informed our design of \toolname\footnote{Name changed for double-blind.} (Configurable Approach to Repairing \& Refactoring Outdated Tactics), a proof repair plugin for Coq 8.8.
 \toolname combines a configurable proof term transformation,
 search procedures to configure the proof term transformation,
 and a prototype decompiler from proof terms back to suggested tactics.
@@ -61,8 +60,10 @@ The result is a flexible proof repair tool that:
 
 \begin{enumerate}
 \item supports changes in types informed by proof engineers and not supported by other tools, and
-\item produces suggested tactic scripts as part of better workflow integration.
+\item produces suggested tactic scripts and proves relations corresponding to changes as part of better workflow integration.
 \end{enumerate}
+
+\subsection*{Addressing Challenge 1: Flexible Type Support}
 
 \begin{figure*}
 \small
@@ -92,22 +93,35 @@ The result is a flexible proof repair tool that:
     \hline
   \end{tabular}
   \caption{Some changes using \toolname, from left to right: class of changes (Class), whether the class of changes uses
-automatic or manual configuration (Config.), example changes in that class (Examples), and Coq tools we are aware of that can support repair along (Repair Tools) or automatic proof of (Search Tools) the equivalence correponding to each example change. The tools considered for comparison are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and a classic tool for changing data structures~\cite{magaud2000changing}. \toolname is the only one of these tools with support for tactic suggestions.}
+automatic or manual configuration (Config.), example changes in that class (Examples), and Coq tools we are aware of that can support repair along (Repair Tools) or automatic proof of (Search Tools) the equivalence correponding to each example change. The tools listed for comparison are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and a classic tool for changing data structures~\cite{magaud2000changing}. \toolname is the only one of these tools with support for tactic suggestions.}
 \label{fig:changes}
-\end{figure*} % TODO cite wb paper
+\end{figure*}
 
-Table~\ref{fig:changes} shows that \toolname can support a flexible class of changes within a unified framework.
+Table~\ref{fig:changes} shows that \toolname can support a flexible class of changes informed by the needs of proof engineers within a unified framework.
 In general, \toolname can support any change described by a deconstructed type equivalence that we call a \textit{configuration} (Section~\ref{sec:key2}).
 The configuration expresses to the proof term transformation how to translate functions and proofs defined over the old version of a type
 to refer only to the new version, and how to do so in a way that does not break definitional equality.
-To further improve usability, \toolname contains search procedures that automatically discover configurations and prove the
-equivalences they induce for certain classes of changes (\textit{automatic configuration}).
-Otherwise, \toolname takes a configuration as input from the proof engineer (\textit{manual configuration}).
+The proof engineer can write this configuration in Coq and feed it to \toolname (\textit{manual configuration} in Table~\ref{fig:changes}),
+configuring \toolname to support the corresponding change from directly within Coq.
+
+\subsection*{Addressing Challenge 2: Workflow Integration}
+
+Research on workflow integration for proof repair tools is in its infancy.
+\toolname is built with workflow integration in mind, and the changes in Table~\ref{fig:changes} highlight this as well.
+For example, \toolname is the only proof repair tool we are aware of that produces suggested tactic scripts for repaired proofs,
+a challenge highlighted in existing proof repair work~\cite{pumpkinpatch, robert2018} and discussed in 
+a recent survey of proof engineering~\cite{PGL-045}.
+In addition, building on input from an industrial proof engineer, \toolname implements search procedures that 
+automatically discover configurations and prove the equivalences they induce for four different classes of 
+changes (\textit{automatic configuration} in Table~\ref{fig:changes}).
+Our paternship with an industrial proof engineer has and continues to inform other changes to further improve workflow integration
+(Sections~\ref{sec:implementation} and~\ref{sec:search}).
+
+\subsection*{Bringing it Together}
 
 Our main technical advances are techniques for transforming proof terms directly to repair broken proofs in response to changes
 in types, while our prototype decompiler up to tactics is important for usability in Coq.
-We demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname 1) can support a benchmark from a user study of Coq proof engineers, 2) can simplify dependently-typed programming, %automating manual steps from previous work,
+We elaborate on some of the examples from Table~\ref{fig:changes} to further demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname 1) can support a benchmark from a user study of Coq proof engineers, 2) can simplify dependently-typed programming, %automating manual steps from previous work,
 3) can help proof engineers port functions and proofs from unary to binary numbers, and
 4) has helped an industrial proof engineer at Galois integrate Coq with a company workflow and write proofs about an implementation of the TLS Handshake Protocol.
-%Our experiences drive ideas (Section~\ref{sec:discussion}) that open the door to better proof engineering tools.
 
