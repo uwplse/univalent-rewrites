@@ -49,8 +49,18 @@ When such a type equivalence between two types exists, we say those types are \t
 \begin{lstlisting}
 Old.list $\simeq$ New.list
 \end{lstlisting}
-To give some intuition for what kinds of changes can be described by type equivalences, we describe two of the changes 
-from Table~\ref{fig:changes} below.
+
+\toolname further requires that the equivalences it supports are expressed using something called a \textit{configuration},
+which we will define formally in Section~\ref{sec:configurable}.
+At a high level, a configuration is a deconstructed equivalence.
+Its purpose is to help the proof term transformation update proof terms across the equivalence in a way that removes
+references to the old type (like \lstinline{Old.list}), all the while abstracting away the details specific to any given change in type
+(like permuting arguments to induction principles).
+Every equivalence induces a configuration (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/arbitrary.v}{arbitrary.v}),
+though not necessarily one that is suitable for repair (removing references to the old type) as opposed to just reuse.
+
+All of the changes from Table~\ref{fig:changes} can be described by configurations in a way that is suitable for repair.
+To give some more intuition for what kinds of changes can be described this way, we elaborate on two such changes below.
 
 \subsubsection{Factoring out Constructors}
 \label{sec:ex1}
@@ -241,7 +251,7 @@ that tells \toolname how to transform certain constructors, eliminators, and equ
 correspond to the equivalence.
 The configuration can be supplied manually, or discovered automatically by a search procedure.
 
-TODO explain that configurations always induce equivalences, though not always in ways suitable for repair
+TODO reash configurations, explain that configurations always induce equivalences, though not always in ways suitable for repair
 \toolname further requires that the equivalences it supports are expressed using a particular configuration that we will define in Section~\ref{sec:configurable}. At a high level, this configuration helps the proof term transformation update constructors and eliminators
 while maintaining some level of abstraction... etc. make this the focus, call it out as the sort of key trick.
 
