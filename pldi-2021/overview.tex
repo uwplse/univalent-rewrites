@@ -15,12 +15,13 @@
 \end{figure*}
 
 \toolname is available on Github.\footnote{\url{https://github.com/uwplse/pumpkin-pi}}
-Consider a simple example of using this extension: fixing broken list proofs after swapping the two list constructors (Figure~\ref{fig:listswap}).
-This change is inspired by a similar change from a user study of proof engineers (see Section~\ref{sec:replica}).
-Even such a simple change can cause trouble in existing proofs, like this proof from the Coq standard library:\footnote{We use induction instead of pattern matching.}
+Consider a simple example of using \toolname: fixing broken list proofs after swapping the two list constructors (Figure~\ref{fig:listswap}).
+This change is inspired by a similar change from a user study of proof engineers (Section~\ref{sec:replica}).
+Even such a simple change can cause trouble in proofs, like this proof from the Coq standard library:\footnote{We use induction instead of pattern matching.}
 
 \begin{lstlisting}
-Lemma rev_app_distr {A : Type} : $\forall$ (x y : list A), rev (x ++ y) = rev y ++ rev x.(@\vspace{-0.04cm}@)
+Lemma rev_app_distr {A} :
+  $\forall$ (x y : list A), rev (x ++ y) = rev y ++ rev x.(@\vspace{-0.04cm}@)
 Proof.(@\vspace{-0.04cm}@)
   induction x as [| a l IHl].(@\vspace{-0.04cm}@)
   induction y as [| a l IHl].(@\vspace{-0.04cm}@)
@@ -32,7 +33,7 @@ Qed.
 \end{lstlisting}
 This theorem says that appending two lists and reversing the result behaves the same way as appending
 the reverse of the second list onto the reverse of the first list.
-When we change the \lstinline{list} type, our proof no longer works.
+When we change the \lstinline{list} type, the proof no longer works.
 %This theorem statement \lstinline{rev_app_distr} defined over the old version of \lstinline{list} is our \textit{old specification}.
 %When we change the \lstinline{list} type, we get the \textit{new specification}.
 %But the \textit{old proof} or tactic script no longer works with this new specification.
@@ -41,11 +42,11 @@ To repair this proof with \toolname, we just run this command:
 \begin{lstlisting}
 Repair Old.list New.list in rev_app_distr.
 \end{lstlisting}
-assuming our old and new list types from Figure~\ref{fig:listswap} are in separate modules \lstinline{Old} and \lstinline{New}.
-This produces an updated proof script that succeeds (Figure~\ref{fig:auto}),
+assuming the old and new list types from Figure~\ref{fig:listswap} are in modules \lstinline{Old} and \lstinline{New}.
+This suggests an updated proof script that succeeds (Figure~\ref{fig:auto}),
 where the dependencies (\lstinline{rev}, \lstinline{++}, \lstinline{app_assoc}, and \lstinline{app_nil_r}) have
 also been updated automatically.
-If we'd like, we can manually modify this to something that more closely matches the style of the original proof script:
+If we'd like, we can manually modify this to something that more closely matches the style of the original proof:
 
 \begin{lstlisting}
 Proof.(@\vspace{-0.04cm}@)
@@ -81,9 +82,10 @@ It is not clear which lines to swap since these tactics do not have a semantics 
 Furthermore, just swapping lines is not enough: even for such a simple change, we must also swap
 arguments, so \lstinline{induction x as [| a l IHl]} becomes \lstinline{induction x as [a l IHl|]}.
 Handling even swapping constructors this way would require a search procedure that would not generalize to other changes.
-\citet{robert2018} describes the challenges of repairing tactics directly in detail.
+\citet{robert2018} describes the challenges of repairing tactics in detail.
 
 By instead transforming proof terms, \toolname is able to try just $1$ rather than $720$ candidates.
+By decompiling the transformed proof term, \toolname is able to suggest a tactic script in the end.
 As later sections show, this approach is much more general than just permuting constructors.
 
 
