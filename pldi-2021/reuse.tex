@@ -4,6 +4,7 @@
 \toolname is a tool for \textit{proof repair}.
 Proof repair is the problem of updating a broken proof in response to a change in a program or specification~\cite{PGL-045, pumpkinpatch}---in the
 case of \toolname, a change in a type definition that corresponds to an equivalence (Section~\ref{sec:scope}).
+
 We can view proof repair as a form of 
 \textit{proof reuse}~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}, % TODO consider citation list
 or reusing proofs about one specification (say, from another library, or from within the same proof development)
@@ -48,8 +49,8 @@ When such a type equivalence between two types exists, we say those types are \t
 \begin{lstlisting}
 Old.list $\simeq$ New.list
 \end{lstlisting}
-\toolname further requires that the equivalences it supports can be described by a particular configuration that we will define in Section~\ref{sec:configurable}. For now, to give some intuition for what this configuration can handle, we include two more examples below
-(Sections~\ref{sec:ex1} and~\ref{sec:ex2}).
+To give some intuition for what kinds of changes can be described by type equivalences, we describe two of the changes 
+from Table~\ref{fig:changes} below.
 
 \subsubsection{Factoring out Constructors}
 \label{sec:ex1}
@@ -239,6 +240,10 @@ it takes a \textit{configuration} (see Section~\ref{sec:configurable})
 that tells \toolname how to transform certain constructors, eliminators, and equalities that 
 correspond to the equivalence.
 The configuration can be supplied manually, or discovered automatically by a search procedure.
+
+TODO explain that configurations always induce equivalences, though not always in ways suitable for repair
+\toolname further requires that the equivalences it supports are expressed using a particular configuration that we will define in Section~\ref{sec:configurable}. At a high level, this configuration helps the proof term transformation update constructors and eliminators
+while maintaining some level of abstraction... etc. make this the focus, call it out as the sort of key trick.
 
 Figure~\ref{fig:system} shows how this comes together when the proof engineer invokes \toolname:
 
