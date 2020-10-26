@@ -57,7 +57,7 @@ references to the old type (like \lstinline{Old.list}), all the while abstractin
 (like permuting arguments to induction principles).
 
 In Section~\ref{sec:configurable}, we will define configurations more formally.
-We will also prove that every equivalence induces a configuration,
+We will also show that every equivalence induces a configuration, % TODO one lemma missing from this though
 though not necessarily one that is suitable for repair (removing references to the old type).
 All of the changes from Table~\ref{fig:changes} can be described by configurations in a way that is suitable for repair.
 To give some more intuition for what kinds of changes can be described this way, we elaborate on two such changes below.
@@ -91,7 +91,7 @@ along which \toolname repairs functions and proofs.
 
 The file \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr_refactor.v}
 shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false.
-It uses \toolname to automatically repairs functions and proofs over \lstinline{I}, like:
+It uses \toolname to automatically repair functions and proofs over \lstinline{I}, like:
 
 \begin{lstlisting}
 Theorem demorgan_1 : $\forall$ (i1 i2 : I), neg (and i1 i2) = or (neg i1) (neg i2).(@\vspace{-0.04cm}@)
