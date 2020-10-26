@@ -11,7 +11,7 @@ Proof.(@\vspace{-0.04cm}@)
   intros T l. symmetry. induction l as [ |a l0 H].(@\vspace{-0.04cm}@)
   - auto.(@\vspace{-0.04cm}@)
   - simpl. rewrite $\leftarrow$ H. auto.(@\vspace{-0.04cm}@)
-Defined.
+Qed.
 
 swap$^{-1}$ T (l : New.list T) : Old.list T :=(@\vspace{-0.04cm}@)
   New.list_rect T (fun (l : New.list T) => Old.list T)(@\vspace{-0.04cm}@)
@@ -26,4 +26,4 @@ Proof.(@\vspace{-0.04cm}@)
   intros T l. symmetry. induction l as [t l0 H| ].(@\vspace{-0.04cm}@)
   - simpl. rewrite $\leftarrow$ H. auto.(@\vspace{-0.04cm}@)
   - auto.(@\vspace{-0.04cm}@)
-Defined.
+Qed.

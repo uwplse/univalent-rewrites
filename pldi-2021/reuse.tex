@@ -56,7 +56,7 @@ Its purpose is to help the proof term transformation update proof terms across t
 references to the old type (like \lstinline{Old.list}), all the while abstracting away the details specific to any given change in type
 (like permuting arguments to induction principles).
 
-In Section~\ref{sec:configurable}, we will define configurations more formally.
+In Section~\ref{sec:configurable}, we will define the notion of a configuration more formally.
 We will also show that every equivalence induces a configuration, % TODO one lemma missing from this though
 though not necessarily one that is suitable for repair (removing references to the old type).
 All of the changes from Table~\ref{fig:changes} can be described by configurations in a way that is suitable for repair.
@@ -94,18 +94,22 @@ shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinli
 It uses \toolname to automatically repair functions and proofs over \lstinline{I}, like:
 
 \begin{lstlisting}
-Theorem demorgan_1 : $\forall$ (i1 i2 : I), neg (and i1 i2) = or (neg i1) (neg i2).(@\vspace{-0.04cm}@)
+Theorem demorgan_1 : $\forall$ (i1 i2 : I),(@\vspace{-0.04cm}@)
+  neg (and i1 i2) = or (neg i1) (neg i2).(@\vspace{-0.04cm}@)
 Proof.(@\vspace{-0.04cm}@)
-  intros i1 i2. induction i1; auto.(@\vspace{-0.04cm}@)
-Defined.
+  intros i1 i2.(@\vspace{-0.04cm}@)
+  induction i1; auto.(@\vspace{-0.04cm}@)
+Qed.
 \end{lstlisting}
 to corresponding functions and proofs over \lstinline{J}, like:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-Theorem demorgan_1 : $\forall$ (j1 j2 : J), neg (and j1 j2) = or (neg j1) (neg j2).(@\vspace{-0.04cm}@)
+Theorem demorgan_1 : $\forall$ (j1 j2 : J),(@\vspace{-0.04cm}@)
+  neg (and j1 j2) = or (neg j1) (neg j2).(@\vspace{-0.04cm}@)
 Proof.(@\vspace{-0.04cm}@)
-  intros j1 j2. induction j1 (@\codediff{as [b]. induction b as [ | ]}@); auto.(@\vspace{-0.04cm}@)
-Defined.
+  intros j1 j2.(@\vspace{-0.04cm}@)
+  induction j1 (@\codediff{as [b]. induction b as [ | ]}@); auto.(@\vspace{-0.04cm}@)
+Qed.
 \end{lstlisting}
 These repaired functions and proofs refer to \lstinline{J} in place of \lstinline{I}.
 Otherwise, they behave the same way as the functions and proofs over \lstinline{I} up to the equivalence between

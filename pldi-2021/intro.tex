@@ -95,7 +95,8 @@ The result is a flexible proof repair tool that:
     \hline
   \end{tabular}
   \caption{Some changes using \toolname, from left to right: class of changes (Class), whether the class of changes uses
-automatic or manual configuration (Config.), example changes in that class (Examples), and Coq tools we are aware of that can support repair along (Repair Tools) or automatic proof of (Search Tools) the equivalence correponding to each example change. The tools listed for comparison are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and a classic tool for changing data structures~\cite{magaud2000changing}. \toolname is the only one of these tools with support for tactic suggestions.}
+automatic or manual configuration (Config.), example changes in that class (Examples), and Coq tools we are aware of that can support repair along (Repair Tools) or automatic proof of (Search Tools) the equivalence correponding to each example change. The tools listed for comparison are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and a classic tool for changing data structures~\cite{magaud2000changing}. \toolname is the only one of these tools with support for tactic suggestions.
+We provide more nuanced comparisons to these tools and more in Section~\ref{sec:related}.}
 \label{fig:changes}
 \end{figure*}
 
@@ -109,14 +110,15 @@ configuring \toolname to support the corresponding change from directly within C
 \subsection*{Addressing Challenge 2: Workflow Integration}
 
 Research on workflow integration for proof repair tools is in its infancy.
-\toolname is built with workflow integration in mind, and the changes in Table~\ref{fig:changes} highlight this as well.
+\toolname is built with workflow integration in mind.
 For example, \toolname is the only proof repair tool we are aware of that produces suggested tactic scripts for repaired proofs,
-a challenge highlighted in existing proof repair work~\cite{pumpkinpatch, robert2018} and discussed in 
+a challenge highlighted in existing proof repair work~\cite{pumpkinpatch, robert2018} and in 
 a recent survey of proof engineering~\cite{PGL-045}.
-In addition, building on input from an industrial proof engineer, \toolname implements search procedures that 
+In addition, \toolname implements search procedures that 
 automatically discover configurations and prove the equivalences they induce for four different classes of 
-changes (\textit{automatic configuration} in Table~\ref{fig:changes}).
-Our paternship with an industrial proof engineer has informed other changes to further improve workflow integration
+changes (\textit{automatic configuration} in Table~\ref{fig:changes}),
+decreasing the burden of proof obligations imposed on the proof engineer.
+Our partnership with an industrial proof engineer has informed other changes to further improve workflow integration
 (Sections~\ref{sec:implementation} and~\ref{sec:search}).
 
 \subsection*{Bringing it Together}
