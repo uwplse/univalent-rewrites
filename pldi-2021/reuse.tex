@@ -50,17 +50,7 @@ When such a type equivalence between two types exists, we say those types are \t
 Old.list $\simeq$ New.list
 \end{lstlisting}
 
-\toolname further requires that the equivalences it supports are expressed using something called a \textit{configuration}.
-At a high level, a configuration is a deconstructed equivalence.
-Its purpose is to help the proof term transformation update proof terms across the equivalence in a way that removes
-references to the old type (like \lstinline{Old.list}), all the while abstracting away the details specific to any given change in type
-(like permuting arguments to induction principles).
-
-In Section~\ref{sec:configurable}, we will define the notion of a configuration more formally.
-We will also show that every equivalence induces a configuration, % TODO one lemma missing from this though
-though not necessarily one that is suitable for repair (removing references to the old type).
-All of the changes from Table~\ref{fig:changes} can be described by configurations in a way that is suitable for repair.
-To give some more intuition for what kinds of changes can be described this way, we elaborate on two such changes below.
+To give some more intuition for what kinds of changes can be described by equivalences, we elaborate on two such changes below.
 
 \subsubsection{Factoring out Constructors}
 \label{sec:ex1}
@@ -118,16 +108,14 @@ Otherwise, they behave the same way as the functions and proofs over \lstinline{
 \subsubsection{Adding a Dependent Index}
 \label{sec:ex2}
 
-Despite the fact that \toolname requires changes to correspond to type equivalences,
-\toolname can in fact handle some changes in which the proof engineer adds or removes information.
-This is true when it is possible to express those changes as equivalences between \textit{refinements} ($\Sigma$ types).
-It is up to the proof engineer to supply the additional information needed to construct proofs about the refinement
-(the corresponding projection of the $\Sigma$ type).
-
-%In general, for any change in type definition, there is always \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/trivial.v}{a trivial equivalence} between $\Sigma$ types.
-%But this trivial equivalence is not useful for proof engineers, since it requires as much information from the proof engineer as just
-%writing the new proof from scratch.
-
+At first glance, the word \textit{equivalence} might seem to imply that \toolname can support only changes in
+which the proof engineer does not add or remove any information.
+However, \toolname can handle these changes when it is possible to express them as equivalences between
+sigma types or between sum types.
+The idea is, when possible, to separate out the new information
+into a projection of a $\Sigma$ type, or into a constructor of a sum type.
+Proofs about this new information become the proof obligation for the proof engineer,
+and \toolname automates the rest.
 
 \begin{figure*}
 \begin{minipage}{0.40\textwidth}
@@ -142,10 +130,21 @@ It is up to the proof engineer to supply the additional information needed to co
 \label{fig:listtovect}
 \end{figure*}
 
-Practically, the key to handling changes that add or remove information usefully is to separate the new information from redundant old information, 
-and include only the new information in the correpsonding projection of the $\Sigma$ type.
 Consider, for example, changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
-An early version of \toolname called \textsc{Devoid}~\cite{Ringer2019} could repair proofs about lists to proofs about \textit{vectors of some length}, since:
+With \toolname, we can get from functions and proofs over lists, like:
+
+\begin{lstlisting}
+\end{lstlisting}
+
+
+
+\toolname
+
+ includes automation that configures its proof term transformation to the change from
+\textsc{Devoid}~\cite{Ringer2019}, 
+
+ like the proof reuse tool 
+The proof reuse tool \textsc{Devoid}~\cite{Ringer2019} could repair proofs about lists to proofs about \textit{vectors of some length}, since:
 
 \begin{lstlisting}
 list T $\simeq$ $\Sigma$(n : nat).vector T n.
@@ -182,6 +181,7 @@ to fix her functions and proofs, she must additionally prove invariants about th
 \toolname makes it easy to separate out that proof obligation, then automates the rest.
 Section~\ref{sec:search} shows this and other case studies using \toolname to repair real proofs
 informed by the needs of proof engineers.
+TODO note the sum example extending constructor, but note still slow?
 
 % TODO show an example when it is not possible to define this
 
@@ -225,7 +225,7 @@ Furthermore, it did so in a way that removed all references to \lstinline{Old.li
 and in its dependencies.
 That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be removed.
 
-\subsection{\textsc{Carrot}: A Tool for Proof Repair Across Type Equivalences}
+\subsection{\textsc{Carrot}: A Tool for Proof Repair Across Equivalences}
 \label{sec:time}
 
 \begin{figure*}
@@ -252,9 +252,12 @@ that tells \toolname how to transform certain constructors, eliminators, and equ
 correspond to the equivalence.
 The configuration can be supplied manually, or discovered automatically by a search procedure.
 
-TODO reash configurations, explain that configurations always induce equivalences, though not always in ways suitable for repair
-\toolname further requires that the equivalences it supports are expressed using a particular configuration that we will define in Section~\ref{sec:configurable}. At a high level, this configuration helps the proof term transformation update constructors and eliminators
-while maintaining some level of abstraction... etc. make this the focus, call it out as the sort of key trick.
+\toolname further requires that the equivalences it supports are expressed using something called a \textit{configuration}.
+At a high level, a configuration is a deconstructed equivalence.
+Its purpose is to help the proof term transformation update proof terms across the equivalence in a way that removes
+references to the old type (like \lstinline{Old.list}), all the while abstracting away the details specific to any given change in type
+(like permuting arguments to induction principles).
+TODO make this the focus, call it out as the sort of key trick.
 
 Figure~\ref{fig:system} shows how this comes together when the proof engineer invokes \toolname:
 
