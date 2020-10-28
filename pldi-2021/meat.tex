@@ -41,12 +41,17 @@ Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldo
 \subsection{The Configuration}
 \label{sec:configurable}
 
-The configuration is the key to building a proof term transformation that can support many different classes of changes.
+The configuration is the key to building a proof term transformation that implements transport in a way that is suitable for repair.
 %Before introducing the proof term transformation, we will describe the configuration, which in effect specifies the behavior
 %of the transformation.
 %It instantiates the proof term transformation to two equivalent types \A and \B, so that the proof term transformation
 %can transform terms defined over \A to terms defined over \B instead.
 %The behavior of the proof term transformation at a particular equivalence hinges on correct configuration.
+Each configuration corresponds to an equivalence \A $\simeq$ \B.
+It deconstructs that equivalence into things that talk about \A, and things that talk about \B.
+Furthermore, it does so in a way that allows the transformation to abstract away details
+specific to the given equivalence, like the order or number of arguments to an induction principle or type.
+
 At a high level, the configuration helps the transformation achieve two goals:
 
 \begin{enumerate}
@@ -87,8 +92,7 @@ even if \A and \B are types with different numbers of constructors.
 \begin{figure*}
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-DepConstr(0, list T) : list T :=(@\vspace{-0.04cm}@)
-  Constr((@\codediff{0}@), list T).(@\vspace{-0.04cm}@)
+DepConstr(0, list T) : list T := Constr((@\codediff{0}@), list T).(@\vspace{-0.04cm}@)
 DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
   Constr ((@\codediff{1}@), list T) t l.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
@@ -99,8 +103,7 @@ DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.0
 \hfill
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
-DepConstr(0, list T) : list T :=(@\vspace{-0.04cm}@)
-  Constr((@\codediff{1}@), list T).(@\vspace{-0.04cm}@)
+DepConstr(0, list T) : list T := Constr((@\codediff{1}@), list T).(@\vspace{-0.04cm}@)
 DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
   Constr((@\codediff{0}@), list T) t l.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
@@ -123,20 +126,20 @@ Similarly, the dependent eliminator for \lstinline{Old.list} is the normal elimi
 while the dependent eliminator for \lstinline{New.list} swaps cases.
 
 These constructors and eliminators can be \textit{dependent}.
-One example of this arises from implementing the change from \lstinline{list T} to $\Sigma$\lstinline{(n : nat).vector T n}.
+One example of this arises from implementing the change from \lstinline{list T} to \lstinline{packed_vect T}.
 The configuration \toolname discovers for this configures the dependent constructors to pack the index into an existential, for example:
 
 \begin{lstlisting}
-DepConstr(0, $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n :=(@\vspace{-0.04cm}@)
+DepConstr(0, packed_vect) : packed_vect T :=(@\vspace{-0.04cm}@)
   $\exists$ (Constr(0, nat)) (Constr(0, vector T)).
 \end{lstlisting}
-and the eliminator it discovers eliminates over the projections:
+and the eliminator it discovers eliminates the projections:
 
 \begin{lstlisting}
 DepElim(s, P) { f$_0$ f$_1$ } : P ($\exists$ ($\pi_l$ s) ($\pi_r$ s)) :=(@\vspace{-0.04cm}@)
-  Elim($\pi_r$ s, $\lambda$ (n : nat) (v : vector T n) . P ($\exists$ n v)) {(@\vspace{-0.04cm}@)
+  Elim($\pi_r$ s, $\lambda$(n : nat)(v : vector T n).P ($\exists$ n v)) {(@\vspace{-0.04cm}@)
     f$_0$,(@\vspace{-0.04cm}@)
-    ($\lambda$ (t : T) (n : nat) (v : vector T n) . f$_1$ t ($\exists$ n v))(@\vspace{-0.04cm}@)
+    ($\lambda$(t : T)(n : nat)(v : vector T n).f$_1$ t ($\exists$ n v))(@\vspace{-0.04cm}@)
   }. 
 \end{lstlisting}
 
@@ -153,7 +156,7 @@ discover \lstinline{DepConstr} and \lstinline{DepElim} from just the types \A an
 
 The other configuration parts \lstinline{Eta} and \lstinline{Iota} deal with producing well-typed terms,
 in particular by transporting equalities.
-A naive proof term transformation in a non-univalent language, as noted in \citet{tabareau2019marriage},
+A naive proof term transformation, as noted in \citet{tabareau2019marriage},
 may fail to generate well-typed terms if it does not consider the problem of transporting equalities.
 Otherwise, if the transformation transforms a term \lstinline{t : T} to some \lstinline{t' : T'}, it does not necessarily
 hold that it transforms \lstinline{T} to \lstinline{T'}.
@@ -165,24 +168,25 @@ $\eta$-expansion describes how to expand a term to apply a constructor to an eli
 and is important for defining dependent eliminators~\cite{nlab:eta-conversion}.
 $\iota$-reduction ($\beta$-reduction for inductive types) describes how to reduce an elimination of a constructor~\cite{nlab:beta-reduction}.
 
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
+\begin{figure}
+\begin{minipage}{0.44\columnwidth}
    \lstinputlisting[firstline=1, lastline=8]{nattobin.tex}
 \end{minipage}
 \hfill
-\begin{minipage}{0.48\textwidth}
+\begin{minipage}{0.54\columnwidth}
    \lstinputlisting[firstline=10, lastline=17]{nattobin.tex}
 \end{minipage}
 \vspace{-0.3cm}
 \caption{Unary (left) and binary (right) natural numbers.}
 \label{fig:nattobin}
-\end{figure*}
+\end{figure}
 
-The configuration for the change from \lstinline{list} to \lstinline{$\Sigma$(n : nat).vector T n} has propositional \lstinline{Eta}.
+The configuration for the change from \lstinline{list} to \lstinline{packed\_vect} has propositional \lstinline{Eta}.
 To describe \lstinline{Eta}, it is enough to use the standard definition of $\eta$-expansion for $\Sigma$:
 
 \begin{lstlisting}
-Eta ($\Sigma$(n : nat).vector T n) := $\lambda$ (s : $\Sigma$(n : nat).vector T n).$\exists$ ($\pi_l$ s) ($\pi_r$ s).
+Eta (packed_vect) :=
+  $\lambda$(s : packed_vect).$\exists$ ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
 which is propositional and not definitional in Coq.
 Thanks to this, we can forego the assumption that our language has primitive projections (definitional $\eta$ for $\Sigma$).
@@ -198,18 +202,22 @@ For example, in Coq, while \lstinline{S (n + m)  = S n + m} holds by reflexivity
 when we define \lstinline{+} with \lstinline{DepElim} over \lstinline{N},
 the corresponding theorem over \lstinline{N} does not hold by reflexivity.
 
-To transform proofs about \lstinline{nat} to proofs about \lstinline{N}, we must transform \textit{definitional} $\iota$-reduction over \lstinline{nat} to explicit \textit{propositional} $\iota$-reduction over \lstinline{N}.
-For our choice of configuration in Section~\ref{sec:bin},
+To transform proofs about \lstinline{nat} to proofs about \lstinline{N}, we must transform \textit{definitional} $\iota$-reduction over \lstinline{nat} to \textit{propositional} $\iota$-reduction over \lstinline{N}.
+For our configuration in Section~\ref{sec:bin},
 $\iota$-reduction is definitional over \lstinline{nat}, since a proof of:
 
 \begin{lstlisting}
-$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n, DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
+$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
+  DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } =
+  (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
 goes through by reflexivity.
 However, the corresponding $\iota$ rule for \lstinline{N} is propositional, since:
 
 \begin{lstlisting}
-$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n, DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } = (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
+$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
+  DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } =
+  (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
 no longer holds by reflexivity.
 The \lstinline{Iota} rules are exactly rewrites along proofs of the theorems above for the successor case.
@@ -303,7 +311,7 @@ terms explicitly.
 It then runs the proof term transformation, which transports proofs across the equivalence that corresponds to the configuration 
 (Section~\ref{sec:transfspecif}).
 
-\subsubsection{From Transformation to Search Procedure: Unification Heuristics}
+\subsubsection{Unification Heuristics}
 \label{sec:unif}
 
 The transformation does not fully describe the search procedure for transforming terms that \toolname implements.
@@ -462,7 +470,7 @@ where \lstinline{f} uses \lstinline{DepElim} to eliminate \A and \lstinline{DepC
 \lstinline{DepElim} to eliminate \B and \lstinline{DepConstr} to construct \A.
 \lstinline{DepConstr} over \B must be equal to \lstinline{DepConstr} over \A up to transport along the induced equivalence (\lstinline{dep_constr_ok}), 
 and similarly for \lstinline{DepElim} (\lstinline{dep_elim_ok}).
-This had previously been proven on the change from \lstinline{list T} to $\Sigma$\lstinline{(n : nat).vector T n)} in the 
+This had previously been proven on the change from \lstinline{list T} to \lstinline{packed_vect T} in the 
 univalent parametricity framework\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}---we build on that intuition.
 
 \paragraph{Equality}
