@@ -101,7 +101,8 @@ We provide more nuanced comparisons to these tools and more in Section~\ref{sec:
 \end{figure*}
 
 Table~\ref{fig:changes} shows that \toolname can support a flexible class of changes informed by the needs of proof engineers within a unified framework.
-In general, \toolname can support any change described by a deconstructed type equivalence that we call a \textit{configuration} (Section~\ref{sec:key2}).
+In general, \toolname can support any change described by a type equivalence, though it takes the equivalence in a
+deconstructed form that we call a \textit{configuration}.
 The configuration expresses to the proof term transformation how to translate functions and proofs defined over the old version of a type
 to refer only to the new version, and how to do so in a way that does not break definitional equality.
 The proof engineer can write this configuration in Coq and feed it to \toolname (\textit{manual configuration} in Table~\ref{fig:changes}),
