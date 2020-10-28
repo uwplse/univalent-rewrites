@@ -190,16 +190,19 @@ and the updated append function \lstinline{++} over \lstinline{New.list} that \t
 equal up to transport along the equivalence from Figure~\ref{fig:equivalence}, since:
 
 \begin{lstlisting}
-$\forall$ T (l1 l2 : Old.list T), swap T (l1 ++ l2) = (swap T l1) ++ (swap T l2).
+$\forall$ T (l1 l2 : Old.list T),
+  swap T (l1 ++ l2) = (swap T l1) ++ (swap T l2).
 \end{lstlisting}
-by induction and rewriting, and similarly in the opposite direction.
+by \lstinline{app_ok} in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}.
 The original \lstinline{rev_app_distr} is equal to the transformed proof along the same equivalence,
 since it proves the same thing the same way as the transformed proof up to the same equivalence, and up to the changes in \lstinline{++}
 and \lstinline{rev}.
 
-The formal details of equality up to transport in a univalent type theory can be found in \citet{univalent2013homotopy}, and an approximation in Coq without univalence can be found in \citet{tabareau2017equivalences}.
 Note that for any equivalent \A and \B, there can be many equivalences $A \simeq B$.
 Equality up to transport is along a \textit{particular} equivalence, though we erase this in the notation.
+Also note that, as Coq lacks univalence, and so equality up to transport cannot be stated in Coq in general,
+this notation should be interpreted in the context of a univalent metatheory.
+The formal details of equality up to transport in such a theory can be found in \citet{univalent2013homotopy}, and an approximation in Coq without univalence can be found in \citet{tabareau2017equivalences}.
 
 Transport methods typically work by explicitly applying the functions that make up the equivalence to convert
 inputs and outputs back and forth between equivalent types.
@@ -212,11 +215,11 @@ since the old specification may no longer exist.
 Section~\ref{sec:overview} showed a simple case of this: \toolname
 reused the proof of \lstinline{rev_app_distr} defined over \lstinline{Old.list}
 to generate a new proof of \lstinline{rev_app_distr} defined over equivalent \lstinline{New.list}.
-Furthermore, it did so in a way that removed all references to \lstinline{Old.list}, both in the proof
+Furthermore, it did so in a way that removed all references to \lstinline{Old.list} in the proof
 and in its dependencies.
 That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be removed.
 
-\subsection{\textsc{Carrot}: A Tool for Proof Repair Across Equivalences}
+\subsection{A Tool for Proof Repair Across Equivalences}
 \label{sec:time}
 
 \begin{figure*}
@@ -235,21 +238,19 @@ That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be remove
 
 \toolname implements this transport with a twist using a proof term transformation.
 The proof term transformation implements transport across equivalences,
-but in a way that replaces references to the old specification (in Section~\ref{sec:overview}, the theorem that refers to \lstinline{Old.list})
-with references to the new specification (in Section~\ref{sec:overview}, the theorem that refers to \lstinline{New.list}).
-This proof term transformation is configurable to a particular equivalence:
-it takes a \textit{configuration} (see Section~\ref{sec:configurable}) 
-that tells \toolname how to transform certain constructors, eliminators, and equalities that 
-correspond to the equivalence.
+but in a way that replaces references to the old type (in Section~\ref{sec:overview}, \lstinline{Old.list})
+with references to the new type (in Section~\ref{sec:overview}, \lstinline{New.list}).
+
+This proof term transformation takes as input an equivalence in a special form that we call a \textit{configuration}.
+At a high level, a configuration is a deconstructed equivalence, split into parts that refer to the old type
+and parts that refer to the new type, without converting back and forth.
+The purpose of this deconstructed equivalence is to help the proof term transformation transport proofs across the equivalence in a 
+way that removes references to the old type, all the while abstracting away the details specific to any 
+given change in type (like permuting arguments to induction principles).
+Section~\ref{sec:configurable} explains a configuration in more detial, and shows that every equivalence
+induces a configuration.
+
 The configuration can be supplied manually, or discovered automatically by a search procedure.
-
-\toolname further requires that the equivalences it supports are expressed using something called a \textit{configuration}.
-At a high level, a configuration is a deconstructed equivalence.
-Its purpose is to help the proof term transformation update proof terms across the equivalence in a way that removes
-references to the old type (like \lstinline{Old.list}), all the while abstracting away the details specific to any given change in type
-(like permuting arguments to induction principles).
-TODO make this the focus, call it out as the sort of key trick.
-
 Figure~\ref{fig:system} shows how this comes together when the proof engineer invokes \toolname:
 
 \begin{enumerate}
@@ -267,22 +268,14 @@ The example in Section~\ref{sec:overview} uses automatic configuration. When we 
 then configures \textbf{Transform} using that equivalence.
 \textbf{Transform} then ports the proof term that inducted over \lstinline{Old.list}
 to induct over \lstinline{New.list}, and finally
-\textbf{Decompile} produces the tactic script in Figure~\ref{fig:auto}.
+\textbf{Decompile} produces the tactic script in light blue. %in Figure~\ref{fig:auto}.
 
-There are currently four search procedures for automatic configuration implemented in \toolname,
-all informed by the needs of real proof engineers:
-
-\begin{enumerate}
-\item porting between tuples and records,
-\item renaming and permuting constructors of inductive types,
-\item porting along algebraic ornaments to types at \textit{some} index (from \textsc{Devoid}), and
-\item unpacking types at \textit{some} index to a \textit{particular} index.
-\end{enumerate}
+There are currently four search procedures for automatic configuration implemented in \toolname (see Table~\ref{fig:changes}).
 All four search procedures generate equivalence proofs as in Figure~\ref{fig:equivalence} automatically (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/search.ml}{search.ml} and \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/equivalence.ml}{equivalence.ml}),
 then configure (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) the transformation to those equivalences.
 Manual configuration makes it possible
-for the proof engineer to directly configure the transformation to a particular equivalence
-when a search procedure for that equivalence is not yet implemented.
+for the proof engineer to directly configure the transformation to any other equivalence,
+even without a search procedure.
 Section~\ref{sec:search} shows examples of both workflows applied to real proof reuse and repair scenarios.
 
 

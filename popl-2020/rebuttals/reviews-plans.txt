@@ -103,12 +103,11 @@ B: First, I was really frustrated by the paper's lack of explicit clarity about 
 B, Line 829: "One ongoing challenge is defining and discovering useful configurations to support adding new constructors."  Yes, sounds really important to scale to most real use cases.
 
 Actions:
-1. Implement and provide examples of adding constructors and adding hypotheses
-2. If time, evaluate a case like adding constructors or adding hypotheses
-3. Consider predicate examples
-4. Maybe revisit the positive example
-5. Anonymize code!
-6. Consider more formal classification & John email
+1. If time, evaluate a case like adding constructors or adding hypotheses
+2. Consider predicate examples
+3. Maybe revisit the positive example
+4. Anonymize code!
+5. Consider more formal classification & John email
 
 --- Formalization ---
 
