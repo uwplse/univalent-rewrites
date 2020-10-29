@@ -1,4 +1,4 @@
-\section{A Configurable Proof Term Transformation}
+\section{The Transformation}
 \label{sec:key2}
 
 At the heart of \toolname is a configurable proof term transformation for transporting
@@ -315,8 +315,8 @@ It then runs the proof term transformation, which transports proofs across the e
 \label{sec:unif}
 
 The transformation does not fully describe the search procedure for transforming terms that \toolname implements.
-Before running the transformation, \toolname \textit{unifies} the 
-input proof term with applications of the terms in the configuration for \A. 
+Before running the transformation, \toolname \textit{unifies} the proof term with particular \A (fixing parameters and indices),
+and with applications of the terms in the configuration for \A. 
 The transformation then transforms the applications of the terms in the configuration of \A
 to applications of the terms in the configuration for \B.
 Reducing the result produces the output term defined over \B.
@@ -326,16 +326,16 @@ Reducing the result produces the output term defined over \B.
 \begin{lstlisting}
 (* 1: original term *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- (@\codediff{Elim}@) (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
-   ($\lambda$ m . m),(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m . (@\codediff{Constr}@)(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
+ Elim (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
+   ($\lambda$ m.m),(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m.Constr(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
  } m.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
 (* 2: after unifying (@\texttt{with}@) configuration *)(@\vspace{-0.04cm}@)
-$\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- (@\codediff{DepElim}@) (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
-   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m . (@\codediff{DepConstr}@)(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
+$\lambda$ (T : Type) (l m : (@\codediff{A}@)) .(@\vspace{-0.04cm}@)
+ (@\codediff{DepElim}@) (l, $\lambda$(l: (@\codediff{A}@)).(@\codediff{A}@) $\rightarrow$ (@\codediff{A}@))) {(@\vspace{-0.04cm}@)
+   ($\lambda$ m.m)(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m.(@\codediff{DepConstr}@)(1, (@\codediff{A}@)) t (IHl m))(@\vspace{-0.04cm}@)
  } m.
 \end{lstlisting}
 \end{minipage}
@@ -344,16 +344,16 @@ $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
 \begin{lstlisting}
 (* 4: reduced to final term *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- (@\codediff{Elim}@) (l, $\lambda$(l: New.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m . (@\codediff{Constr}@)(0, New.list T) t (IHl m)),(@\vspace{-0.04cm}@)
+ Elim (l, $\lambda$(l: New.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m.Constr(0, New.list T) t (IHl m)),(@\vspace{-0.04cm}@)
    ($\lambda$ m . m)(@\vspace{-0.04cm}@)
  } m.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
-(* 3: ported to New.list *)(@\vspace{-0.04cm}@)
-$\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- DepElim (l, $\lambda$(l: (@\codediff{New.list T}@)).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
-   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m . DepConstr(1, (@\codediff{New.list T}@)) t (IHl m))(@\vspace{-0.04cm}@)
+(* 3: after transforming *)(@\vspace{-0.04cm}@)
+$\lambda$ (T : Type) (l m : (@\codediff{B}@)) .(@\vspace{-0.04cm}@)
+ (@\codediff{DepElim}@) (l, $\lambda$(l: (@\codediff{B}@)).(@\codediff{B}@) $\rightarrow$ (@\codediff{B}@))) {(@\vspace{-0.04cm}@)
+   ($\lambda$ m.m)(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m.(@\codediff{DepConstr}@)(1, (@\codediff{B}@)) t (IHl m))(@\vspace{-0.04cm}@)
  } m.
 \end{lstlisting}
 \end{minipage}
@@ -363,21 +363,20 @@ $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
 \end{figure*}
 
 Figure~\ref{fig:appswap1} shows this with the list append function \lstinline{++} from Section~\ref{sec:overview}.
-To update the append function (top left), \toolname
-unifies subterms of the input term with implicit applications of \lstinline{DepConstr} and \lstinline{DepElim} and substitutes
-in the configuration terms (bottom left).
-After expansion, the transformation then recursively substitutes in \lstinline{New.list}
-for \lstinline{Old.list}, which moves \lstinline{DepConstr} and \lstinline{DepElim}
+To update the append function (top left), \toolname unifies \lstinline{Old.list T} with \A, and \lstinline{Constr} and \lstinline{Elim}
+over \lstinline{Old.list T} with \lstinline{DepConstr} and \lstinline{DepElim} over \A (bottom left).
+After unification, the transformation then recursively substitutes in \B
+for \A, which moves \lstinline{DepConstr} and \lstinline{DepElim}
 to construct and eliminate over the updated type (bottom right).
-Finally, this reduces to a term with swapped constructors and cases (top right).
+Finally, this reduces to a term with swapped constructors and cases over \lstinline{New.list T} (top right).
 
 In this case, unification is straightforward, since \lstinline{DepConstr} and \lstinline{DepElim} correspond to
 \lstinline{Constr} and \lstinline{Elim} directly.
-This can be more challenging when configuration terms are dependent or have uninstantiated parameters.
+This can be more challenging when configuration terms are dependent.
 This is especially pronounced with definitional \lstinline{Eta} and \lstinline{Iota},
 which typically show up contracted in real code.
-This problem is exactly why \citet{tabareau2019marriage} speculated that converting definitional to propositional equalities
-like we do with \lstinline{Iota} may, in general, be intractable.
+%This problem is exactly why \citet{tabareau2019marriage} speculated that converting definitional to propositional equalities
+%like we do with \lstinline{Iota} may, in general, be intractable.
 
 To handle this, \toolname relies on \textit{unification heuristics} that tell \toolname how to unify subterms with applications of configuration terms, and how to instantiate parameters and dependent indices in those configuration subterms.
 The transformation in turn assumes that all parameters and indices are fixed.
@@ -402,7 +401,7 @@ The rest is straightforward.
 
 Note that this goal for correctness is metatheoretical:
 stating and proving that two terms are equal up to transport is in general not possible in a language like Coq
-without additional axioms, though it is in some cases realizable with an external tool like the
+without additional axioms, though it is for some particular types \A and \B realizable with an external tool like the
 univalent parametricity framework~\cite{tabareau2017equivalences}.
 \toolname does not yet generate these proofs as we were focused on building a usable tool with axiomatic freedom and few dependencies.
 Coq ensures that all terms that plugins produce are well-typed; for now, %as with \textsc{Devoid},
@@ -411,6 +410,8 @@ the proof engineer must vet the transformed specifications herself to ensure tha
 \subsection{Specifying Correct Configurations}
 \label{sec:art}
 
+% TODO proof in one direction, algorithm in the other
+
 Both when designing a search procedure for an automatic configuration and when
 configuring \toolname manually, choosing a correct and useful configuration is important,
 and it is not always straightforward. This section specifies what it means for these
@@ -418,7 +419,7 @@ to be correct and gives some intuition as to why.
 Section~\ref{sec:search} shows some useful example configurations.
 
 The configuration instantiates the proof term transformation to a particular equivalence between \A and \B.
-Choosing an equivalence is a bit of an art:
+Choosing an equivalence necessarily depends in some way on the proof engineer's intentions:
 there can be infinitely many equivalences that correspond to a 
 given change in specification, only some of which are useful (for example, \href{https://github.com/uwplse/ornamental-search/blob/master/plugin/coq/playground/refine_unit.v}{refine_unit.v} proves that any \A is equivalent to \lstinline{unit} refined by \A).
 Beyond that, even once we have chosen an equivalence, we could define many possible configurations that correspond
@@ -455,9 +456,9 @@ iota_ok (j, B) : $\forall$ (P : B $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P
 preserves equivalence (top) coherently with equality (bottom). Throughout, $\vec{f}$, $\vec{x}$, and $\vec{\mathtt{IH}}$ represent
 eliminator cases, constructor arguments, and inductive hypotheses, respectively.}
 \label{fig:spec}
-\end{figure*} % TODO sigs for Iota here are not quite correct---Q is not bound
+\end{figure*} % TODO sigs for Iota here are not quite correct---Q is not bound. Also need to tweak to deal w/ eta, and to use eta_OK, and to relate both eta
 
-Thankfully, once the art is done, we can specify what it means for it to be \textit{correct art}.
+Once the proof engineer or a search procedure has chosen a configuration, we can specify what it means for that configuration to be correct.
 Figure~\ref{fig:spec} specifies the correctness criteria for any given configuration (assuming a univalent metatheory in which equality up
 to transport is defined).
 These correctness criteria relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}
@@ -470,8 +471,8 @@ where \lstinline{f} uses \lstinline{DepElim} to eliminate \A and \lstinline{DepC
 \lstinline{DepElim} to eliminate \B and \lstinline{DepConstr} to construct \A.
 \lstinline{DepConstr} over \B must be equal to \lstinline{DepConstr} over \A up to transport along the induced equivalence (\lstinline{dep_constr_ok}), 
 and similarly for \lstinline{DepElim} (\lstinline{dep_elim_ok}).
-This had previously been proven on the change from \lstinline{list T} to \lstinline{packed_vect T} in the 
-univalent parametricity framework\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}---we build on that intuition.
+An example proves this on the change from \lstinline{list T} to \lstinline{packed_vect T} in the 
+univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
 
 \paragraph{Equality}
 To ensure coherence with equality (Figure~\ref{fig:spec}, bottom),
@@ -479,7 +480,22 @@ To ensure coherence with equality (Figure~\ref{fig:spec}, bottom),
 That is, \lstinline{Eta} must have the same definitional behavior as the dependent eliminator (\lstinline{eta_ok}).
 Each \lstinline{Iota} must prove and rewrite along the simplification (formally, \textit{refolding}~\cite{boutillier:tel-01054723}) behavior that corresponds to a case of the dependent eliminator (\lstinline{iota_ok}).
 
-\paragraph{Intuition for Correctness}
+\paragraph{Correctness}
+With this correctness criteria for a configuration, we get the completeness result that every equivalence induces a configuration (Section~\ref{sec:completeness}).
+We also obtain an algorithm for the soundness result that every configuration induces an equivalence (Section~\ref{sec:soundness}),
+which we use in particular cases to produce correctness proofs in \toolname, but do not yet prove in the general case.
+We do not yet know if configurations and equivalences are themselves equivalent---we leave that to future work.
+
+\subsubsection{Completeness}
+\label{sec:completeness}
+
+TODO explain, link to proof, update proof to show whatever results we can show
+
+\subsubsection{Soundness}
+\label{sec:soundness}
+
+TODO tweak, WIP
+
 The correctness criteria for equivalence make it possible for the transformation
 to avoid applying \lstinline{f} and \lstinline{g} explicitly---instead porting terms from \A directly to \B.
 Intuitively, \lstinline{dep_constr_ok} and \lstinline{dep_elim_ok} guarantee that the transformation
@@ -501,7 +517,6 @@ For each case $i$, the proof obligation is to show that \lstinline{g b} is equal
 Define this as a motive \lstinline{Q}.
 Refold to rewrite along each inductive hypothesis (\lstinline{iota_ok}) using \lstinline{Iota(A, i, Q)} applied to each \lstinline{DepConstr} over \B (the cases of the definition of \lstinline{f}), with reflexivity as the base case. % TODO check this
 
-\paragraph{Generating Proofs of Correctness}
 The intuition above is what
 \textbf{Configure} uses to implement search procedures that generate functions \lstinline{f} and \lstinline{g} for the classes of equivalences
 that correspond to automatic configuration (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/search.ml}{search.ml}), and also
