@@ -11,7 +11,7 @@ we can decompile these Gallina terms to suggested Ltac proof scripts for the pro
 \end{quote}
 
 \textbf{Decompile} implements a prototype of this translation:
-it translates a proof term to a candidate proof script that attempts to prove the same theorem the same way.
+it translates a proof term to a suggested proof script that attempts to prove the same theorem the same way.
 Note that this problem is not well defined: while there is always a proof script that 
 works (applying the proof term with the \lstinline{apply} tactic), the result is often qualitatively unreadable.
 This is the baseline behavior to which the decompiler defaults.
@@ -149,13 +149,13 @@ Furthermore, the result can already handle some of the example proofs \toolname 
 The generated proof term of \lstinline{rev_app_distr} with swapped list constructors from Section~\ref{sec:overview},
 for example, consists only of induction, rewriting, simplification, and reflexivity (solved by \lstinline{auto}).
 Figure~\ref{fig:rainbow} shows the proof term for the base case of \lstinline{rev_app_distr} 
-alongside the decompiled tactic script that \toolname produces.
+alongside the decompiled tactic script that \toolname suggests.
 This script is fairly low-level and close to the proof term, but it is already something that the proof engineer
 can step through piece by piece to understand, modify, and maintain.
 There are very few differences from the mini decompiler needed to produce this,
 for example handling of rewrites in both directions (\lstinline{eq_ind_r} as opposed to \lstinline{eq_ind}),
 simplifying to handle motive inference for rewrites,
-and turning applications of \lstinline{eq_refl} into reflexivity or \lstinline{auto}.
+and turning applications of \lstinline{eq_refl} into \lstinline{reflexivity} or \lstinline{auto}.
 
 In fact, since \toolname uses an existing command to translate pattern matching and fixpoints to eliminators,
 \textit{all} of the proof terms that \toolname produces will use induction and rewriting instead.
@@ -178,8 +178,9 @@ For example, the second pass cancels out sequences of \lstinline{intros} and \ls
 The second pass can also take suggested tactics (for example, part of the old version of the proof script) from the proof engineer as hints,
 then iteratively replace tactics with those hints, checking the result as the second pass recurses.
 This makes it possible for the tactic scripts \toolname suggests to include custom tactics and decision procedures.
+Work in progress is using the second pass to remove redundant arguments to \lstinline{apply} and \lstinline{rewrite}.
 Further improvements could come from preserving comments and indentation, or automatically using information from the old 
-version of the proof script.
+version of the proof script rather than asking for it explicitly.
 
 \paragraph{Induction and Rewriting}
 The mini decompiler includes more predictable versions of \lstinline{rewrite} and \lstinline{induction}
