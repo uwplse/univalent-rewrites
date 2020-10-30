@@ -439,16 +439,19 @@ dep_elim_ok : $\forall$ (a : A) (b : B) (P : A $\rightarrow$ Type) (Q : B $\righ
   a $\equiv_{A \simeq B}$ b $\rightarrow$ P $\equiv_{A \simeq B}$ Q $\rightarrow$ DepElim(a, P) $\equiv_{A \simeq B}$ DepElim(b, Q).(@\vspace{-0.04cm}@)
 (@\vspace{-0.04cm}@)
 (* --- Equality --- *)(@\vspace{-0.04cm}@)
-eta_ok (A) : $\forall$ (a : A) (P : A $\rightarrow$ Type) $\vec{f}$, DepElim(a, P) $\vec{f}$ : P (Eta(A) a).(@\vspace{-0.04cm}@)
-eta_ok (B) : $\forall$ (b : B) (P : B $\rightarrow$ Type) $\vec{f}$, DepElim(b, P) $\vec{f}$ : P (Eta(B) b).(@\vspace{-0.04cm}@)
+elim_eta (A) : $\forall$ (a : A) (P : A $\rightarrow$ Type) $\vec{f}$, DepElim(a, P) $\vec{f}$ : P (Eta(A) a).(@\vspace{-0.04cm}@)
+elim_eta (B) : $\forall$ (b : B) (P : B $\rightarrow$ Type) $\vec{f}$, DepElim(b, P) $\vec{f}$ : P (Eta(B) b).(@\vspace{-0.04cm}@)
 (@\vspace{-0.04cm}@)
-iota_ok (j, A) : $\forall$ (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, A) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+eta_ok (A) : $\forall$ (a : A), Eta (A) a = a.
+eta_ok (B) : $\forall$ (b : B), Eta (B) b = b.
+(@\vspace{-0.04cm}@)
+iota_ok (j, A) : $\forall$ (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (Eta (A) (DepConstr(j, A) $\vec{x}$)) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
   Q (DepElim(DepConstr(j, A) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
-  Q ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)(@\vspace{-0.04cm}@)
+  Q (rew $\leftarrow$ eta_ok (A) (DepConstr(j, A) $\vec{x}$) in ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...))(@\vspace{-0.04cm}@)
 := Iota(A, j, Q).(@\vspace{-0.04cm}@)
-iota_ok (j, B) : $\forall$ (P : B $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (DepConstr(j, B) $\vec{x}$) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+iota_ok (j, B) : $\forall$ (P : B $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (Eta (B) (DepConstr(j, B) $\vec{x}$)) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
   Q (DepElim(DepConstr(j, B) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
-  Q ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...)(@\vspace{-0.04cm}@)
+  Q (rew $\leftarrow$ eta_ok (B) (DepConstr(j, B) $\vec{x}$) in ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...))(@\vspace{-0.04cm}@)
 := Iota(B, j, Q).
 \end{lstlisting}
 \vspace{-0.3cm}
@@ -471,61 +474,53 @@ where \lstinline{f} uses \lstinline{DepElim} to eliminate \A and \lstinline{DepC
 \lstinline{DepElim} to eliminate \B and \lstinline{DepConstr} to construct \A.
 \lstinline{DepConstr} over \B must be equal to \lstinline{DepConstr} over \A up to transport along the induced equivalence (\lstinline{dep_constr_ok}), 
 and similarly for \lstinline{DepElim} (\lstinline{dep_elim_ok}).
-An example proves this on the change from \lstinline{list T} to \lstinline{packed_vect T} in the 
-univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
+%An example proves this on the change from \lstinline{list T} to \lstinline{packed_vect T} in the 
+%univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
+Intuitively, \lstinline{dep_constr_ok} and \lstinline{dep_elim_ok} guarantee that the transformation
+correctly transports dependent constructors and dependent eliminators,
+as doing so will preserve equality up to transport for those subterms.
+This makes it possible for the transformation
+to avoid applying \lstinline{f} and \lstinline{g} explicitly---instead porting terms from \A directly to \B.
+
+%Furthermore, since CIC$_{\omega}$ is constructive, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
+%and the \textit{only} way to eliminate an \A (respectively \B) is to apply its eliminator.
+%Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and %eliminators.
+%So, as long as we are able to unify subterms with applications of \lstinline{DepConstr} and \lstinline{DepElim},
+%\textsc{Dep-Constr} and \textsc{Dep-Elim} should preserve correctness of the transformation and cover all values and eliminations of \A and \B.
 
 \paragraph{Equality}
 To ensure coherence with equality (Figure~\ref{fig:spec}, bottom),
 \lstinline{Eta} and \lstinline{Iota} must correctly prove the $\eta$ and $\iota$ rules.
-That is, \lstinline{Eta} must have the same definitional behavior as the dependent eliminator (\lstinline{eta_ok}).
+That is, \lstinline{Eta} must have the same definitional behavior as the dependent eliminator (\lstinline{elim_eta}),
+and must behave like the identity function (\lstinline{eta_ok}).
 Each \lstinline{Iota} must prove and rewrite along the simplification (formally, \textit{refolding}~\cite{boutillier:tel-01054723}) behavior that corresponds to a case of the dependent eliminator (\lstinline{iota_ok}).
+This makes it possible for the transformation to
+avoid applying \lstinline{section} and \lstinline{retraction} explicitly.
 
 \paragraph{Correctness}
-With this correctness criteria for a configuration, we get the completeness result that every equivalence induces a configuration (Section~\ref{sec:completeness}).
-We also obtain an algorithm for the soundness result that every configuration induces an equivalence (Section~\ref{sec:soundness}),
-which we use in particular cases to produce correctness proofs in \toolname, but do not yet prove in the general case.
-We do not yet know if configurations and equivalences are themselves equivalent---we leave that to future work.
+With this correctness criteria for a configuration, we get the completeness result that every equivalence induces a configuration---a proof
+of this using a generic construction is in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/arbitrary.v}{arbitrary.v}.
+We also obtain an algorithm for the soundness result that every configuration induces an equivalence.
+The algorithm to prove \lstinline{section} is as follows (\lstinline{retraction} is similar):
+replace \lstinline{a} with \lstinline{Eta (A)} by \lstinline{eta_OK (A)}.
+Then, induct using \lstinline{DepElim} over \A.
+For each case $i$, the proof obligation is to show that \lstinline{g (f a)} is equal to \lstinline{a},
+where \lstinline{a} is \lstinline{DepConstr(A, i)} applied to the non-inductive arguments (by \lstinline{elim_eta (A)}).
+Expand the right-hand side using \lstinline{Iota(A, i)}, then expand it again using \lstinline{Iota(B, i)}
+(destructing over each \lstinline{eta_OK} to apply the corresponding \lstinline{Iota}).
+The result follows by definition of \lstinline{g} and \lstinline{f}, and by reflexivity.
 
-\subsubsection{Completeness}
-\label{sec:completeness}
-
-TODO explain, link to proof, update proof to show whatever results we can show
-
-\subsubsection{Soundness}
-\label{sec:soundness}
-
-TODO tweak, WIP
-
-The correctness criteria for equivalence make it possible for the transformation
-to avoid applying \lstinline{f} and \lstinline{g} explicitly---instead porting terms from \A directly to \B.
-Intuitively, \lstinline{dep_constr_ok} and \lstinline{dep_elim_ok} guarantee that the transformation
-correctly transports dependent constructors and dependent eliminators,
-as doing so will preserve equality up to transport for those subterms.
-Furthermore, since CIC$_{\omega}$ is constructive, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
-and the \textit{only} way to eliminate an \A (respectively \B) is to apply its eliminator.
-Finally, since these form an equivalence, all ways of constructing or eliminating \A and \B are covered by these dependent constructors and eliminators.
-So, as long as we are able to unify subterms with applications of \lstinline{DepConstr} and \lstinline{DepElim},
-\textsc{Dep-Constr} and \textsc{Dep-Elim} should preserve correctness of the transformation and cover all values and eliminations of \A and \B.
-
-The correctness criteria for equality then make it possible for the transformation to
-avoid applying \lstinline{section} and \lstinline{retraction} explicitly.
-Intuitively, this is because the configuration terms together induce proofs of \lstinline{section}
-and \lstinline{retraction}.
-A sketch of the proof of \lstinline{section} is as follows (\lstinline{retraction} is similar):
-Induct using \lstinline{DepElim} over \A.
-For each case $i$, the proof obligation is to show that \lstinline{g b} is equal to \lstinline{g} at \lstinline{DepConstr(b, i)} applied to the non-inductive arguments (by definition of \lstinline{f}).
-Define this as a motive \lstinline{Q}.
-Refold to rewrite along each inductive hypothesis (\lstinline{iota_ok}) using \lstinline{Iota(A, i, Q)} applied to each \lstinline{DepConstr} over \B (the cases of the definition of \lstinline{f}), with reflexivity as the base case. % TODO check this
-
-The intuition above is what
+The algorithm above is what
 \textbf{Configure} uses to implement search procedures that generate functions \lstinline{f} and \lstinline{g} for the classes of equivalences
 that correspond to automatic configuration (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/search.ml}{search.ml}), and also
 generate proofs \lstinline{section} and \lstinline{retraction} that these functions form an equivalence (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/equivalence.ml}{equivalence.ml}).
 To minimize dependencies, \toolname does not produce proofs of \lstinline{dep_constr_ok} and \lstinline{dep_elim_ok} directly,
-as doing so would require either a special framework~\cite{tabareau2017equivalences}
+as stating these theorems cleanly would require either a special framework~\cite{tabareau2017equivalences}
 or a univalent type theory~\cite{univalent2013homotopy}.
-Thankfully, the proof engineer does not need to prove these in order to use \toolname.
-Rather, the correctness criteria simply need to hold in order for the transformation to work.
+If the proof engineer wishes, it is possible to prove these in individual cases,
+as we do in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/arbitrary.v}{arbitrary.v}.
+However, the proof engineer does not need to prove these in order to use \toolname---the correctness criteria
+simply need to hold in order for the transformation to work.
 
 \subsection{The Tool}
 \label{sec:implementation}
@@ -533,7 +528,7 @@ Rather, the correctness criteria simply need to hold in order for the transforma
 The configurable proof term transformation helped us build a flexible proof repair and reuse tool.
 However, it alone was not enough to build a tool that reaches real proof engineers.
 This section describes a sample of the implementation challenges that we encountered and how we solved them.
-Section~\ref{sec:discussion} elaborates on the remaining challenges and our plans to address them in the future.
+Section~\ref{sec:discussion} elaborates on some of the remaining challenges and our plans to address them in the future.
 
 \paragraph{From CIC$_{\omega}$ to Coq}
 
@@ -545,8 +540,7 @@ using \lstinline{DepConstr}.
 
 \paragraph{Termination \& Intent}
 
-Another challenge with implementing the proof term transformation is deciding whether to run a rule that matches at all.
-That is, when the correctness criteria for a configuration hold and a subterm matches a rule, this suggests that \toolname \textit{can}
+When the correctness criteria for a configuration hold and a subterm matches a configuration term, this suggests that \toolname \textit{can}
 run the transformation rule, but it does not necessarily mean that it \textit{should}.
 In some cases, repeatedly running a matching transformation rule would result in nontermination.
 For example, if \B is a refinement of \A, then we can always run \textsc{Equivalence}
@@ -555,8 +549,7 @@ over and over again, forever.
 %useful to support this case.
 We thus include some simple termination checks in our code (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftrules.ml}{liftrules.ml}).
 
-Even when termination is guaranteed, whether to run a matching transformation rule
-depends on intent.
+Even when termination is guaranteed, whether to transform a subterm depends on intent.
 For example, our industrial proof engineer sometimes wished to port only some occurrences of \A,
 especially when \A was a tuple that could appear elsewhere
 with a different meaning.
