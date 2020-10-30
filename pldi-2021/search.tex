@@ -27,23 +27,24 @@ Some workflows were unanticipated and informed design changes in \toolname.
 
 \begin{figure*}
 \begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=1, lastline=8]{replica.tex}
+   \lstinputlisting[firstline=1, lastline=9]{replica.tex}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=10, lastline=17]{replica.tex}
+   \lstinputlisting[firstline=11, lastline=19]{replica.tex}
 \end{minipage}
 \vspace{-0.4cm}
-\caption{A simple language (left) and the same language with two swapped constructors (right).}
+\caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
 \label{fig:replica}
 \end{figure*}
 
 The constructor swapping example from Section~\ref{sec:overview} was inspired by two benchmarks 
 from the \textsc{Replica} user study of proof engineers~\cite{replica}.
-An isolated change corresponding to part of one of the benchmarks is shown in Figure~\ref{fig:replica}.
+A change corresponding to part of one of the benchmarks is shown in Figure~\ref{fig:replica}.
 The proof engineer had a simple language represented by an inductive type \lstinline{Term},
 as well as some definitions and proofs about the language.
-The proof engineer swapped two constructors in the term language.
+The proof engineer swapped two constructors in the term language,
+and added a new constructor \lstinline{Bool}.
 
 We used \toolname to automatically configure the proof term transformation to swap these constructors,
 then repair all of the functions and proofs.
@@ -53,11 +54,15 @@ permuting more than two constructors,
 or permuting and renaming constructors at the same time.
 In all cases, with a bit of human guidance, \toolname repaired the functions and proofs.
 
+We then extended the inductive type to add the new constructor, and used \toolname to repair terms,
+separating out the proof obligations for the new constructor from the old terms.
+The resulting terms were guaranteed to preserve the behavior of the old terms.
+
 \subsubsection{Configuration}
 
-The automatic configuration this used handles permuting and renaming constructors of inductive types.
+The swap change used an automatic configuration that handles permuting and renaming constructors of inductive types.
 This is one of the simplest configurations.
-The only nontrivial part is that \lstinline{DepConstr} over the updated type permutes back the constructors, in our example:
+The only nontrivial part is that \lstinline{DepConstr} over the updated type permutes back the constructors:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
 dep_constr_0 (H : Z) : Term := (@\codediff{Int}@) H.(@\vspace{-0.04cm}@)
@@ -67,20 +72,28 @@ so that they align with the original constructors.
 The eliminator similarly permutes cases:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_elim P f0 f1 f2 f3 f4 f5 f6 t : P t := Term_rect P f0 (@\codediff{f2}@) (@\codediff{f1}@) f3 f4 f5 f6 t.
+dep_elim P f0 f1 f2 f3 f4 f5 f6 t : P t :=(@\vspace{-0.04cm}@)
+  Old.Term_rect P f0 (@\codediff{f2}@) (@\codediff{f1}@) f3 f4 f5 f6 t.
 \end{lstlisting}
-where \lstinline{Term_rect} is the eliminator over the old version of \lstinline{Term}.
+
+Adding the constructor combined a manual configuration with an automatic configuration.
+The details of this are in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add_constr.v}.
+At a high level, we defined an inductive type \lstinline{Diff} and (using partial automation) a configuration to port the terms across this equivalence:
+
+\begin{lstlisting}
+Old.Term + (@\codediff{Diff}@) $\simeq$ New.Term
+\end{lstlisting}
+This made it simple to guarantee preservation of the behavior over \lstinline{Old.Term} before the change.
 
 \subsubsection{Example}
 
 We used \toolname to automatically update the functions and proofs in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{\lstinline{Swap.v}} from the \textsc{Replica} benchmark.
 This included functions about \lstinline{Term}, as well as a large record \lstinline{EpsilonLogic} that encoded the semantics of the language,
-plus a proof about that record:
-
-\begin{lstlisting}
-Theorem eval_eq_true_or_false : $\forall$ (L : EpsilonLogic) env (t1 t2 : Term),(@\vspace{-0.04cm}@)
-  L.eval env (Eq t1 t2) = L.vTrue $\vee$ L.eval env (Eq t1 t2) = L.vFalse.
-\end{lstlisting}
+plus a proof about that record.
+%\begin{lstlisting}
+%Theorem eval_eq_true_or_false : $\forall$ (L : EpsilonLogic) env (t1 t2 : Term),(@\vspace{-0.04cm}@)
+%  L.eval env (Eq t1 t2) = L.vTrue $\vee$ L.eval env (Eq t1 t2) = L.vFalse.
+%\end{lstlisting}
 \toolname automatically updated all of these. For the inductive proof, it produced
 a new inductive proof that used the induction principle with the swapped constructors.
 It also discovered all other 23 type-correct permutations of constructors, all available for selection to 
@@ -89,26 +102,33 @@ It presented the desired transformation as the first option in the list, so that
 was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this change.
 It was also able to handle the more advanced variants of this change.
 
+In \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add_constr.v},
+we then updated the functions to add the new constructor.
+This resulted in some case explosion, but was very formulaic.
+Since the functions \toolname produced were guaranteed to preserve the behavior of the old functions,
+we used them as regression tests to check the behavior of the handwritten functions from the benchmark.
+
 \subsubsection{Lessons}
 
-Implementing the search procedure was simple. %and took about three days.
-The biggest challenge was implementing an interactive interface to choose between mappings when there are multiple possible mappings,
-or to allow the proof engineer to write a single custom mapping function and derive the rest of the configuration from that.
-This was only a single snapshot of the benchmark, which included
-other changes like adding constructors to inductive types.
-One ongoing challenge is defining and discovering useful configurations to support adding new constructors.
+Swapping constructors was simple---it used a search procedure that handles
+any permutation or renaming of constructors.
+Extending constructors was less simple.
+Most notably, the repaired terms were (unlike in the swap case) inefficient compared to human-written terms.
+For now, they make good regression tests for the human-written terms---in the future,
+we hope to automate the discovery of the more efficient term as well.
 
-The isolated change was simple enough that \toolname would not have been necessary
+The swap change alone was simple enough that \toolname would not have been necessary
 for updating the proofs for the initial change---keeping the tactics the same would have also worked.
 %This is a property of the particular proofs that we had access to;
 As we saw in Sections~\ref{sec:overview} and~\ref{sec:key1}, even for simple changes, this is not always true.
-More advanced variants of this benchmark that involved also renaming constructors did necessitate \toolname,
+More advanced variants of this benchmark that we tried did necessitate \toolname,
 and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
 The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
-its dependencies, four variants of the \textsc{Replica} benchmark,
+its dependencies, four variants of the \textsc{Replica} swapping change,
 and testing a large and ambiguous permutation of a 30 constructor \lstinline{Enum},
 took \toolname less than 90 seconds total. % TODO specs, reproduction
-Each variant of the \textsc{Replica} benchmark took \toolname less than 5 seconds. % TODO specs, reproduction
+Each variant of the \textsc{Replica} swapping change took \toolname less than 5 seconds, % TODO specs, reproduction
+and the change adding a constructor took \toolname less than 30 seconds. % TODO specs, reproduction
 
 \subsection{Vectors from Lists}
 \label{sec:dep}
@@ -131,14 +151,14 @@ and someone on the \lstinline{coq-club} message board contacted us expressing in
 We used two automatic configurations to ease development with dependent types using algebraic ornaments.
 The first instantiates the proof term transformation to the tranformation from \textsc{Devoid}:
 it ports functions and proofs from the input type to the ornamented type at \textit{some} index,
-like $\Sigma$\lstinline{(n : nat).vector T n}.
+like \lstinline{packed_vect T} from Section~\ref{sec:key1}.
 The second provides the missing link to get proofs at a \textit{particular} index, like \lstinline{vector T n};
 \textsc{Devoid} had left this to the proof engineer.
 
 For lists and vectors, the search procedure for the first configuration used the equivalence:
 
 \begin{lstlisting}
-list T $\simeq$ $\Sigma$(n : nat).vector T n
+list T $\simeq$ packed_vect T
 \end{lstlisting}
 The configuration it found for \lstinline{list} was simple: identity for \lstinline{Eta},
 the list constructors for \lstinline{DepConstr}, the list eliminator for \lstinline{DepElim},
@@ -146,27 +166,25 @@ and definitional \lstinline{Iota}.
 For \lstinline{vector}, it set \lstinline{Eta} to $\eta$-expand $\Sigma$ types:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-eta (T : Type) (s : $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n := $\exists$ ($\pi_l$ s) ($\pi_r$ s).
+eta (T : Type) (s : packed_vect T) : packed_vect T :=(@\vspace{-0.04cm}@)
+  $\exists$ ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
 it set \lstinline{DepConstr} to pack constructors: % TODO shrink this now that some of it is in the other section
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_constr_0 (T : Type) : $\Sigma$(n : nat).vector T n :=(@\vspace{-0.04cm}@)
-  $\exists$ 0 (Vector.nil A).(@\vspace{-0.04cm}@)
-dep_constr_1 (T : Type) (t : T) (s : $\Sigma$(n : nat).vector T n) : $\Sigma$(n : nat).vector T n :=(@\vspace{-0.04cm}@)
+dep_constr_0 T : $\exists$ 0 (Vector.nil A).(@\vspace{-0.04cm}@)
+dep_constr_1 T t s :=(@\vspace{-0.04cm}@)
   $\exists$ (S ($\pi_l$ s)) (Vector.cons ($\pi_l$ s) t ($\pi_r$ s)).
 \end{lstlisting}
 it set \lstinline{DepElim} to eliminate its projections:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-dep_elim (T : Type) (P : $\Sigma$(n : nat).vector T n $\rightarrow$ Type) (pnil : P (dep_constr_0 T))(@\vspace{-0.04cm}@)
-    (pcons : $\forall$ t s, P (eta T s) $\rightarrow$ P (dep_constr_1 T t s)) (s : $\Sigma$(n : nat).vector T n)(@\vspace{-0.04cm}@)
-    : P (eta T s) :=(@\vspace{-0.04cm}@)
-  vector_rect T(@\vspace{-0.04cm}@)
-    (fun (n : nat) (v : vector T n) => P ($\exists$ n v))(@\vspace{-0.04cm}@)
-    pnil(@\vspace{-0.04cm}@)
-    (fun (t : T) (n : nat) (v : vector T n) => pcons t ($\exists$ n v))(@\vspace{-0.04cm}@)
-    ($\pi_l$ s) ($\pi_r$ s).
+dep_elim T P pnil pcons : P (eta T s) :=(@\vspace{-0.04cm}@)
+vector_rect T(@\vspace{-0.04cm}@)
+  (fun n v => P ($\exists$ n v))(@\vspace{-0.04cm}@)
+  pnil(@\vspace{-0.04cm}@)
+  (fun t n v => pcons t ($\exists$ n v))(@\vspace{-0.04cm}@)
+  ($\pi_l$ s) ($\pi_r$ s).
 \end{lstlisting}
 and it used definitional \lstinline{Iota}.
 %This configuration was enough to capture all of the search and lifting functionality from \textsc{Devoid}.
@@ -176,7 +194,7 @@ This configuration corresponds to the equivalence between sigma types at a parti
 and the same type escaping the sigma type, in our example:
 
 \begin{lstlisting}
-$\Sigma$(s : $\Sigma$(m : nat).vector T m).$\pi_l$ s = n $\simeq$ vector T n
+$\Sigma$(s : packed_vect T).$\pi_l$ s = n $\simeq$ vector T n
 \end{lstlisting}
 By composition with the initial equivalence, this transports proofs
 across the equivalence we want:
@@ -186,13 +204,14 @@ $\Sigma$(l : list T).length l = n $\simeq$ vector T n
 \end{lstlisting}
 since these equivalences are equal up to transport along the first equivalence.
 
-The second configuration carries equality proofs over the indices.
+The second configuration carries equality proofs over the indices,
+which are then instantiated for the transformation using unification heuristics.
 For example, it views \lstinline{vector T n} as implicitly representing $\Sigma$\lstinline{(v : vector T m).n = m} for some \lstinline{m}.
 This is seen in \lstinline{eta}, here: 
-% TODO both should take the same number of arguments, even if eta_A takes fewer. also does this belong in iota?
+% TODO both should take the same number of arguments, even if eta_A takes fewer. also does this belong in iota? this is weird honestly
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-eta (T : Type) (n m : nat) (H : n = m) (v : vector T m) : vector T n :=(@\vspace{-0.04cm}@)
+eta T n m (H : n = m) (v : vector T m): vector T n :=(@\vspace{-0.04cm}@)
   eq_rect m (vector T) v n H.
 \end{lstlisting}
 which is the identity function generalized over any equal index.
@@ -220,7 +239,8 @@ This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip
 
 \begin{lstlisting}
 Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
-  (v1: $\Sigma$(l1: (@\codediff{list A}@)).(@\codediff{length}@) l1 = n) (v2: $\Sigma$(l2: (@\codediff{list B}@)).(@\codediff{length}@) l2 = n),(@\vspace{-0.04cm}@)
+  (v1: $\Sigma$(l1: (@\codediff{list A}@)).(@\codediff{length}@) l1 = n)(@\vspace{-0.04cm}@)
+  (v2: $\Sigma$(l2: (@\codediff{list B}@)).(@\codediff{length}@) l2 = n),(@\vspace{-0.04cm}@)
     zip_with pair n v1 v2 = zip n v1 v2.
 \end{lstlisting}
 We then ran \lstinline{Repair module} using the first
@@ -228,7 +248,8 @@ configuration, which proved this lemma:
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
 Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
-  (v1:$\Sigma$(l1:(@\codediff{$\Sigma$(m: nat).vector A m}@)).(@\codediff{$\pi_l$}@) l1 = n) (v2:$\Sigma$(l2:(@\codediff{$\Sigma$(m: nat).vector B m}@)).(@\codediff{$\pi_l$}@) l2 = n),(@\vspace{-0.04cm}@)
+  (v1: $\Sigma$(l1: (@\codediff{packed_vect A}@)).(@\codediff{$\pi_l$}@) l1 = n)(@\vspace{-0.04cm}@)
+  (v2: $\Sigma$(l2: (@\codediff{packed_vect B}@)).(@\codediff{$\pi_l$}@) l2 = n),(@\vspace{-0.04cm}@)
     zip_with pair v1 v2 = zip v1 v2.
 \end{lstlisting}
 with functions \lstinline{zip_with} and \lstinline{zip} updated as well.
@@ -240,20 +261,16 @@ Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
   (v1: (@\codediff{vector A n}@)) (v2: (@\codediff{vector B n}@)),(@\vspace{-0.04cm}@)
     zip_with pair v1 v2 = zip v1 v2.
 \end{lstlisting}
-with functions \lstinline{zip_with} and \lstinline{zip} operating directly over vectors.
+with functions \lstinline{zip_with} and \lstinline{zip} repaired as well.
 
 \subsubsection{Lessons}
 
 %\paragraph{Configuration \& Flexibility}
-Implementing the search procedure for the first configuration was straightforward.
-%It also simplified the transformation from \textsc{Devoid} %by removing the need for special rules for handling eliminators and constructors
-%by adding and removing arguments, and for special handling of non-primitive projections,
-%as that work is done in the configuration.
-%by moving all of the interesting work into the search procedure for the configuration.
-Implementing the search procedure for the second configuration was less straightforward.
-It is still an open challenge to define complete unification heuristics to port any arbitrary proof
-along the second configuration in either direction,
-though this does not impact the case study.
+%Implementing the search procedure for the first configuration was straightforward.
+%Implementing the search procedure for the second configuration was less straightforward.
+%It is still an open challenge to define complete unification heuristics to port any arbitrary proof
+%along the second configuration in either direction,
+%though this does not impact the case study.
 
 %\paragraph{Workflow Integration}
 The result was a simplified workflow from \textsc{Devoid} that automated steps 
@@ -270,11 +287,13 @@ Additional effort is needed to further improve tactic integration with dependent
 \subsection{Unary and Binary Numbers}
 \label{sec:bin}
 
-All of the case studies so far have dealt with pairs of types with the same inductive structure.
+All of the case studies so far have dealt with pairs of types with the same inductive structure,
+or with new information.
 Some of the oldest problems in the transport literature deal with \textit{changing} inductive
-structure.
-We have realized a classic example~\cite{magaud2000changing}  of this with \toolname using a manual configuration:
+structure without adding any new information.
+We have realized a classic example~\cite{magaud2000changing} of this with \toolname using a manual configuration:
 updating unary to binary natural numbers.
+% TODO fin and vect? mention somewhere?
 
 In Coq, a binary number \lstinline{N} (see Section~\ref{sec:key2}, Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
 is either 1 (\lstinline{xH}), or the result of shifting left and adding 1 (\lstinline{xI})
