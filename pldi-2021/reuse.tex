@@ -12,15 +12,16 @@ to derive proofs about another specification.
 The difference is that in standard proof reuse, both of these specifications continue to exist.
 In contrast, proof repair is the process of reusing proofs across \textit{two versions of a single specification},
 only one of which---the new version---must continue to exist.
-That is, the old version of the specification may be removed after updating proofs to use the new version.
+That is, the old version of the specification may be removed after updating proofs to use the new version (Section~\ref{sec:repair}).
+The key to supporting proof repair is to build a proof reuse tool that can handle that additional challenge (Section~\ref{sec:time}).
 
-\begin{quote}
-\textbf{Insight 1}:
-Proof repair is a form of proof reuse---reusing proofs about one specification to derive proofs about another specification---with 
-the additional challenge that one of the specifications may cease to exist (Section~\ref{sec:repair}).
-The key to supporting proof repair is to build a proof reuse
-tool that can handle that additional challenge (Section~\ref{sec:time}).
-\end{quote}
+%\begin{quote}
+%\textbf{Insight 1}:
+%Proof repair is a form of proof reuse---reusing proofs about one specification to derive proofs about another specification---with 
+%the additional challenge that one of the specifications may cease to exist (Section~\ref{sec:repair}).
+%The key to supporting proof repair is to build a proof reuse
+%tool that can handle that additional challenge (Section~\ref{sec:time}).
+%\end{quote}
 
 \subsection{Scope: Type Equivalences}
 \label{sec:scope}

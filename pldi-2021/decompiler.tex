@@ -6,9 +6,9 @@ while the proof engineer typically writes and maintains proof scripts made up of
 We improve usability thanks to the realization that, since Coq's proof term language Gallina is very structured,
 we can decompile these Gallina terms to suggested Ltac proof scripts for the proof engineer to maintain.
 
-\begin{quote}
-\textbf{Insight 3}: The transformed proof terms can then be translated back to tactic scripts.
-\end{quote}
+%\begin{quote}
+%\textbf{Insight 3}: The transformed proof terms can then be translated back to tactic scripts.
+%\end{quote}
 
 \textbf{Decompile} implements a prototype of this translation:
 it translates a proof term to a suggested proof script that attempts to prove the same theorem the same way.
