@@ -14,7 +14,7 @@ three years} to verifying a significant
 piece of software if he could be 
 assured that the software would remain stable.
 \end{quote}
-we deduce that, since 1977, either verification has become much easier,
+we could argue that, since 1977, either verification has become easier,
 or researchers have become much more fanatical. Unfortunately, not all has changed (emphasis still ours):
 
 \begin{quote}
@@ -30,7 +30,7 @@ or when change occurs outside of proof engineers' control~\cite{PGL-045}.
 Still, maintaining verified programs can be challenging: it means keeping not just the programs, but also specifications and proofs about those programs up-to-date.
 This remains so difficult that sometimes, even experts give up in the face of change~\cite{replica}.
 
-We make progress on two open challenges in \textit{proof repair}, the problem of automatically updating proofs in response
+We make progress on two open challenges in \textit{proof repair} (Section~\ref{sec:key1}), the problem of automatically updating proofs in response
 to changes in programs or specifications:
 
 \begin{enumerate}
@@ -40,22 +40,21 @@ of changes~\cite{robert2018, wibergh2019}, and these are not informed by the nee
 \item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018},
 and may impose additional proof obligations like proving relations corresponding to changes~\cite{Ringer2019}.
 \end{enumerate}
-Our progress towards these challenges leverages three key insights:
+%Our progress towards these challenges leverages three key insights:%
+%
+%\begin{enumerate}
+%\item Proof repair is a form of proof reuse---reusing proofs about one specification to derive proofs about another specification---with 
+%the additional challenge that one of the specifications may cease to exist.
+%The key to supporting proof repair is to build a proof reuse
+%tool that can handle that additional challenge (Section~\ref{sec:key1}). 
+%\item A configurable proof term transformation can be used to build such a proof repair tool,
+%and the result can handle many different kinds of changes (Section~\ref{sec:key2}).
+%\item The transformed proof terms can then be translated back to suggested tactic scripts (Section~\ref{sec:decompiler}).
+%\end{enumerate}
 
-\begin{enumerate}
-\item Proof repair is a form of proof reuse---reusing proofs about one specification to derive proofs about another specification---with 
-the additional challenge that one of the specifications may cease to exist.
-The key to supporting proof repair is to build a proof reuse
-tool that can handle that additional challenge (Section~\ref{sec:key1}). 
-\item A configurable proof term transformation can be used to build such a proof repair tool,
-and the result can handle many different kinds of changes (Section~\ref{sec:key2}).
-\item The transformed proof terms can then be translated back to suggested tactic scripts (Section~\ref{sec:decompiler}).
-\end{enumerate}
-
-These insights informed our design of \toolname\footnote{Name changed for double-blind.} (Configurable Approach to Repairing \& Refactoring Outdated Tactics), a proof repair plugin for Coq 8.8.
-\toolname combines a configurable proof term transformation,
-search procedures to configure the proof term transformation,
-and a prototype decompiler from proof terms back to suggested tactics.
+Our progress toward these challenges leverages a configurable proof term transformation (Section~\ref{sec:key2})
+in combination with a prototype decompiler from proof terms back to suggested tactics (Section~\ref{sec:decompiler}).
+This is implemented in \toolname\footnote{Name changed for double-blind.} (Configurable Approach to Repairing \& Refactoring Outdated Tactics), a proof repair plugin for Coq 8.8.
 The result is a flexible proof repair tool that: 
 
 \begin{enumerate}
@@ -65,42 +64,7 @@ The result is a flexible proof repair tool that:
 
 \subsection*{Addressing Challenge 1: Flexible Type Support}
 
-\begin{figure*}
-\small
-  \begin{tabular}{|l|l|l|l|l|}
-    \hline
-    \textbf{Class} & \textbf{Config.} & \textbf{Examples} & \textbf{Repair Tools} & \textbf{Search Tools} \\
-    \hline
-    \multirow[t]{3}{*}{Permute Constructors} & \multirow[t]{3}{*}{Auto} & List, Standard Library (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \toolname, UP & \toolname \\
-     & & Modifying a PL, \textsc{REPLica} Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \toolname, UP  & \toolname \\
-    & & Large Ambiguous Enum (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \toolname, UP & \toolname \\
-    \hline
-    \multirow[t]{2}{*}{Algebraic Ornaments} & \multirow[t]{2}{*}{Auto} & List to Packed Vector, hs-to-coq (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{Example.v}) & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
-    & & List to Packed Vector, Standard Library (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/ListToVect.v}{ListToVect.v}) & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
-    \hline
-    Unpack Sigma Types & Auto & Vector of Particular Length, hs-to-coq (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{Example.v}) & \toolname, UP & \toolname \\
-    \hline
-    \multirow[t]{3}{*}{Tuples \& Records} & \multirow[t]{3}{*}{Auto} & Simple Records (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/minimal_records.v}{minimal\_records.v}) & \toolname, UP & \toolname \\
-    & & Parameterized Records (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/more_records.v}{more_records.v}) & \toolname, UP & \toolname \\
-    & & Industrial Use (\href{https://github.com/Ptival/saw-core-coq/tree/dump-wip}{saw-core-coq}) & \toolname, UP & \toolname \\
-    \hline
-    Add new Constructors & Mixed & PL Extension, \textsc{REPLica} Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add\_constr.v}) & \toolname & \toolname (partial) \\
-    \hline
-    Factor out Constructors & Manual & External Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr\_refactor.v}) & \toolname, UP & None \\
-    \hline
-    Permute Hypotheses & Manual & External Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/flip.v}{flip.v}) & \toolname, UP & None \\
-    \hline
-    \multirow[t]{2}{*}{Change Inductive Structure} & \multirow[t]{2}{*}{Manual} & Unary to Binary, Classic Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{nonorn.v}) & \toolname, Classic & None \\
-     & & Vector to Finite Set, External Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/fin.v}{fin.v}) & \toolname & None \\
-    \hline
-  \end{tabular}
-  \caption{Some changes using \toolname, from left to right: class of changes (Class), whether the class of changes uses
-automatic or manual configuration (Config.), example changes in that class (Examples), and Coq tools we are aware of that can support repair along (Repair Tools) or automatic proof of (Search Tools) the equivalence correponding to each example change. The tools listed for comparison are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and a classic tool for changing data structures~\cite{magaud2000changing}. \toolname is the only one of these tools with support for tactic suggestions.
-We provide more nuanced comparisons to these tools and more in Section~\ref{sec:related}.}
-\label{fig:changes}
-\end{figure*}
-
-Table~\ref{fig:changes} shows that \toolname can support a flexible class of changes informed by the needs of proof engineers within a unified framework.
+The case studies in Section~\ref{sec:search}---summarized in Table~\ref{fig:changes}---show that \toolname can support a flexible class of changes informed by the needs of proof engineers within a unified framework.
 In general, \toolname can support any change described by a type equivalence, though it takes the equivalence in a
 deconstructed form that we call a \textit{configuration}.
 The configuration expresses to the proof term transformation how to translate functions and proofs defined over the old version of a type
@@ -122,11 +86,11 @@ decreasing the burden of proof obligations imposed on the proof engineer.
 Our partnership with an industrial proof engineer has informed other changes to further improve workflow integration
 (Sections~\ref{sec:implementation} and~\ref{sec:search}).
 
-\subsection*{Bringing it Together}
+%\subsection*{Bringing it Together}
 
-Our main technical advances are techniques for transforming proof terms directly to repair broken proofs in response to changes
-in types, while our prototype decompiler up to tactics is important for usability in Coq.
-We elaborate on some of the examples from Table~\ref{fig:changes} to further demonstrate flexibility and usability with four case studies (Section~\ref{sec:search}), which show that \toolname 1) can support a benchmark from a user study of Coq proof engineers, 2) can simplify dependently-typed programming, %automating manual steps from previous work,
-3) can help proof engineers port functions and proofs from unary to binary numbers, and
-4) has helped an industrial proof engineer at Galois integrate Coq with a company workflow and write proofs about an implementation of the TLS Handshake Protocol.
+%Our main technical advances are techniques for transforming proof terms directly to repair broken proofs in response to changes
+%in types, while our prototype decompiler up to tactics is important for usability in Coq.
+%We elaborate on some of the examples from Table~\ref{fig:changes} to further demonstrate flexibility and usability with four case studies (Section~%\ref{sec:search}), which show that \toolname 1) can support a benchmark from a user study of Coq proof engineers, 2) can simplify dependently-typed programming, %automating manual steps from previous work,
+%3) can help proof engineers port functions and proofs from unary to binary numbers, and
+%4) has helped an industrial proof engineer at Galois integrate Coq with a company workflow and write proofs about an implementation of the TLS %Handshake Protocol.
 

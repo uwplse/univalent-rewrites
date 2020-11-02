@@ -1,6 +1,43 @@
 \section{Case Studies: \textsc{Carrot} Four Ways}
 \label{sec:search}
 
+\begin{figure*}
+\small
+  \begin{tabular}{|l|l|l|l|l|}
+    \hline
+    \textbf{Class} & \textbf{Config.} & \textbf{Examples} & \textbf{Repair Tools} & \textbf{Search Tools} \\
+    \hline
+    \multirow[t]{3}{*}{Permute Constructors} & \multirow[t]{3}{*}{Auto} & List, Standard Library (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \toolname, UP & \toolname \\
+     & & Modifying a PL, \textsc{REPLica} Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \toolname, UP  & \toolname \\
+    & & Large Ambiguous Enum (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \toolname, UP & \toolname \\
+    \hline
+    \multirow[t]{2}{*}{Algebraic Ornaments} & \multirow[t]{2}{*}{Auto} & List to Packed Vector, hs-to-coq (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{Example.v}) & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
+    & & List to Packed Vector, Standard Library (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/ListToVect.v}{ListToVect.v}) & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
+    \hline
+    Unpack Sigma Types & Auto & Vector of Particular Length, hs-to-coq (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{Example.v}) & \toolname, UP & \toolname \\
+    \hline
+    \multirow[t]{3}{*}{Tuples \& Records} & \multirow[t]{3}{*}{Auto} & Simple Records (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/minimal_records.v}{minimal\_records.v}) & \toolname, UP & \toolname \\
+    & & Parameterized Records (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/more_records.v}{more_records.v}) & \toolname, UP & \toolname \\
+    & & Industrial Use (\href{https://github.com/Ptival/saw-core-coq/tree/dump-wip}{saw-core-coq}) & \toolname, UP & \toolname \\
+    \hline
+    Add new Constructors & Mixed & PL Extension, \textsc{REPLica} Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add\_constr.v}) & \toolname & \toolname (partial) \\
+    \hline
+    Factor out Constructors & Manual & External Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr\_refactor.v}) & \toolname, UP & None \\
+    \hline
+    Permute Hypotheses & Manual & External Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/flip.v}{flip.v}) & \toolname, UP & None \\
+    \hline
+    \multirow[t]{2}{*}{Change Inductive Structure} & \multirow[t]{2}{*}{Manual} & Unary to Binary, Classic Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{nonorn.v}) & \toolname, Classic & None \\
+     & & Vector to Finite Set, External Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/fin.v}{fin.v}) & \toolname & None \\
+    \hline
+  \end{tabular}
+  \caption{Some changes using \toolname, from left to right: class of changes (Class), whether the class of changes uses
+automatic or manual configuration (Config.), example changes in that class (Examples), and Coq tools we are aware of that can support repair along (Repair Tools) or automatic proof of (Search Tools) the equivalence correponding to each example change. The tools listed for comparison are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and a classic tool for changing data structures~\cite{magaud2000changing}. \toolname is the only one of these tools with support for tactic suggestions.
+We provide more nuanced comparisons to these tools and more in Section~\ref{sec:related}.}
+\label{fig:changes}
+\end{figure*}
+
+TODO pending major rewrite of this section to explain the table in a paragraph each
+
 This section explains four case studies for \toolname, building from the simple to complex:
 
 \begin{enumerate}
