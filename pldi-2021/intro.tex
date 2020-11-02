@@ -73,6 +73,20 @@ to refer only to the new version, and how to do so in a way that does not break 
 The proof engineer can write this configuration in Coq and feed it to \toolname (\textit{manual configuration} in Table~\ref{fig:changes}),
 configuring \toolname to support the corresponding change from directly within Coq.
 
+\begin{figure*}
+\begin{minipage}{0.52\textwidth}
+\includegraphics[width=\linewidth]{workflowa.pdf}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+\includegraphics[width=\linewidth]{workflowb.pdf}
+\vspace{0.97cm}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{The two possible workflows for \toolname, using either automatic (left) or manual (right) configuration.}
+\label{fig:system}
+\end{figure*}
+
 \subsection*{Addressing Challenge 2: Workflow Integration}
 
 Research on workflow integration for proof repair tools is in its infancy.
@@ -89,20 +103,6 @@ Our partnership with an industrial proof engineer has informed other changes to 
 
 \subsection*{Bringing it Together}
 
-\begin{figure*}
-\begin{minipage}{0.52\textwidth}
-\includegraphics[width=\linewidth]{workflowa.pdf}
-\end{minipage}
-\hfill
-\begin{minipage}{0.45\textwidth}
-\includegraphics[width=\linewidth]{workflowb.pdf}
-\vspace{0.97cm}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{The two possible workflows for \toolname, using either automatic (left) or manual (right) configuration.}
-\label{fig:system}
-\end{figure*}
-
 Figure~\ref{fig:system} shows how this comes together when the proof engineer invokes \toolname:
 
 \begin{enumerate}
@@ -118,10 +118,10 @@ Figure~\ref{fig:system} shows how this comes together when the proof engineer in
 There are currently four search procedures for automatic configuration implemented in \toolname (see Table~\ref{fig:changes}).
 %All four search procedures generate equivalence proofs as in Figure~\ref{fig:equivalence} automatically (\href{https://github.com/uwplse/pumpkin-pi/%blob/master/plugin/src/automation/search/search.ml}{search.ml} and \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/equivalence.ml}{equivalence.ml}),
 %then configure (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) the transformation %to those equivalences.
-%Manual configuration makes it possible
-%for the proof engineer to directly configure the transformation to any other equivalence,
-%even without a search procedure.
-%Section~\ref{sec:search} shows examples of both workflows applied to real proof reuse and repair scenarios.
+Manual configuration makes it possible
+for the proof engineer to directly configure the transformation to any other equivalence,
+even without a search procedure.
+Section~\ref{sec:search} shows examples of both workflows applied to real proof reuse and repair scenarios.
 
 %Our main technical advances are techniques for transforming proof terms directly to repair broken proofs in response to changes
 %in types, while our prototype decompiler up to tactics is important for usability in Coq.

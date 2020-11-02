@@ -5,7 +5,7 @@ At the heart of \toolname is a configurable proof term transformation for transp
 proofs across equivalences (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/lift.ml}{lift.ml}). 
 This proof term transformation is a generalization of the transformation from 
 \textsc{Devoid}~\cite{Ringer2019}, which solved this problem for a particular class of equivalences.
-\toolname moves the reasoning specific to that class of equivalences into the configuration. 
+%\toolname moves the reasoning specific to that class of equivalences into the configuration. 
 
 %\begin{quote}
 %\textbf{Insight 2}:
@@ -13,9 +13,10 @@ This proof term transformation is a generalization of the transformation from
 %and the result can handle many different kinds of changes.
 %\end{quote}
 
+The proof term transformation takes as input a deconstructed equivalence that we call a \textit{configuration}.
 This section starts by introducing the configuration (Section~\ref{sec:configurable}),
 then introduces the proof term transformation that builds on that (Section~\ref{sec:generic}).
-It then gives intuition for what it means for a configuration to be correct (Section~\ref{sec:art}),
+It then defines for what it means for a configuration to be correct (Section~\ref{sec:art}),
 and finally describes the additional work needed to go from this transformation to the implementation (Section~\ref{sec:implementation}). 
 
 \paragraph{Conventions}
@@ -41,22 +42,7 @@ Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldo
 \subsection{The Configuration}
 \label{sec:configurable}
 
-TODO orphaned/needs merging:
-This proof term transformation takes as input an equivalence in a special form that we call a \textit{configuration}.
-At a high level, a configuration is a deconstructed equivalence, split into parts that refer to the old type
-and parts that refer to the new type, without converting back and forth.
-The purpose of this deconstructed equivalence is to help the proof term transformation transport proofs across the equivalence in a 
-way that removes references to the old type, all the while abstracting away the details specific to any 
-given change in type (like permuting arguments to induction principles).
-Section~\ref{sec:art} shows that every equivalence
-induces a configuration.
-
 The configuration is the key to building a proof term transformation that implements transport in a way that is suitable for repair.
-%Before introducing the proof term transformation, we will describe the configuration, which in effect specifies the behavior
-%of the transformation.
-%It instantiates the proof term transformation to two equivalent types \A and \B, so that the proof term transformation
-%can transform terms defined over \A to terms defined over \B instead.
-%The behavior of the proof term transformation at a particular equivalence hinges on correct configuration.
 Each configuration corresponds to an equivalence \A $\simeq$ \B.
 It deconstructs that equivalence into things that talk about \A, and things that talk about \B.
 Furthermore, it does so in a way that allows the transformation to abstract away details
@@ -81,8 +67,9 @@ each of which corresponds to one of the two goals, namely:
 \end{enumerate}
 Each of these is defined in CIC$_{\omega}$ for any given equivalence.
 %\textbf{Configure} passes this configuration to \textbf{Transform}.
-The four parts of this configuration must relate to one another in a particular way in order for the proof
-term transformation to work correctly (Section~\ref{sec:art}).
+
+Section~\ref{sec:art} describes how the four parts of this configuration must relate to one another in order for the proof
+term transformation to work correctly, and proves that every equivalence induces a configuration.
 
 \subsubsection{Preserving the Equivalence}
 \label{sec:equivalence}
