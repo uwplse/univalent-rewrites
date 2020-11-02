@@ -221,7 +221,7 @@ The formal details of equality up to transport in such a theory can be found in 
 Transport methods typically work by explicitly applying the functions that make up the equivalence to convert
 inputs and outputs back and forth between equivalent types.
 This approach would not be suitable for repair, since it does not make it possible to remove the old specification.
-\toolname implements transport in a way that allows for removing references to the old specification.
+\toolname implements transport in a way that allows for removing references to the old specification---using a proof term transformation.
 
 %The goal of a proof repair tool like \toolname is to define a transport method that
 %can remove references to the old specification, %rather than converting back and forth like standard transport methods.
@@ -235,65 +235,8 @@ This approach would not be suitable for repair, since it does not make it possib
 %and in its dependencies.
 %That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be removed.
 
-\subsection{A Tool for Proof Repair Across Equivalences}
-\label{sec:time}
-
-\begin{figure*}
-\begin{minipage}{0.52\textwidth}
-\includegraphics[width=\linewidth]{workflowa.pdf}
-\end{minipage}
-\hfill
-\begin{minipage}{0.45\textwidth}
-\includegraphics[width=\linewidth]{workflowb.pdf}
-\vspace{0.97cm}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{The two possible workflows for \toolname, using either automatic (left) or manual (right) configuration.}
-\label{fig:system}
-\end{figure*}
-
-\toolname implements this transport with a twist using a proof term transformation.
-The proof term transformation implements transport across equivalences,
-but in a way that replaces references to the old type (in Section~\ref{sec:overview}, \lstinline{Old.list})
-with references to the new type (in Section~\ref{sec:overview}, \lstinline{New.list}).
-
-This proof term transformation takes as input an equivalence in a special form that we call a \textit{configuration}.
-At a high level, a configuration is a deconstructed equivalence, split into parts that refer to the old type
-and parts that refer to the new type, without converting back and forth.
-The purpose of this deconstructed equivalence is to help the proof term transformation transport proofs across the equivalence in a 
-way that removes references to the old type, all the while abstracting away the details specific to any 
-given change in type (like permuting arguments to induction principles).
-Section~\ref{sec:configurable} explains a configuration in more detial, and
-Section~\ref{sec:art} shows that every equivalence
-induces a configuration.
-
-The configuration can be supplied manually, or discovered automatically by a search procedure.
-Figure~\ref{fig:system} shows how this comes together when the proof engineer invokes \toolname:
-
-\begin{enumerate}
-\item \toolname configures itself, either:
-\begin{enumerate}
-\item automatically (left), using \textbf{Configure} to discover the configuration, or
-\item manually (right), by taking the configuration as an argument.
-\end{enumerate}
-\item The configured \textbf{Transform} transforms the old proof term into the new proof term.
-\item \textbf{Decompile} produces a new proof script from the new proof term.
-\end{enumerate}
-
-The example in Section~\ref{sec:overview} uses automatic configuration. When we run the \lstinline{Repair} command,
-\textbf{Configure} invokes a search procedure that automatically proves the equivalence in Figure~\ref{fig:equivalence},
-then configures \textbf{Transform} using that equivalence.
-\textbf{Transform} then ports the proof term that inducted over \lstinline{Old.list}
-to induct over \lstinline{New.list}, and finally
-\textbf{Decompile} produces the tactic script in light blue. %in Figure~\ref{fig:auto}.
-
-There are currently four search procedures for automatic configuration implemented in \toolname (see Table~\ref{fig:changes}).
-All four search procedures generate equivalence proofs as in Figure~\ref{fig:equivalence} automatically (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/search.ml}{search.ml} and \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/equivalence.ml}{equivalence.ml}),
-then configure (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) the transformation to those equivalences.
-Manual configuration makes it possible
-for the proof engineer to directly configure the transformation to any other equivalence,
-even without a search procedure.
-Section~\ref{sec:search} shows examples of both workflows applied to real proof reuse and repair scenarios.
+%\subsection{A Tool for Proof Repair Across Equivalences}
+%\label{sec:time}
 
 
 

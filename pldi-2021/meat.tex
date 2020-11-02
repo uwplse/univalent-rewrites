@@ -41,6 +41,16 @@ Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldo
 \subsection{The Configuration}
 \label{sec:configurable}
 
+TODO orphaned/needs merging:
+This proof term transformation takes as input an equivalence in a special form that we call a \textit{configuration}.
+At a high level, a configuration is a deconstructed equivalence, split into parts that refer to the old type
+and parts that refer to the new type, without converting back and forth.
+The purpose of this deconstructed equivalence is to help the proof term transformation transport proofs across the equivalence in a 
+way that removes references to the old type, all the while abstracting away the details specific to any 
+given change in type (like permuting arguments to induction principles).
+Section~\ref{sec:art} shows that every equivalence
+induces a configuration.
+
 The configuration is the key to building a proof term transformation that implements transport in a way that is suitable for repair.
 %Before introducing the proof term transformation, we will describe the configuration, which in effect specifies the behavior
 %of the transformation.
