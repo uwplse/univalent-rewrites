@@ -5,15 +5,20 @@
 Proof repair is the problem of updating a broken proof in response to a change in a program or specification~\cite{PGL-045, pumpkinpatch}---in the
 case of \toolname, a change in a type definition that corresponds to an equivalence (Section~\ref{sec:scope}).
 
-We can view proof repair as a form of 
-\textit{proof reuse}~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}, % TODO consider citation list
-or reusing proofs about one specification (say, from another library, or from within the same proof development)
-to derive proofs about another specification.
-The difference is that in standard proof reuse, both of these specifications continue to exist.
-In contrast, proof repair is the process of reusing proofs across \textit{two versions of a single specification},
-only one of which---the new version---must continue to exist.
-That is, the old version of the specification may be removed after updating proofs to use the new version (Section~\ref{sec:repair}).
-The key to supporting proof repair is to build a proof reuse tool that can handle that additional challenge (Section~\ref{sec:time}).
+Given an equivalence between two types \A and \B,
+\toolname repairs functions and proofs defined over \A to instead refer to \B.
+It does this in a way that allows for removing all references to \A, which is essential for proof repair,
+since \A may be an old version of an updated type (Section~\ref{sec:repair}).
+
+ %We can view proof repair as a form of 
+%\textit{proof reuse}~\cite{Ringer2019, felty1994generalization, caplan1995logical, pons2000generalization, johnsen2004theorem}, % TODO consider citation list
+%or reusing proofs about one specification (say, from another library, or from within the same proof development)
+%to derive proofs about another specification.
+%The difference is that in standard proof reuse, both of these specifications continue to exist.
+%In contrast, proof repair is the process of reusing proofs across \textit{two versions of a single specification},
+%only one of which---the new version---must continue to exist.
+%That is, the old version of the specification may be removed after updating proofs to use the new version (Section~\ref{sec:repair}).
+%The key to supporting proof repair is to build a proof reuse tool that can handle that additional challenge (Section~\ref{sec:time}).
 
 %\begin{quote}
 %\textbf{Insight 1}:
@@ -45,16 +50,16 @@ In particular, these changes in type definitions must correspond to \textit{type
 or pairs of functions that map between two types and are mutual inverses.
 Figure~\ref{fig:equivalence} shows a type equivalence between the two versions of \lstinline{list}
 from Section~\ref{sec:overview}, Figure~\ref{fig:listswap} that \toolname discovered and proved automatically.
-When such a type equivalence between two types exists, we say those types are \textit{equivalent} (denoted $\simeq$), for example:
+When such a type equivalence between two types \A and \B exists, we say those types are \textit{equivalent} (denoted \A $\simeq$ \B). % for example:
+%
+%\begin{lstlisting}
+%Old.list $\simeq$ New.list
+%\end{lstlisting}
 
-\begin{lstlisting}
-Old.list $\simeq$ New.list
-\end{lstlisting}
+All of the changes in Table~\ref{fig:changes} in Section~\ref{sec:search} can be described by equivalences.
+To give some more intuition for what kinds of changes can be described this way, we preview two changes below.
 
-All of the changes in Table~\ref{fig:changes} can be described by equivalences.
-To give some more intuition for what kinds of changes can be described this way, we describe two changes below.
-
-\subsubsection{Factoring out Constructors}
+\subsubsection*{Factoring out Constructors}
 \label{sec:ex1}
 
 \begin{figure}
@@ -80,34 +85,35 @@ as long as she first configures \toolname to describe which constructor
 of \lstinline{I} maps to \lstinline{true} and which maps to \lstinline{false}.
 This information about constructor mappings induces an equivalence \lstinline{I }$\simeq$\lstinline{ J}
 along which \toolname repairs functions and proofs.
+The file \lstinline{constr\_refactor.v} in auxiliary material
+shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false,
+and repairing proofs of De Morgan's laws.
+%
+%It uses \toolname to automatically repair functions and proofs over \lstinline{I}, like:
 
-The file \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr_refactor.v}
-shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false.
-It uses \toolname to automatically repair functions and proofs over \lstinline{I}, like:
+%\begin{lstlisting}
+%Theorem demorgan_1 : $\forall$ (i1 i2 : I),(@\vspace{-0.04cm}@)
+%  neg (and i1 i2) = or (neg i1) (neg i2).(@\vspace{-0.04cm}@)
+%Proof.(@\vspace{-0.04cm}@)
+%  intros i1 i2.(@\vspace{-0.04cm}@)
+%  induction i1; auto.(@\vspace{-0.04cm}@)
+%Qed.
+%\end{lstlisting}
+%to corresponding functions and proofs over \lstinline{J}, like:
+%
+%\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
+%Theorem demorgan_1 : $\forall$ (j1 j2 : J),(@\vspace{-0.04cm}@)
+%  neg (and j1 j2) = or (neg j1) (neg j2).(@\vspace{-0.04cm}@)
+%Proof.(@\vspace{-0.04cm}@)
+%  intros j1 j2.(@\vspace{-0.04cm}@)
+%  induction j1 (@\codediff{as [b]. induction b as [ | ]}@); auto.(@\vspace{-0.04cm}@)
+%Qed.
+%\end{lstlisting}
+%These repaired functions and proofs refer to \lstinline{J} in place of \lstinline{I}.
+%Otherwise, they behave the same way as the functions and proofs over \lstinline{I} up to the equivalence between
+%\lstinline{I} and \lstinline{J}---Section~\ref{sec:repair} explains this intuition more formally.
 
-\begin{lstlisting}
-Theorem demorgan_1 : $\forall$ (i1 i2 : I),(@\vspace{-0.04cm}@)
-  neg (and i1 i2) = or (neg i1) (neg i2).(@\vspace{-0.04cm}@)
-Proof.(@\vspace{-0.04cm}@)
-  intros i1 i2.(@\vspace{-0.04cm}@)
-  induction i1; auto.(@\vspace{-0.04cm}@)
-Qed.
-\end{lstlisting}
-to corresponding functions and proofs over \lstinline{J}, like:
-
-\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-Theorem demorgan_1 : $\forall$ (j1 j2 : J),(@\vspace{-0.04cm}@)
-  neg (and j1 j2) = or (neg j1) (neg j2).(@\vspace{-0.04cm}@)
-Proof.(@\vspace{-0.04cm}@)
-  intros j1 j2.(@\vspace{-0.04cm}@)
-  induction j1 (@\codediff{as [b]. induction b as [ | ]}@); auto.(@\vspace{-0.04cm}@)
-Qed.
-\end{lstlisting}
-These repaired functions and proofs refer to \lstinline{J} in place of \lstinline{I}.
-Otherwise, they behave the same way as the functions and proofs over \lstinline{I} up to the equivalence between
-\lstinline{I} and \lstinline{J}---Section~\ref{sec:repair} explains this intuition more formally.
-
-\subsubsection{Adding a Dependent Index}
+\subsubsection*{Adding a Dependent Index}
 \label{sec:ex2}
 
 At first glance, the word \textit{equivalence} may seem to imply that \toolname can support only changes in
@@ -116,8 +122,8 @@ But equivalences are more powerful than they may seem.
 For example, in cubical type theory, with the help of quotient types, it is possible to form an equivalence
 from a relation, even when the relation itself is not an equivalence~\cite{angiuli2020internalizing}.
 
-\toolname, of course, operates on Coq code, and Coq lacks quotient types.
-It is possible to achieve a similar outcome and use \toolname for changes that add or remove information
+While Coq lacks quotient types,
+it is possible to achieve a similar outcome and use \toolname for changes that add or remove information
 whenever those change can be expressed as equivalences between $\Sigma$ types or between sum types.
 The idea is, when possible, to separate out the new information
 into a projection of a $\Sigma$ type, or into a constructor of a sum type.
@@ -126,11 +132,11 @@ and \toolname automates the rest.
 
 \begin{figure*}
 \begin{minipage}{0.40\textwidth}
-   \lstinputlisting[firstline=1, lastline=4]{listtovect.tex}
+   \lstinputlisting[firstline=1, lastline=3]{listtovect.tex}
 \end{minipage}
 \hfill
 \begin{minipage}{0.58\textwidth}
-   \lstinputlisting[firstline=6, lastline=9]{listtovect.tex}
+   \lstinputlisting[firstline=5, lastline=7]{listtovect.tex}
 \end{minipage}
 \vspace{-0.3cm}
 \caption{A vector (right) is a list (left) indexed by its length.}
@@ -138,50 +144,57 @@ and \toolname automates the rest.
 \end{figure*}
 
 Consider, for example, changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
-With the proof reuse tool \textsc{Devoid}~\cite{Ringer2019},
-it is possible to repair proofs about lists to proofs about vectors of \textit{some} length, since:
-
-\begin{lstlisting}
-packed_vect T := $\Sigma$(n : nat).vector T n.
-list T $\simeq$ packed_vector T.
-\end{lstlisting}
-This is enough to automatically repair a lemma about lists:
-
-\begin{lstlisting}
-$\forall$ {A B} (l1 : list A) (l2 : list B),(@\vspace{-0.04cm}@)
-  zip_with pair l1 l2 = zip l1 l2.
-\end{lstlisting}
-to a lemma about vectors of some length:
-
-\begin{lstlisting}
-$\forall$ {A B} (l1 : (@\codediff{packed\_vect A}@)) (l2 : (@\codediff{packed\_vect B}@)),(@\vspace{-0.04cm}@)
-  zip_with pair l1 l2 = zip l1 l2.
-\end{lstlisting}
-recursively updating dependencies \lstinline{zip} and \lstinline{zip_with}.
-It is not enough, however, to help the proof engineer get from that to a proof about vectors \textit{of a particular length}:
-
-\begin{lstlisting}
-$\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\codediff{vector B n}@)),(@\vspace{-0.04cm}@)
-  zip_with pair (@\codediff{n}@) l1 l2 = zip (@\codediff{n}@) l1 l2.
-\end{lstlisting}
-\textsc{Devoid} leaves this step to the proof engineer.
-\toolname, in contrast, can handle this step as well (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}).
-The key is to repair functions and proofs across this equivalence:
+\lstinline{Example.v} in auxiliary material shows how to use \toolname to repair functions and proofs
+about lists to functions and proofs about vectors of a particular length, since:
 
 \begin{lstlisting}
 $\Sigma$(l : list T).length l = n $\simeq$ vector T n.
 \end{lstlisting}
-From the proof engineer's perspective, when the proof engineer updates specifications from \lstinline{list} to \lstinline{vector},
+
+%
+%(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}).%%
+%
+%With the proof reuse tool \textsc{Devoid}~\cite{Ringer2019},
+%it is possible to repair proofs about lists to proofs about vectors of \textit{some} length, since:
+%
+%\begin{lstlisting}
+%packed_vect T := $\Sigma$(n : nat).vector T n.
+%list T $\simeq$ packed_vector T.
+%\end{lstlisting}
+%This is enough to automatically repair a lemma about lists:
+%
+%\begin{lstlisting}
+%$\forall$ {A B} (l1 : list A) (l2 : list B),(@\vspace{-0.04cm}@)
+%  zip_with pair l1 l2 = zip l1 l2.
+%\end{lstlisting}
+%to a lemma about vectors of some length:
+%
+%\begin{lstlisting}
+%$\forall$ {A B} (l1 : (@\codediff{packed\_vect A}@)) (l2 : (@\codediff{packed\_vect B}@)),(@\vspace{-0.04cm}@)
+%  zip_with pair l1 l2 = zip l1 l2.
+%\end{lstlisting}
+%recursively updating dependencies \lstinline{zip} and \lstinline{zip_with}.
+%It is not enough, however, to help the proof engineer get from that to a proof about vectors \textit{of a particular length}:
+%
+%\begin{lstlisting}
+%$\forall$ {A B} (@\codediff{n}@) (l1 : (@\codediff{vector A n}@)) (l2 : (@\codediff{vector B n}@)),(@\vspace{-0.04cm}@)
+%  zip_with pair (@\codediff{n}@) l1 l2 = zip (@\codediff{n}@) l1 l2.
+%\end{lstlisting}
+%\textsc{Devoid} leaves this step to the proof engineer.
+%\toolname, in contrast, can handle this step as well (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}).
+%The key is to repair functions and proofs across this equivalence:
+
+From the proof engineer's perspective, after updating specifications from \lstinline{list} to \lstinline{vector},
 to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists.
 \toolname makes it easy to separate out that proof obligation, then automates the rest.
 %Section~\ref{sec:search} shows this and other case studies using \toolname to repair real proofs
 %informed by the needs of proof engineers.
 
-\subsection{Transport with a Twist}
+\subsection{Goal: Transport with a Twist}
 \label{sec:repair}
 
-Proof repair across type equivalences corresponds to a particular kind of proof reuse called \textit{transport},
-with the twist that the specification about which we are reusing proofs may cease to exist.
+The goal of a tool for proof repair across type equivalences is to implement a kind of proof reuse known as \textit{transport},
+but in a way that is suitable for repair.
 A transport method takes an input term $t$ and produces an output term $t'$ that is \textit{equal up to transport}
 along an equivalence $A \simeq B$ (denoted $t \equiv_{A \simeq B} t'$).
 Informally, equality up to transport means that if $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
@@ -194,7 +207,7 @@ equal up to transport along the equivalence from Figure~\ref{fig:equivalence}, s
 $\forall$ T (l1 l2 : Old.list T),
   swap T (l1 ++ l2) = (swap T l1) ++ (swap T l2).
 \end{lstlisting}
-by \lstinline{app_ok} in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}.
+by \lstinline{app_ok} in \lstinline{Swap.v}.
 The original \lstinline{rev_app_distr} is equal to the transformed proof along the same equivalence,
 since it proves the same thing the same way as the transformed proof up to the same equivalence, and up to the changes in \lstinline{++}
 and \lstinline{rev}.
@@ -207,18 +220,20 @@ The formal details of equality up to transport in such a theory can be found in 
 
 Transport methods typically work by explicitly applying the functions that make up the equivalence to convert
 inputs and outputs back and forth between equivalent types.
-This approach would not work for repair, since it does not make it possible to remove the old specification.
-The goal of a proof repair tool like \toolname is to define a transport method that
-can remove references to the old specification, %rather than converting back and forth like standard transport methods.
-%That way, the proof repair tool can produce proofs that no longer refer in any way to the old specification,
-since the old specification may no longer exist.
+This approach would not be suitable for repair, since it does not make it possible to remove the old specification.
+\toolname implements transport in a way that allows for removing references to the old specification.
 
-Section~\ref{sec:overview} showed a simple case of this: \toolname
-reused the proof of \lstinline{rev_app_distr} defined over \lstinline{Old.list}
-to generate a new proof of \lstinline{rev_app_distr} defined over equivalent \lstinline{New.list}.
-Furthermore, it did so in a way that removed all references to \lstinline{Old.list} in the proof
-and in its dependencies.
-That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be removed.
+%The goal of a proof repair tool like \toolname is to define a transport method that
+%can remove references to the old specification, %rather than converting back and forth like standard transport methods.
+%%That way, the proof repair tool can produce proofs that no longer refer in any way to the old specification,
+%since the old specification may no longer exist.
+
+%Section~\ref{sec:overview} showed a simple case of this: \toolname
+%reused the proof of \lstinline{rev_app_distr} defined over \lstinline{Old.list}
+%to generate a new proof of \lstinline{rev_app_distr} defined over equivalent \lstinline{New.list}.
+%Furthermore, it did so in a way that removed all references to \lstinline{Old.list} in the proof
+%and in its dependencies.
+%That way, after calling \lstinline{Repair}, \lstinline{Old.list} could be removed.
 
 \subsection{A Tool for Proof Repair Across Equivalences}
 \label{sec:time}
