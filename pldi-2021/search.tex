@@ -65,95 +65,37 @@ a \lstinline{zip_with} function, and a proof \lstinline{zip_with_is_zip} relatin
 functions from lists to vectors of \textit{some} length, since \lstinline{list T} $\simeq$ \lstinline{packed_vect T}.
 % TODO must define earlier in paper
 The tactic decompiler helped us write tactic proofs that had been
-prohibitively difficult for us to write by hand.
-However, the suggested tactics did need massaging. % as the decompiler struggled with motive inference
+prohibitively difficult for us to write by hand,
+though the suggested tactics did need massaging. % as the decompiler struggled with motive inference
 %for induction with dependent types.
 Additional effort is needed to improve tactic suggestions for dependent types.
 
 \subsubsection*{Unpack Sigma Types: Vectors of Particular Lengths}
 
-\iffalse
-With \toolname, we were able to not only support algebraic ornaments as in \textsc{Devoid},
-but also automate effort that had previously been manual.
-Several proof engineers including the industrial proof engineer, a Reddit user,
-and someone on the \lstinline{coq-club} message board contacted us expressing interest in using this functionality.
+%The previous case study showed how to get between lists and vectors of \textit{some} length.
+The file \lstinline{Example.v} goes on to show how to port functions and proofs to vectors of a \textit{particular} length, 
+like \lstinline{vector T n}.
+\textsc{Devoid} had left this step to the proof engineer.
 
-The second provides the missing link to get proofs at a \textit{particular} index, like \lstinline{vector T n};
-\textsc{Devoid} had left this to the proof engineer.
-
-To get from lists to vectors \textit{at a particular length}, we used one additional automatic configuration.
+To support this, we used one additional automatic configuration.
 This configuration corresponds to the equivalence between sigma types at a particular projection
-and the same type escaping the sigma type, in our example:
+and the same type escaping the sigma type. %, in our example $\Sigma$\lstinline{(s : packed_vect T).}$\pi_l$\lstinline{ s = n }$\simeq$\lstinline{ vector T n}.
+By composition with the equivalence from the previous case study, this transports proofs
+across the equivalence from Section~\ref{sec:ex2}.
 
-\begin{lstlisting}
-$\Sigma$(s : packed_vect T).$\pi_l$ s = n $\simeq$ vector T n
-\end{lstlisting}
-By composition with the initial equivalence, this transports proofs
-across the equivalence we want:
+There were two tricks that were important for workflow integration for this change:
+The first was to program the search procedure to view each \lstinline{vector T n} as 
+representing $\Sigma$\lstinline{(v : vector T m).n = m} for some \lstinline{m},
+then let \toolname instantiate those equalities using unification heuristics before transforming terms.
+The second was to generate a custom eliminator that makes it
+easy to combine functions and proofs about lists with functions and proofs about their lengths.
+%This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths):
 
-\begin{lstlisting}
-$\Sigma$(l : list T).length l = n $\simeq$ vector T n
-\end{lstlisting}
-since these equivalences are equal up to transport along the first equivalence.
-
-The second configuration carries equality proofs over the indices,
-which are then instantiated for the transformation using unification heuristics.
-For example, it views \lstinline{vector T n} as implicitly representing $\Sigma$\lstinline{(v : vector T m).n = m} for some \lstinline{m}.
-This is seen in \lstinline{eta}, here: 
-% TODO both should take the same number of arguments, even if eta_A takes fewer. also does this belong in iota? this is weird honestly
-
-\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-eta T n m (H : n = m) (v : vector T m): vector T n :=(@\vspace{-0.04cm}@)
-  eq_rect m (vector T) v n H.
-\end{lstlisting}
-which is the identity function generalized over any equal index.
-Since there are no changes in inductive types, \lstinline{DepElim} and \lstinline{DepConstr} are trivial,
-and \lstinline{Iota} does not change.
-
-%\begin{lstlisting}
-%(@\codeauto{dep_elim}@) (T : Type) (P : $\forall$ (n : nat), vector T n $\rightarrow$ Type) (p : $\forall$ n v, P n (eta T n n v)) (v : vector T n) : %P (eta T n n v) :=
-%  p.
-%\end{lstlisting}
-
-
-It then manually ported those proofs to proofs over vectors at a particular length.
-The updated \toolname example automates this last step.
-
-%The workflow for this was a bit different than it was with \textsc{Devoid}.
-To handle this, we used a custom eliminator \toolname generated to combine the list functions
-with length invariants, and to combine the list proofs with the proofs about those length invariants.
-This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths):
-
-\begin{lstlisting}
-Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
-  (v1: $\Sigma$(l1: (@\codediff{list A}@)).(@\codediff{length}@) l1 = n)(@\vspace{-0.04cm}@)
-  (v2: $\Sigma$(l2: (@\codediff{list B}@)).(@\codediff{length}@) l2 = n),(@\vspace{-0.04cm}@)
-    zip_with pair n v1 v2 = zip n v1 v2.
-\end{lstlisting}
-We then ran \lstinline{Repair module} using the first
-configuration, which proved this lemma:
-
-\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
-  (v1: $\Sigma$(l1: (@\codediff{packed_vect A}@)).(@\codediff{$\pi_l$}@) l1 = n)(@\vspace{-0.04cm}@)
-  (v2: $\Sigma$(l2: (@\codediff{packed_vect B}@)).(@\codediff{$\pi_l$}@) l2 = n),(@\vspace{-0.04cm}@)
-    zip_with pair v1 v2 = zip v1 v2.
-\end{lstlisting}
-with functions \lstinline{zip_with} and \lstinline{zip} updated as well.
-We composed this with \lstinline{Repair module} on the second configuration,
-which proved the final lemma:
-
-\begin{lstlisting}[backgroundcolor=\color{cyan!30}]
-Lemma zip_with_is_zip : $\forall$ A B n(@\vspace{-0.04cm}@)
-  (v1: (@\codediff{vector A n}@)) (v2: (@\codediff{vector B n}@)),(@\vspace{-0.04cm}@)
-    zip_with pair v1 v2 = zip v1 v2.
-\end{lstlisting}
-with functions \lstinline{zip_with} and \lstinline{zip} repaired as well.
-
-
-The result was a simplified workflow from \textsc{Devoid} that automated steps 
-that had previously been manual.
-\fi
+The resulting search procedure and workflow works not just for lists and vectors, but for any algebraic ornament,
+automating effort from \textsc{Devoid} that had previously been manual.
+The tactic decompiler yielded similar results to the previous case study: helpful for writing proofs
+that we had struggled with manually, but not yet perfect.
+More effort is needed to improve tactic suggestions for dependent types.
 
 \subsubsection*{Tuples \& Records: Industrial Use}
 
