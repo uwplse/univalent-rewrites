@@ -209,8 +209,8 @@ separating out the proof obligations for the new constructor from the old terms.
 Adding the constructor combined a manual configuration with an automatic configuration.
 The details of this are in \lstinline{add_constr.v}.
 At a high level, we defined an inductive type \lstinline{Diff} and (using partial automation) a configuration to port the terms across the equivalence \lstinline{Old.Term + Diff} $\simeq$ \lstinline{New.Term}.
-This resulted in some case explosion, but was very formulaic.
-The resulting functions guaranteed preservation of the behavior over \lstinline{Old.Term} before the change.
+This resulted in some case explosion, but was very formulaic, and points to a clear path for automation of this class of changes in the future.
+The repaired functions guaranteed preservation of the behavior over \lstinline{Old.Term} before the change.
 
 Extending constructors was less simple than swapping constructors.
 Most notably, the repaired terms were (unlike in the swap case) inefficient compared to human-written terms.
@@ -222,14 +222,82 @@ to get between proofs of the inefficient and efficient terms.
 \subsubsection*{Factor out Constructors: External Example}
 
 The change from Figure~\ref{fig:equivalence2} factoring out a constructor came at the request of a non-author.
-We used \toolname to support this change in \lstinline{constr\_refactor.v}.
+We used \toolname to support this change in \lstinline{constr_refactor.v}.
 This changed used a manual configuration that essentially described which constructor to map to \lstinline{true}
 and which constructor to map to \lstinline{false}.
 The configuration was very simple for us to write, and the repaired tactic proofs were immediately useful.
 
 \subsubsection*{Permute Hypotheses: External Example}
 
+The change in \lstinline{flip.v} came at the request of a different non-author, and shows how to 
+use \toolname to swap two hypotheses of a type, since \lstinline{T1} $\rightarrow$ \lstinline{T2} $\rightarrow$ \lstinline{T3} $\simeq$
+\lstinline{T2} $\rightarrow$ \lstinline{T1} $\rightarrow$ \lstinline{T3}.
+This configuration was also manual.
+Since neither type was inductive, this change used the generic construction for any equivalence,
+instantiated to this particular equivalence.
+This worked well, but necessitated some manual annotation due to the lack of custom unification heuristics for 
+manual configuration.
+
 \subsubsection*{Change Inductive Structure: Unary to Binary}
+
+All of the case studies so far have dealt with pairs of types with the same inductive structure,
+or with new information.
+Some of the oldest problems in the transport literature deal with \textit{changing} inductive
+structure without adding any new information.
+We have realized a classic example~\cite{magaud2000changing} of this with \toolname using a manual configuration:
+updating unary to binary natural numbers.
+% TODO fin and vect? mention somewhere?
+
+In Coq, a binary number \lstinline{N} (see Section~\ref{sec:key2}, Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
+is either 1 (\lstinline{xH}), or the result of shifting left and adding 1 (\lstinline{xI})
+or nothing (\lstinline{xO}).
+This allows for a fast addition function, found in the Coq standard library.
+In the style of \citet{magaud2000changing}, we used \toolname to derive a slow binary
+addition function that does not refer to \lstinline{nat}.
+From that, we ported proofs over unary addition to binary addition,
+removing all references to \lstinline{nat}, and show that they hold over fast binary addition too.
+
+The implementation of this is in \lstinline{nonorn.v}.
+The configuration for \lstinline{N} used functions from the Coq standard library
+for \lstinline{DepConstr} and \lstinline{DepElim}. 
+\lstinline{Iota} was almost written for us.
+The standard library had a lemma that reduced the successor case:
+
+\begin{lstlisting}
+N.peano_rect_succ :(@\vspace{-0.04cm}@)
+  $\forall$ P pO pS n, N.peano_rect P pO pS (N.succ n) = pS n (N.peano_rect P pO pS n).
+\end{lstlisting}
+\lstinline{Iota} over the successor case was a simple rewrite by this lemma:
+
+\begin{lstlisting}
+Lemma iota_1 :(@\vspace{-0.04cm}@)
+  $\forall$ P pO pS n (Q : P (dep_constr_1 n) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+     Q (pS n (dep_elim P pO pS n)) $\rightarrow$(@\vspace{-0.04cm}@)
+     Q (dep_elim P pO pS (dep_constr_1 n)).(@\vspace{-0.04cm}@)
+Proof.(@\vspace{-0.04cm}@)
+  intros. unfold dep_elim, dep_constr_1. rewrite N.peano_rect_succ. auto.(@\vspace{-0.04cm}@)
+Defined.
+\end{lstlisting}
+
+
+The need for a nontrivial \lstinline{Iota} comes from the fact that \lstinline{N} has a different
+inductive structure from \lstinline{nat}.
+By writing a manual configuration with nontrivial \lstinline{Iota}, it was possible for us to implement this transformation 
+that had previously been its own tool.
+
+While porting addition from \lstinline{nat} to \lstinline{N} was fully automatic after configuring \toolname,
+porting proofs about addition took more work.
+In particular, due to the lack of unification heuristics for manual configuration,
+we had to annotate the proof term to tell \toolname that implicit casts in the inductive cases of proofs were applications of \lstinline{Iota}
+over \lstinline{nat}.
+These annotations were formulaic, but tricky to write.
+Unification heuristics would go a long way toward improving the workflow for this use case.
+
+After annotating, we obtained automatically repaired proofs about the slow version of addition,
+which we found simple to port to fast binary addition.
+We hope to automate this last step in the future using CoqEAL~\cite{cohen:hal-01414881}.
+Repaired tactics were partially useful, but struggled with making sense of custom eliminators, and with generating useful
+tactics for applications of iota; both of these are clear paths to more useful proof scripts.
 
 %\end{enumerate}
 %\item \toolname was flexible. Each search procedure for automatic configuration
