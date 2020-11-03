@@ -155,9 +155,77 @@ and the ability to tell \toolname not to $\delta$-reduce certain terms.
 
 \subsubsection*{Permute Constructors: Modifying a Language}
 
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=9]{replica.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=11, lastline=19]{replica.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
+\label{fig:replica}
+\end{figure*}
+
+The constructor swapping example from Section~\ref{sec:overview} was inspired by two benchmarks 
+from the \textsc{Replica} user study of proof engineers~\cite{replica}.
+A change corresponding to part of one of the benchmarks is shown in Figure~\ref{fig:replica}.
+The proof engineer had a simple language represented by an inductive type \lstinline{Term},
+as well as some definitions and proofs about the language.
+The proof engineer swapped two constructors in the term language,
+and added a new constructor \lstinline{Bool}.
+
+We used \toolname to automatically configure the proof term transformation to swap these constructors,
+then repair all of the functions and proofs about the language in \lstinline{Swap.v}.
+We also succeeded at more difficult variants of this,
+like swapping constructors with the same type, renaming all of the constructors,
+permuting more than two constructors,
+or permuting and renaming constructors at the same time.
+In all cases, with a bit of human guidance to choose the correct permutation, \toolname repaired the functions and proofs.
+
+For the swap change, the suggested tactics worked well.
+Still, the swap change alone was simple enough that \toolname would not have been necessary
+for updating the proofs for the initial change---keeping the tactics the same would have also worked.
+%This is a property of the particular proofs that we had access to;
+As we saw in Sections~\ref{sec:overview} and~\ref{sec:key1}, even for simple changes, this is not always true.
+More advanced variants of this benchmark that we tried did necessitate \toolname,
+and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
+%The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
+%its dependencies, four variants of the \textsc{Replica} swapping change,
+%and testing a large and ambiguous permutation of a 30 constructor \lstinline{Enum},
+%took \toolname less than 90 seconds total. % TODO specs, reproduction
+%Each variant of the \textsc{Replica} swapping change took \toolname less than 5 seconds, % TODO specs, reproduction
+%and the change adding a constructor took \toolname less than 30 seconds. % TODO specs, reproduction
+
 \subsubsection*{Add new Constructors: Extending a Language}
 
+The change in Figure~\ref{fig:replica} includes not just swapping constructors, but also adding a new
+constructor to extend a programming language.
+We used \toolname to repair functions for this change as well,
+separating out the proof obligations for the new constructor from the old terms.
+%The resulting functions were guaranteed to preserve the behavior of the old terms. % TODO do the proofs too
+
+Adding the constructor combined a manual configuration with an automatic configuration.
+The details of this are in \lstinline{add_constr.v}.
+At a high level, we defined an inductive type \lstinline{Diff} and (using partial automation) a configuration to port the terms across the equivalence \lstinline{Old.Term + Diff} $\simeq$ \lstinline{New.Term}.
+This resulted in some case explosion, but was very formulaic.
+The resulting functions guaranteed preservation of the behavior over \lstinline{Old.Term} before the change.
+
+Extending constructors was less simple than swapping constructors.
+Most notably, the repaired terms were (unlike in the swap case) inefficient compared to human-written terms.
+For now, they make good regression tests for the human-written terms---in the future,
+we hope to automate the discovery of the more efficient term as well,
+or use the refinement framework CoqEAL~\cite{cohen:hal-01414881}
+to get between proofs of the inefficient and efficient terms.
+
 \subsubsection*{Factor out Constructors: External Example}
+
+The change from Figure~\ref{fig:equivalence2} factoring out a constructor came at the request of a non-author.
+We used \toolname to support this change in \lstinline{constr\_refactor.v}.
+This changed used a manual configuration that essentially described which constructor to map to \lstinline{true}
+and which constructor to map to \lstinline{false}.
+The configuration was very simple for us to write, and the repaired tactic proofs were immediately useful.
 
 \subsubsection*{Permute Hypotheses: External Example}
 
