@@ -99,6 +99,60 @@ More effort is needed to improve tactic suggestions for dependent types.
 
 \subsubsection*{Tuples \& Records: Industrial Use}
 
+An industrial proof engineer at Galois has been using \toolname in proving
+correct an implementation of the TLS handshake protocol.
+While this is ongoing work, thus far,
+\toolname has helped \company integrate Coq with their existing verification workflow.
+
+Before contact, \company had been using a custom solver-aided verification language to prove correct C programs.
+They had found that at times, those constraint solvers got stuck, and they could not
+progress on proofs about those programs.
+They had built a compiler that translates their solver-aided language into Coq's specification language Gallina,
+that way their proof engineers could finish stuck proofs interactively using Coq.
+However, they had found that the generated Gallina programs and specifications were sometimes too difficult to work with.
+
+A proof engineer at \company has used \toolname to work with those automatically generated programs and specifications
+with the following workflow: 1) use \toolname to update the automatically generated functions and specifications into more
+human-readable functions and specifications, then 2) write Coq proofs about the more human-readable functions and specifications, then finally
+3) use \toolname again to update those proofs about human-readable functions and specifications back to
+proofs about the original automatically generated functions and specifications.
+This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
+that would have otherwise been difficult.
+
+\iffalse
+\begin{figure*}
+\begin{minipage}{0.33\textwidth}
+   \lstinputlisting[firstline=1, lastline=10]{records.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.66\textwidth}
+   \lstinputlisting[firstline=12, lastline=21]{records.tex}
+\end{minipage}
+\vspace{-0.5cm}
+\caption{Two unnamed tuples (left) and corresponding named records (right).}
+\label{fig:records}
+\end{figure*}
+\fi
+
+Some example proofs that the proof engineer used \toolname for
+can be found in a branch of the proof engineer's repository.\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}}
+So far, the proof engineer has used at least three automatic configurations.
+The proof engineer most often used \toolname to port anonymous tuples produced by \company' compiler
+to named records, due to differences between the solver-aided language and Coq.
+Supporting this change used an automatic configuration.
+
+%The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
+%workflow using solver-aided tools at \company.
+The workflow for using \toolname itself was a bit nonstandard,
+and there was little need for tactic proofs about the compiler-generated functions and specifications.
+In the initial days, we worked closely with the proof engineer;
+later, the proof engineer worked independently and reached out occasionally by email or phone.
+\toolname was usable enough for this to work, but we found two challenges with workflow integration:
+the proof engineer sometimes could not distinguish between user errors and bugs in our code,
+and the proof engineer typically waited only about ten seconds at most for \toolname to return.
+Both observations informed improvements to \toolname, like better error messages, caching of transformed subterms,
+and the ability to tell \toolname not to $\delta$-reduce certain terms.
+
 \subsubsection*{Permute Constructors: Modifying a Language}
 
 \subsubsection*{Add new Constructors: Extending a Language}
