@@ -1,30 +1,20 @@
 \section{Implementation}
 \label{sec:impl}
 
-The configurable proof term transformation helped us build a flexible proof repair tool.
-However, it alone was not enough to build a tool that reaches real proof engineers.
-Similarly, the mini decompiler abstracted a lot of the details that make Ltac so useful to proof engineers---and so painful to 
+The transformation abstracts a lot of the details needed to build a proof repair tool that reaches real proof engineers.
+Similarly, the mini decompiler abstracts a lot of the details that make Ltac so useful to proof engineers---and so painful to 
 reason about automatically.
 This section describes a sample of the implementation challenges that we encountered and how we solved them,
-both for the transformation (Section~\ref{sec:implementation}) and for the decompiler (Section~\ref{sec:second}).
-Section~\ref{sec:discussion} elaborates on some remaining challenges and our plans to address them. % in the future.
+for both the transformation (Section~\ref{sec:implementation}) and the decompiler (Section~\ref{sec:second}).
+Section~\ref{sec:discussion} describes some remaining challenges and our plans to address them. % in the future.
 
 \subsection{Implementing the Transformation}
 \label{sec:implementation}
 
-\paragraph{From CIC$_{\omega}$ to Coq}
-
-The implementation~\circled{4} % lift.ml
-of the proof term transformation must handle language differences to scale from CIC$_{\omega}$ to Coq.
-We use an existing command called \lstinline{Preprocess}~\cite{Ringer2019} to turn pattern matching and fixpoints into 
-applications of eliminators.
-We handle refolding of constants in constructors using \lstinline{DepConstr}.
-
 \paragraph{Termination \& Intent}
-
 When the correctness criteria for a configuration hold and a subterm unifies with a configuration term, this suggests that \toolname \textit{can}
 run the transformation rule, but it does not necessarily mean that it \textit{should}.
-In some cases, repeatedly running a matching transformation rule would result in nontermination.
+In some cases, doing so would result in nontermination.
 For example, if \B is a refinement of \A, then we can always run \textsc{Equivalence}
 over and over again, forever.
 %\textsc{Devoid} ruled out this case by simply prohibiting the case where \B refers to \A, but we found it sometimes
@@ -38,6 +28,13 @@ with a different meaning.
 \toolname has some support for this using an interactive workflow~\circled{13}. % minimal_records.v, but show this
 %We helped the proof engineer do this by interacting with \toolname using a particular workflow.
 %We plan to support this automatically using type-directed search in the future.
+
+\paragraph{From CIC$_{\omega}$ to Coq}
+The implementation~\circled{4} % lift.ml
+of the proof term transformation must handle language differences to scale from CIC$_{\omega}$ to Coq.
+We use an existing command called \lstinline{Preprocess}~\cite{Ringer2019} to turn pattern matching and fixpoints into 
+applications of eliminators.
+We handle refolding of constants in constructors using \lstinline{DepConstr}.
 
 \paragraph{Reaching Real Proof Engineers}
 Many of our design decisions in implementing \toolname were informed by our partnership with
@@ -79,7 +76,7 @@ and so the decompiler infers the right direction based on the motive used.
 
 Qtac also assumes that both tactics take the inductive motive explicitly.
 In Coq, however, both tactics infer the motive automatically.
-Consequentially, Coq will sometimes infer the wrong motive without manipulation of goals and hypotheses,
+Consequentially, Coq will sometimes infer the wrong motive, % without manipulation of goals and hypotheses,
 or will fail to infer a motive at all.
 This is especially common for the \lstinline{rewrite} tactic, which is purely syntactic.
 To handle induction, the decompiler strategically uses the \lstinline{revert} tactic to manipulate the goal

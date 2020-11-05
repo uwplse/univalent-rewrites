@@ -29,6 +29,18 @@ Section~\ref{sec:second} explains how we scale that up to the actual implementat
 \subsection*{A Mini Decompiler}
 \label{sec:first}
 
+The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call Qtac.
+The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
+Qtac includes hypothesis introduction (\lstinline{intro}),
+rewriting by equalities (\lstinline{rewrite}), symmetry of equality (\lstinline{symmetry}),
+application of a term to prove the goal (\lstinline{apply}), induction (\lstinline{induction}),
+case splitting of conjunctions (\lstinline{split}),
+constructors of disjunctions (\lstinline{left} and \lstinline{right}), and
+composition (\lstinline{.}).
+Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always take a motive explicitly, rather than relying on a unification engine.
+Similarly, \lstinline{apply} applies only the function without inferring any arguments, and leaves those arguments to proof obligations.
+The implementation reasons about Ltac and so does not make these assumptions.
+
 \begin{figure}
 \small
 \begin{grammar}
@@ -41,18 +53,6 @@ induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right |
 \caption{Qtac syntax.}
 \label{fig:ltacsyntax1}
 \end{figure}
-
-The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call Qtac.
-The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
-Qtac includes hypothesis introduction (\lstinline{intro}),
-rewriting by equalities (\lstinline{rewrite}), symmetry of equality (\lstinline{symmetry}),
-application of a term to prove the goal (\lstinline{apply}), induction (\lstinline{induction}),
-case splitting of conjunctions (\lstinline{split}),
-constructors of disjunctions (\lstinline{left} and \lstinline{right}), and
-composition (\lstinline{.}).
-Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always take a motive explicitly, rather than relying on a unification engine.
-Similarly, \lstinline{apply} applies only the function without inferring any arguments, and leaves those arguments to proof obligations.
-The implementation reasons about Ltac and so does not make these assumptions.
 
 \begin{figure*}
 \begin{mathpar}

@@ -1,19 +1,6 @@
 \section{A Simple Motivating Example}
 \label{sec:overview}
 
-\begin{figure*}
-\begin{minipage}{0.46\textwidth}
-   \lstinputlisting[firstline=1, lastline=3]{listswap.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.46\textwidth}
-   \lstinputlisting[firstline=5, lastline=7]{listswap.tex}
-\end{minipage}
-\vspace{-0.3cm}
-\caption{The updated \lstinline{list} (right) is the old \lstinline{list} (left) with its two constructors swapped (\codediff{orange}).}
-\label{fig:listswap}
-\end{figure*}
-
 Consider a simple example of using \toolname: fixing broken list proofs after swapping the two list constructors (Figure~\ref{fig:listswap}).
 This change is inspired by a similar change from a user study of proof engineers (Section~\ref{sec:search}).
 Even such a simple change can cause trouble in proofs, like this proof from the Coq standard library:\footnote{We use induction instead of pattern matching.}
@@ -37,6 +24,41 @@ When we change the \lstinline{list} type, the proof no longer works.
 %When we change the \lstinline{list} type, we get the \textit{new specification}.
 %But the \textit{old proof} or tactic script no longer works with this new specification.
 To repair this proof with \toolname, we just run this command:
+
+\begin{figure}
+%\includegraphics[width=\columnwidth]{workflowa.pdf}
+\includegraphics[width=\columnwidth]{workflowa.pdf}
+\vspace{-0.4cm}
+\caption{The workflow for \toolname.}
+\label{fig:system}
+\end{figure}
+
+\begin{figure*}
+\begin{minipage}{0.46\textwidth}
+   \lstinputlisting[firstline=1, lastline=3]{listswap.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.46\textwidth}
+   \lstinputlisting[firstline=5, lastline=7]{listswap.tex}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{The updated \lstinline{list} (right) is the old \lstinline{list} (left) with its two constructors swapped (\codediff{orange}).}
+\label{fig:listswap}
+\end{figure*}
+
+\begin{figure*}
+\codeauto{%
+\begin{minipage}{0.48\textwidth}
+\lstinputlisting[firstline=1, lastline=14]{equivproof.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\lstinputlisting[firstline=16, lastline=30]{equivproof.tex}
+\end{minipage}}
+\vspace{-0.3cm}
+\caption{Two functions between \lstinline{Old.list} and \lstinline{New.list} (top) that form an equivalence (bottom).}
+\label{fig:equivalence}
+\end{figure*}
 
 \begin{lstlisting}
 Repair Old.list New.list in rev_app_distr.

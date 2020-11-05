@@ -73,20 +73,6 @@ to refer only to the new version, and how to do so in a way that does not break 
 The proof engineer can write this configuration in Coq and feed it to \toolname (\textit{manual configuration} in Table~\ref{fig:changes}),
 configuring \toolname to support the corresponding change from directly within Coq.
 
-\begin{figure*}
-\begin{minipage}{0.52\textwidth}
-\includegraphics[width=\linewidth]{workflowa.pdf}
-\end{minipage}
-\hfill
-\begin{minipage}{0.45\textwidth}
-\includegraphics[width=\linewidth]{workflowb.pdf}
-\vspace{0.97cm}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{The two possible workflows for \toolname, using either automatic (left) or manual (right) configuration.}
-\label{fig:system}
-\end{figure*}
-
 \subsection*{Addressing Challenge 2: Workflow Integration}
 
 Research on workflow integration for proof repair tools is in its infancy.
@@ -106,11 +92,7 @@ Our partnership with an industrial proof engineer has informed other changes to 
 Figure~\ref{fig:system} shows how this comes together when the proof engineer invokes \toolname:
 
 \begin{enumerate}
-\item \toolname configures the transformation, either:
-\begin{enumerate}
-\item automatically (left), using \textbf{Configure}, or
-\item manually (right).
-\end{enumerate}
+\item The proof engineer \textbf{Configure}s \toolname, either manually or automatically.
 \item The configured \textbf{Transform} transforms the old proof term into the new proof term.
 \item \textbf{Decompile} suggests a new proof script. % given the new proof term.
 \end{enumerate}

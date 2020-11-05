@@ -27,20 +27,6 @@ since \A may be an old version of an updated type (Section~\ref{sec:repair}).
 %tool that can handle that additional challenge (Section~\ref{sec:time}).
 %\end{quote}
 
-\begin{figure*}
-\codeauto{%
-\begin{minipage}{0.48\textwidth}
-\lstinputlisting[firstline=1, lastline=14]{equivproof.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\lstinputlisting[firstline=16, lastline=30]{equivproof.tex}
-\end{minipage}}
-\vspace{-0.3cm}
-\caption{Two functions between \lstinline{Old.list} and \lstinline{New.list} (top) that form an equivalence (bottom).}
-\label{fig:equivalence}
-\end{figure*}
-
 \subsection{Scope: Type Equivalences}
 \label{sec:scope}
 
@@ -48,7 +34,7 @@ since \A may be an old version of an updated type (Section~\ref{sec:repair}).
 that correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
 or pairs of functions that map between two types and are mutual inverses.
 Figure~\ref{fig:equivalence} shows a type equivalence between the two versions of \lstinline{list}
-from Section~\ref{sec:overview}, Figure~\ref{fig:listswap} that \toolname discovered and proved automatically.
+from Section~\ref{sec:overview}, Figure~\ref{fig:listswap} that \toolname discovered and proved automatically~\circled{1}.
 When such a type equivalence between two types \A and \B exists, we say those types are \textit{equivalent} (denoted \A $\simeq$ \B). % for example:
 %
 %\begin{lstlisting}
@@ -114,6 +100,19 @@ and repairing proofs of De Morgan's laws~\circled{2}. % constr_refactor.v
 \subsubsection*{Adding a Dependent Index}
 \label{sec:ex2}
 
+\begin{figure*}
+\begin{minipage}{0.40\textwidth}
+   \lstinputlisting[firstline=1, lastline=3]{listtovect.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.58\textwidth}
+   \lstinputlisting[firstline=5, lastline=7]{listtovect.tex}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{A vector (right) is a list (left) indexed by its length.}
+\label{fig:listtovect}
+\end{figure*}
+
 At first glance, the word \textit{equivalence} may seem to imply that \toolname can support only changes in
 which the proof engineer does not add or remove information.
 But equivalences are more powerful than they may seem.
@@ -127,19 +126,6 @@ The idea is, when possible, to separate out the new information
 into a projection of a $\Sigma$ type or a constructor of a sum type.
 Proofs about this new information become the proof obligation for the proof engineer,
 and \toolname automates the rest.
-
-\begin{figure*}
-\begin{minipage}{0.40\textwidth}
-   \lstinputlisting[firstline=1, lastline=3]{listtovect.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.58\textwidth}
-   \lstinputlisting[firstline=5, lastline=7]{listtovect.tex}
-\end{minipage}
-\vspace{-0.3cm}
-\caption{A vector (right) is a list (left) indexed by its length.}
-\label{fig:listtovect}
-\end{figure*}
 
 Consider, for example, changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
 \toolname can repair functions and proofs about lists to functions and proofs about vectors of a particular length~\circled{3}, % Example.v

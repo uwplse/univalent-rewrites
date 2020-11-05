@@ -42,6 +42,33 @@ Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldo
 \subsection{The Configuration}
 \label{sec:configurable}
 
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+DepConstr(0, list T) : list T := Constr((@\codediff{0}@), list T).(@\vspace{-0.04cm}@)
+DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
+  Constr ((@\codediff{1}@), list T) t l.(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
+  Elim(l, P) { (@\codediff{p$_{\mathtt{nil}}$}@), (@\codediff{p$_{\mathtt{cons}}$}@) }.
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+DepConstr(0, list T) : list T := Constr((@\codediff{1}@), list T).(@\vspace{-0.04cm}@)
+DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
+  Constr((@\codediff{0}@), list T) t l.(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
+  Elim(l, P) { (@\codediff{p$_{\mathtt{cons}}$}@), (@\codediff{p$_{\mathtt{nil}}$}@) }.
+\end{lstlisting}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}.}
+\label{fig:listconfig}
+\end{figure*}
+
 The configuration is the key to building a proof term transformation that implements transport in a way that is suitable for repair.
 Each configuration corresponds to an equivalence \A $\simeq$ \B.
 It deconstructs that equivalence into things that talk about \A, and things that talk about \B.
@@ -85,33 +112,6 @@ and \lstinline{DepElim} (\textit{dependent constructors} and \textit{eliminators
 These describe how to construct and eliminate \A and \B, wrapping the types with a common inductive structure.
 There must be the same number of dependent constructors and cases in dependent eliminators for \A and \B,
 even if \A and \B are types with different numbers of constructors.
-
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-DepConstr(0, list T) : list T := Constr((@\codediff{0}@), list T).(@\vspace{-0.04cm}@)
-DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
-  Constr ((@\codediff{1}@), list T) t l.(@\vspace{-0.04cm}@)
-(@\vspace{-0.14cm}@)
-DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
-  Elim(l, P) { (@\codediff{p$_{\mathtt{nil}}$}@), (@\codediff{p$_{\mathtt{cons}}$}@) }.
-\end{lstlisting}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-DepConstr(0, list T) : list T := Constr((@\codediff{1}@), list T).(@\vspace{-0.04cm}@)
-DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
-  Constr((@\codediff{0}@), list T) t l.(@\vspace{-0.04cm}@)
-(@\vspace{-0.14cm}@)
-DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
-  Elim(l, P) { (@\codediff{p$_{\mathtt{cons}}$}@), (@\codediff{p$_{\mathtt{nil}}$}@) }.
-\end{lstlisting}
-\end{minipage}
-\vspace{-0.3cm}
-\caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}.}
-\label{fig:listconfig}
-\end{figure*}
 
 For the \lstinline{list} change from Section~\ref{sec:overview},
 the configuration that \toolname discovers uses the dependent constructors
@@ -235,9 +235,9 @@ then if $\iota$-reduction is definitional over \lstinline{DepElim} on \A, it wil
 \lstinline{DepElim} with definitional $\iota$ on \B.
 Otherwise, if \A and \B have different inductive structures, as with \lstinline{nat} and \lstinline{N},
 then definitional $\iota$ over one would become propositional $\iota$ over the other.
-For the case of \lstinline{nat} and \lstinline{N},
-the need for propositional $\iota$ was noted as far back as \citet{magaud2000changing}.
-\lstinline{Iota} in the configuration encodes this more generally.
+%For the case of \lstinline{nat} and \lstinline{N},
+%the need for propositional $\iota$ was noted as far back as \citet{magaud2000changing}.
+%\lstinline{Iota} in the configuration encodes this more generally.
 
 \subsection{The Proof Term Transformation}
 \label{sec:generic}
@@ -470,9 +470,9 @@ These correctness criteria relate \lstinline{DepConstr}, \lstinline{DepElim}, \l
 in a way that preserves equivalence (Section~\ref{sec:equivalence}) coherently with equality (Section~\ref{sec:equality}).
 
 \paragraph{Equivalence}
-To preserve equivalence (Figure~\ref{fig:spec}, top), \lstinline{DepConstr} and \lstinline{DepElim} must together induce an equivalence between \A and \B.
-That is, \lstinline{section} and \lstinline{retraction} must hold for two functions \lstinline{f} and \lstinline{g},
-where \lstinline{f} uses \lstinline{DepElim} to eliminate \A and \lstinline{DepConstr} to construct \B, and similarly for \lstinline{g}. 
+To preserve equivalence (Figure~\ref{fig:spec}, top), \lstinline{DepConstr} and \lstinline{DepElim} must together induce an equivalence. % between \A and \B.
+That is, \lstinline{section} and \lstinline{retraction} must hold for functions \lstinline{f} and \lstinline{g},
+where \lstinline{f} uses \lstinline{DepElim} to eliminate \A and \lstinline{DepConstr} to construct \B, and \lstinline{g} is similar.
 %uses  \lstinline{DepElim} to eliminate \B and \lstinline{DepConstr} to construct \A.
 \lstinline{DepConstr} over \B must be equal to \lstinline{DepConstr} over \A up to transport along the induced equivalence (\lstinline{dep_constr_ok}), 
 and similarly for \lstinline{DepElim} (\lstinline{dep_elim_ok}).
@@ -482,7 +482,7 @@ Intuitively, \lstinline{dep_constr_ok} and \lstinline{dep_elim_ok} guarantee tha
 correctly transports dependent constructors and dependent eliminators,
 as doing so will preserve equality up to transport for those subterms.
 This makes it possible for the transformation
-to avoid applying \lstinline{f} and \lstinline{g} explicitly---instead porting terms from \A directly to \B.
+to avoid applying \lstinline{f} and \lstinline{g}, instead porting terms from \A directly to \B.
 
 %Furthermore, since CIC$_{\omega}$ is constructive, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
 %and the \textit{only} way to eliminate an \A (respectively \B) is to apply its eliminator.
