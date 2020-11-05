@@ -391,6 +391,40 @@ These unification heuristics are incomplete.
 When even Coq's unification is not enough, \toolname relies on proof engineers to provide hints
 in the form of explicit annotations.
 
+\begin{figure*}
+\begin{lstlisting}
+(* --- Equivalence --- *)(@\vspace{-0.04cm}@)
+f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }(@\vspace{-0.04cm}@)
+g : B $\rightarrow$ A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }(@\vspace{-0.04cm}@)
+section : $\forall$ (a : A), g (f a) = a.(@\vspace{-0.04cm}@)
+retraction : $\forall$ (b : B), f (g b) = b.(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+dep_constr_ok : $\forall$ j, DepConstr(j, A) $\equiv_{A \simeq B}$ DepConstr(j, B).(@\vspace{-0.04cm}@)
+dep_elim_ok : $\forall$ a b (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type), a $\equiv_{A \simeq B}$ b $\rightarrow$ P $\equiv_{A \simeq B}$ Q $\rightarrow$ DepElim(a, P) $\equiv_{A \simeq B}$ DepElim(b, Q).(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+(* --- Equality --- *)(@\vspace{-0.04cm}@)
+elim_eta(A) : $\forall$ (a : A) (P : A $\rightarrow$ Type) $\vec{f}$, DepElim(a, P) $\vec{f}$ : P (Eta(A) a).(@\vspace{-0.04cm}@)
+elim_eta(B) : $\forall$ (b : B) (P : B $\rightarrow$ Type) $\vec{f}$, DepElim(b, P) $\vec{f}$ : P (Eta(B) b).(@\vspace{-0.04cm}@)
+eta_ok(A) : $\forall$ (a : A), Eta(A) a = a.(@\vspace{-0.04cm}@)
+eta_ok(B) : $\forall$ (b : B), Eta(B) b = b.(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+iota_ok(j, A) : $\forall$ (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (Eta(A) (DepConstr(j, A) $\vec{x}$)) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+  Q (DepElim(DepConstr(j, A) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
+  Q (rew $\leftarrow$ eta_ok(A) (DepConstr(j, A) $\vec{x}$) in ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...))(@\vspace{-0.04cm}@)
+:= Iota(A, j, Q).(@\vspace{-0.04cm}@)
+iota_ok(j, B) : $\forall$ (P : B $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (Eta(B) (DepConstr(j, B) $\vec{x}$)) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+  Q (DepElim(DepConstr(j, B) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
+  Q (rew $\leftarrow$ eta_ok(B) (DepConstr(j, B) $\vec{x}$) in ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...))(@\vspace{-0.04cm}@)
+:= Iota(B, j, Q).
+\end{lstlisting}
+\vspace{-0.3cm}
+\caption{Correctness criteria for a configuration \lstinline{(DepConstr, DepElim), (Eta, Iota)} to ensure that the transformation
+preserves equivalence (top) coherently with equality (bottom). Throughout, $\vec{f}$, $\vec{x}$, and $\vec{\mathtt{IH}}$ represent
+eliminator cases, constructor arguments, and inductive hypotheses, respectively.}
+\label{fig:spec}
+\end{figure*} % TODO sigs for Iota here are not quite correct---Q is not bound. Also need to tweak to deal w/ eta, and to use eta_OK, and to relate both eta
+
+
 \subsubsection{Specifying Correct Transformation}
 \label{sec:transfspecif}
 
@@ -428,39 +462,6 @@ given change in specification, only some of which are useful (for example~\circl
 Beyond that, even once we have chosen an equivalence, we could define many possible configurations that correspond
 to the equivalence, some of which will produce functions and proofs that are more useful or efficient than others
 (consider \lstinline{DepElim} converting through several intermediate types).
-
-\begin{figure*}
-\begin{lstlisting}
-(* --- Equivalence --- *)(@\vspace{-0.04cm}@)
-f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }(@\vspace{-0.04cm}@)
-g : B $\rightarrow$ A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }(@\vspace{-0.04cm}@)
-section : $\forall$ (a : A), g (f a) = a.(@\vspace{-0.04cm}@)
-retraction : $\forall$ (b : B), f (g b) = b.(@\vspace{-0.04cm}@)
-(@\vspace{-0.04cm}@)
-dep_constr_ok : $\forall$ j, DepConstr(j, A) $\equiv_{A \simeq B}$ DepConstr(j, B).(@\vspace{-0.04cm}@)
-dep_elim_ok : $\forall$ a b (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type), a $\equiv_{A \simeq B}$ b $\rightarrow$ P $\equiv_{A \simeq B}$ Q $\rightarrow$ DepElim(a, P) $\equiv_{A \simeq B}$ DepElim(b, Q).(@\vspace{-0.04cm}@)
-(@\vspace{-0.04cm}@)
-(* --- Equality --- *)(@\vspace{-0.04cm}@)
-elim_eta(A) : $\forall$ (a : A) (P : A $\rightarrow$ Type) $\vec{f}$, DepElim(a, P) $\vec{f}$ : P (Eta(A) a).(@\vspace{-0.04cm}@)
-elim_eta(B) : $\forall$ (b : B) (P : B $\rightarrow$ Type) $\vec{f}$, DepElim(b, P) $\vec{f}$ : P (Eta(B) b).(@\vspace{-0.04cm}@)
-eta_ok(A) : $\forall$ (a : A), Eta(A) a = a.(@\vspace{-0.04cm}@)
-eta_ok(B) : $\forall$ (b : B), Eta(B) b = b.(@\vspace{-0.04cm}@)
-(@\vspace{-0.04cm}@)
-iota_ok(j, A) : $\forall$ (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (Eta(A) (DepConstr(j, A) $\vec{x}$)) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
-  Q (DepElim(DepConstr(j, A) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
-  Q (rew $\leftarrow$ eta_ok(A) (DepConstr(j, A) $\vec{x}$) in ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...))(@\vspace{-0.04cm}@)
-:= Iota(A, j, Q).(@\vspace{-0.04cm}@)
-iota_ok(j, B) : $\forall$ (P : B $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (Eta(B) (DepConstr(j, B) $\vec{x}$)) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
-  Q (DepElim(DepConstr(j, B) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
-  Q (rew $\leftarrow$ eta_ok(B) (DepConstr(j, B) $\vec{x}$) in ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...))(@\vspace{-0.04cm}@)
-:= Iota(B, j, Q).
-\end{lstlisting}
-\vspace{-0.3cm}
-\caption{Correctness criteria for a configuration \lstinline{(DepConstr, DepElim), (Eta, Iota)} to ensure that the transformation
-preserves equivalence (top) coherently with equality (bottom). Throughout, $\vec{f}$, $\vec{x}$, and $\vec{\mathtt{IH}}$ represent
-eliminator cases, constructor arguments, and inductive hypotheses, respectively.}
-\label{fig:spec}
-\end{figure*} % TODO sigs for Iota here are not quite correct---Q is not bound. Also need to tweak to deal w/ eta, and to use eta_OK, and to relate both eta
 
 Once the proof engineer or a search procedure has chosen a configuration, we can specify what it means for that configuration to be correct.
 Figure~\ref{fig:spec} specifies the correctness criteria for any given configuration (assuming a univalent metatheory in which equality up

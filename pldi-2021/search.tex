@@ -7,27 +7,41 @@
     \hline
     \textbf{Class} & \textbf{Config.} & \textbf{Examples} & \textbf{Repair Tools} & \textbf{Search Tools} \\
     \hline
-    \multirow[t]{2}{*}{Algebraic Ornaments} & \multirow[t]{2}{*}{Auto} & List to Packed Vector, hs-to-coq (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{Example.v}) & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
-    & & List to Packed Vector, Standard Library (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/ListToVect.v}{ListToVect.v}) & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
+    \multirow[t]{2}{*}{Algebraic Ornaments} & \multirow[t]{2}{*}{Auto} & List to Packed Vector, hs-to-coq \circled{3} % Example.v
+    & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
+    & & List to Packed Vector, Standard Library \circled{16} % ListToVect.v
+    & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
     \hline
-    Unpack Sigma Types & Auto & Vector of Particular Length, hs-to-coq (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{Example.v}) & \toolname, UP & \toolname \\
+    Unpack Sigma Types & Auto & Vector of Particular Length, hs-to-coq \circled{3} % Example.v
+    & \toolname, UP & \toolname \\
     \hline
-    \multirow[t]{3}{*}{Tuples \& Records} & \multirow[t]{3}{*}{Auto} & Simple Records (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/minimal_records.v}{minimal\_records.v}) & \toolname, UP & \toolname \\
-    & & Parameterized Records (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/more_records.v}{more_records.v}) & \toolname, UP & \toolname \\
-    & & Industrial Use (\href{https://github.com/Ptival/saw-core-coq/tree/dump-wip}{saw-core-coq}) & \toolname, UP & \toolname \\
+    \multirow[t]{3}{*}{Tuples \& Records} & \multirow[t]{3}{*}{Auto} & Simple Records \circled{13} % minimal_records.v 
+     & \toolname, UP & \toolname \\
+    & & Parameterized Records \circled{17} % more_records.v
+    & \toolname, UP & \toolname \\
+    & & Industrial Use \circled{18} %(\href{https://github.com/Ptival/saw-core-coq/tree/dump-wip}{saw-core-coq})
+    & \toolname, UP & \toolname \\
     \hline
-    \multirow[t]{3}{*}{Permute Constructors} & \multirow[t]{3}{*}{Auto} & List, Standard Library (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \toolname, UP & \toolname \\
-     & & Modifying a PL, \textsc{REPLica} Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \toolname, UP  & \toolname \\
-    & & Large Ambiguous Enum (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{Swap.v}) & \toolname, UP & \toolname \\
+    \multirow[t]{3}{*}{Permute Constructors} & \multirow[t]{3}{*}{Auto} & List, Standard Library \circled{1} % Swap.v 
+    & \toolname, UP & \toolname \\
+     & & Modifying a PL, \textsc{REPLica} Benchmark \circled{1} % Swap.v 
+     & \toolname, UP  & \toolname \\
+    & & Large Ambiguous Enum \circled{1} % Swap.v
+    & \toolname, UP & \toolname \\
     \hline
-    Add new Constructors & Mixed & PL Extension, \textsc{REPLica} Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add\_constr.v}) & \toolname & \toolname (partial) \\
+    Add new Constructors & Mixed & PL Extension, \textsc{REPLica} Benchmark \circled{19} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add_constr.v})
+    & \toolname & \toolname (partial) \\
     \hline
-    Factor out Constructors & Manual & External Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr\_refactor.v}) & \toolname, UP & None \\
+    Factor out Constructors & Manual & External Example \circled{2} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr_refactor.v}) 
+    & \toolname, UP & None \\
     \hline
-    Permute Hypotheses & Manual & External Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/flip.v}{flip.v}) & \toolname, UP & None \\
+    Permute Hypotheses & Manual & External Example \circled{20} %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/flip.v}{flip.v}) 
+    & \toolname, UP & None \\
     \hline
-    \multirow[t]{2}{*}{Change Inductive Structure} & \multirow[t]{2}{*}{Manual} & Unary to Binary, Classic Benchmark (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{nonorn.v}) & \toolname, Classic & None \\
-     & & Vector to Finite Set, External Example (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/fin.v}{fin.v}) & \toolname & None \\
+    \multirow[t]{2}{*}{Change Inductive Structure} & \multirow[t]{2}{*}{Manual} & Unary to Binary, Classic Benchmark \circled{5} %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{nonorn.v})
+     & \toolname, Classic & None \\
+     & & Vector to Finite Set, External Example \circled{21} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/fin.v}{fin.v}) 
+     & \toolname & None \\
     \hline
   \end{tabular}
   \caption{Some changes using \toolname, from left to right: class of changes (Class), whether the class of changes uses
@@ -37,14 +51,14 @@ We provide more nuanced comparisons to these tools and more in Section~\ref{sec:
 \end{figure*}
 
 This section summarizes eight case studies using \toolname,
-corresponding to the eight different classes of changes in Table~\ref{fig:changes}.
+corresponding to the eight classes of changes in Table~\ref{fig:changes}.
 %For each case study, we explain the configuration used, walk through an example, and describe lessons learned.
-These case studies demonstrate the flexibility of \toolname in handling diverse changes in datatype and diverse reuse and repair scenarios.
+These case studies demonstrate \toolname's flexibility in handling diverse changes in datatype and diverse reuse and repair scenarios.
 %including in one case for an industrial user with unanticipated workflow.
-They also demonstrate the success of automatic configuration for better workflow integration for supported classes of changes,
+They also demonstrate the success of automatic configuration for better workflow integration for supported changes,
 and the preliminary success of the prototype decompiler.
 Finally, they highlight clear paths to improvement to better serve proof engineers. 
-Detailed walkthroughs of these case studies (including types and configuration terms) can be found in auxiliary material.
+Detailed walkthroughs of these case studies can be found in the repository.
 
 \subsubsection*{Algebraic Ornaments: Lists to Packed Vectors}
 
@@ -58,9 +72,8 @@ length-indexed vector, like we saw in Figure~\ref{fig:listtovect} in Section~\re
 %The search procedure moves the work specific to algebraic ornaments into the \toolname configuration.
 The result is all of the functionality from \textsc{Devoid}, plus tactic suggestions.
 %which allows it to implement the  functionality from \textsc{Devoid}.
-The file \lstinline{Example.v} shows this on an example from \textsc{Devoid}:
+The file~\circled{3} shows this on an example from \textsc{Devoid}:
 porting two list functions and a proof relating them from lists to vectors of \textit{some} length, since \lstinline{list T} $\simeq$ \lstinline{packed_vect T}.
-% TODO must define earlier in paper
 The tactic decompiler helped us write tactic proofs that had been
 prohibitively difficult for us to write by hand,
 though the suggested tactics did need massaging. % as the decompiler struggled with motive inference
@@ -70,7 +83,7 @@ though the suggested tactics did need massaging. % as the decompiler struggled w
 \subsubsection*{Unpack Sigma Types: Vectors of Particular Lengths}
 
 %The previous case study showed how to get between lists and vectors of \textit{some} length.
-The file \lstinline{Example.v} goes on to show how to port functions and proofs to vectors of a \textit{particular} length, 
+The same file~\circled{3} goes on to show how to port functions and proofs to vectors of a \textit{particular} length, 
 like \lstinline{vector T n}.
 \textsc{Devoid} had left this step to the proof engineer.
 We supported this in \toolname by chaining the change from the previous case study
@@ -96,7 +109,7 @@ More effort is needed to improve tactic suggestions for dependent types.
 
 \subsubsection*{Tuples \& Records: Industrial Use}
 
-An industrial proof engineer at Galois has been using \toolname in proving
+An industrial proof engineer at \company has been using \toolname in proving
 correct an implementation of the TLS handshake protocol.
 %While this is ongoing work, thus far,
 %\toolname has helped \company integrate Coq with their existing verification workflow.
@@ -116,7 +129,7 @@ proofs about the original automatically generated functions and specifications.
 So far, the proof engineer has used at least three automatic configurations,
 but the proof engineer most often used an automatic configuration for porting anonymous tuples produced by \company's compiler
 to named records.
-Some examples of this can be found in a branch of the proof engineer's repository. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}}
+Some examples of this can be found in a branch of the proof engineer's repository~\circled{18}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
 
 
 %The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
@@ -155,8 +168,8 @@ The proof engineer swapped two constructors in the term language,
 and added a new constructor \lstinline{Bool}.
 
 This case study and the next case study break this change into two parts.
-In the first part, we used \toolname with automatic configuration to repair all of the functions and proofs about the language in \lstinline{Swap.v} 
-after swapping the two constructors.
+In the first part, we used \toolname with automatic configuration to repair functions and proofs about the language
+after swapping the two constructors~\circled{1}.
 %We also succeeded at more difficult variants of this,
 %like swapping constructors with the same type, renaming all of the constructors,
 %permuting more than two constructors,
@@ -178,8 +191,8 @@ and \toolname worked well for those. % TODO what happens with the tactic decompi
 
 \subsubsection*{Add new Constructors: Extending a Language}
 
-For the second part of the change in Figure~\ref{fig:replica}, in \lstinline{add_constr.v}, we used \toolname to repair functions 
-after adding the new constructor, separating out the proof obligations for the new constructor from the old terms.
+For the second part of the change in Figure~\ref{fig:replica},  we used \toolname to repair functions 
+after adding the new constructor, separating out the proof obligations for the new constructor from the old terms~\circled{19}.
 %The resulting functions were guaranteed to preserve the behavior of the old terms. % TODO do the proofs too
 This change combined a manual configuration with an automatic configuration.
 At a high level, we defined an inductive type \lstinline{Diff} and (using partial automation) a configuration to port the terms across the equivalence \lstinline{Old.Term + Diff} $\simeq$ \lstinline{New.Term}.
@@ -196,14 +209,14 @@ to get between proofs of the inefficient and efficient terms.
 \subsubsection*{Factor out Constructors: External Example}
 
 The change from Figure~\ref{fig:equivalence2} factoring out a constructor came at the request of a non-author.
-We used \toolname to support this change in \lstinline{constr_refactor.v}.
+We used \toolname to support this change~\circled{2}. % in \lstinline{constr_refactor.v}.
 This changed used a manual configuration that essentially described which constructor to map to \lstinline{true}
 and which constructor to map to \lstinline{false}.
 The configuration was very simple for us to write, and the repaired tactic proofs were immediately useful.
 
 \subsubsection*{Permute Hypotheses: External Example}
 
-The change in \lstinline{flip.v} came at the request of a different non-author, and shows how to 
+The change in \circled{20} came at the request of a different non-author, and shows how to 
 use \toolname to swap two hypotheses of a type, since \lstinline{T1} $\rightarrow$ \lstinline{T2} $\rightarrow$ \lstinline{T3} $\simeq$
 \lstinline{T2} $\rightarrow$ \lstinline{T1} $\rightarrow$ \lstinline{T3}.
 This configuration was also manual.
@@ -214,7 +227,7 @@ manual configuration.
 
 \subsubsection*{Change Inductive Structure: Unary to Binary}
 
-In \lstinline{nonorn.v}, we used \toolname to support a classic example of changing inductive structure:
+In \circled{5}, we used \toolname to support a classic example of changing inductive structure:
 updating unary to binary natural numbers~\cite{magaud2000changing}.
 % TODO fin and vect? mention somewhere?
 In Coq, a binary number \lstinline{N} (see Section~\ref{sec:key2}, Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
