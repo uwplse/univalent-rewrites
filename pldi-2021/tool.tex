@@ -1,0 +1,122 @@
+\section{Implementation}
+
+The configurable proof term transformation helped us build a flexible proof repair tool.
+However, it alone was not enough to build a tool that reaches real proof engineers.
+Similarly, the mini decompiler abstracted a lot of the details that make Ltac so useful to proof engineers---and so painful to 
+reason about automatically.
+This section describes a sample of the implementation challenges that we encountered and how we solved them,
+both for the transformation (Section~\ref{sec:implementation}) and for the decompiler (Section~\ref{sec:decompiler}).
+Section~\ref{sec:discussion} elaborates on some of the remaining challenges and our plans to address them in the future.
+
+Interested readers may wish to consult the auxiliary material for help navigating the corresponding code.
+The auxiliary material contains a guide that explains where in the implementation to find each of \lstinline{Configure},
+\lstinline{Transform}, and \lstinline{Decompile}, as well as any other code referenced 
+in this section or elsewhere in this paper. % TODO make this guide, do the asterisk thing
+
+\subsection{Implementing the Transformation}
+\label{sec:implementation}
+
+\paragraph{From CIC$_{\omega}$ to Coq}
+
+The implementation of \lstinline{Transform} must handle language differences to scale from CIC$_{\omega}$ to Coq.
+We use an existing command called \lstinline{Preprocess}~\cite{Ringer2019} to turn pattern matching and fixpoints into 
+applications of eliminators.
+We handle non-primitive projections using \lstinline{Eta}, and we handle refolding of constants in constructors
+using \lstinline{DepConstr}.
+
+\paragraph{Termination \& Intent}
+
+When the correctness criteria for a configuration hold and a subterm unifies with a configuration term, this suggests that \toolname \textit{can}
+run the transformation rule, but it does not necessarily mean that it \textit{should}.
+In some cases, repeatedly running a matching transformation rule would result in nontermination.
+For example, if \B is a refinement of \A, then we can always run \textsc{Equivalence}
+over and over again, forever.
+%\textsc{Devoid} ruled out this case by simply prohibiting the case where \B refers to \A, but we found it sometimes
+%useful to support this case.
+We thus include some simple termination checks in our code. % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftrules.ml}{liftrules.ml}).
+
+Even when termination is guaranteed, whether to transform a subterm depends on intent.
+For example, our industrial proof engineer sometimes wished to port only some occurrences of \A,
+especially when \A was a tuple that could appear elsewhere
+with a different meaning.
+\toolname has some support for this using an interactive workflow.
+%We helped the proof engineer do this by interacting with \toolname using a particular workflow.
+%We plan to support this automatically using type-directed search in the future.
+
+\paragraph{Reaching Real Proof Engineers}
+Many of our design decisions in implementing \toolname were informed by our partnership with
+an industrial proof engineer (see Section~\ref{sec:industry}).
+For example, we found that the proof engineer rarely had the patience to wait more than ten seconds
+for \toolname to port a function or proof.
+In response, we implemented aggressive caching (with an option to disable the cache), even caching intermediate subterms that
+we encounter in the course of running our proof term transformation.
+We also added a cache to tell \toolname not to $\delta$-reduce certain terms.
+%These caches are implemented in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/cache/caching.ml}{caching.ml}.
+%or recurse into certain modules.
+% set certain terms or modules as opaque to \toolname, to prevent unnecessary $\delta$-reduction.
+
+The experiences of proof engineers also informed features that we exposed.
+For example, we implemented special search procedures to generate custom eliminators %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/smartelim.ml}{smartelim.ml})
+to make it easier to reason about types refined by equalities like $\Sigma$\lstinline{(l : list T).length l = n}
+by breaking them into parts and reasoning separately about the projections.
+These features along with our tactic decompiler helped with integration into proof engineering workflows.
+
+\subsection{Implementing the Decompiler}
+\label{sec:second}
+
+\paragraph{Better Proof Scripts}
+The mini decompiler reasons about tactics one subterm at a time, and produces simple tactic scripts.
+To produce a more natural set of tactics, \textbf{Decompile} first it runs something similar to the mini decompiler, and then it modifies those tactics to produce a more natural proof script.
+For example, it cancels out sequences of \lstinline{intros} and \lstinline{revert} tactics.
+It removes redundant arguments to the \lstinline{apply} tactic, ensuring the result still holds. % TODO rewrite
+It can also take suggested tactics (like part of the old version of the proof script) from the proof engineer as hints,
+then iteratively replace tactics with those hints, checking the result as it recurses.
+This makes it possible for the tactic scripts \toolname suggests to include custom tactics and decision procedures.
+Further improvements could come from preserving comments and indentation, or automatically using information from the old 
+version of the proof script rather than asking for it explicitly.
+
+\paragraph{Induction and Rewriting}
+The mini decompiler includes more predictable versions of \lstinline{rewrite} and \lstinline{induction}
+than those found in Coq. \textbf{Decompile} includes additional logic to reason about these tactics.
+For example, Qtac assumes that there is only one \lstinline{rewrite} direction. Ltac has two rewrite directions,
+and so the decompiler infers the right direction based on the motive used.
+
+Qtac also assumes that both tactics take the inductive motive explicitly.
+In Coq, however, both tactics infer the motive automatically.
+Consequentially, Coq will sometimes infer the wrong motive without manipulation of goals and hypotheses,
+or will fail to infer a motive at all.
+This is especially common for the \lstinline{rewrite} tactic, which is purely syntactic.
+To handle induction, the decompiler strategically uses the \lstinline{revert} tactic to manipulate the goal
+so that Coq can better infer the motive.
+To handle rewrites, it uses the \lstinline{simpl} tactic to refold the goal before rewriting.
+Neither of these approaches are guaranteed to work, so the proof engineer may sometimes need to tweak the output proof script appropriately.
+We have found that even if we pass Coq's induction principle an explicit motive, Coq still sometimes fails due
+to unrepresented assumptions.
+Long term, using another tactic like \lstinline{change} to manipulate hypotheses and goals before applying these tactics
+may help with cases for which Coq cannot infer the correct motive.
+
+\paragraph{Manipulating Hypotheses}
+Changing from Qtac to Ltac is not the only challenge in writing the decompiler---we also scale from CIC$_{\omega}$ to Coq.
+This introduces let bindings, which are generated by tactics like \lstinline{rewrite in}, \lstinline{apply in}, and \lstinline{pose}.
+\textbf{Decompile} implements support for \lstinline{rewrite in} and \lstinline{apply in} similarly to how it implements support for
+\lstinline{rewrite} and \lstinline{apply}, but with three differences:
+
+\begin{enumerate}
+\item it ensures that the unmanipulated hypothesis does not occur in the body of the let expression,
+\item it swaps the direction of the rewrite, and
+\item it checks for generated subgoals and recurses into those subgoals.
+\end{enumerate}
+In all other cases, the implementation uses the \lstinline{pose} tactic, a catch-all for let bindings.
+
+\paragraph{Pretty Printing}
+After decompiling proof terms, \textbf{Decompile} pretty prints the result to the proof engineer.
+Like the mini decompiler, \textbf{Decompile} represents its output language using a predefined grammar of Ltac tactics,
+albeit one that is larger than Qtac.
+It maintains the recursive proof structure as it goes, then uses that structure to print proofs of subgoals using bullet points.
+It displays the resulting proof script to the proof engineer, who can modify it as needed.
+For convenience, it includes scripts that automate the process of printing all of these tactic proofs to a Coq file,
+in case the proof engineer does not want such an interactive workflow.
+\toolname keeps all output proof terms from the proof term transformation in the Coq environment in case the decompiler does not succeed.
+Once the proof engineer has this new proof, she can remove the old specifications, functions, and proofs, using the repaired
+versions from then on.
+

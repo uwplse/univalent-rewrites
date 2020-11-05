@@ -202,15 +202,16 @@
 %% before \maketitle command
 \begin{abstract}
 We describe a new approach to automatically repairing broken proofs in response to changes in types in the Coq proof assistant.
-Our approach combines a configurable proof term transformation with a proof term to tactic script decompiler.
+Our approach combines a configurable proof term transformation and search procedures to configure that proof term transformation with a proof term to tactic script decompiler.
 The proof term transformation implements transport across equivalences in a way that is suitable for repair and does not rely on axioms beyond those Coq assumes.
 
 We have implemented this approach in \toolname, a Coq plugin for proof repair.
 %The result is a flexible proof repair tool with workflow integration.
-We have used \toolname to support a benchmark from a user study,
-ease development with dependent types,
-port functions and proofs between unary and binary natural numbers,
-and support an industrial proof engineer to more easily interoperate between Coq and other verification tools.
+We demonstrate the flexibility of \toolname on eight case studies,
+including supporting a benchmark from a user study,
+easing development with dependent types,
+porting functions and proofs between unary and binary natural numbers,
+and supporting an industrial proof engineer to more easily interoperate between Coq and other verification tools.
 \end{abstract}
 
 %% 2012 ACM Computing Classification System (CSS) concepts
@@ -252,6 +253,7 @@ and support an industrial proof engineer to more easily interoperate between Coq
 \input{reuse}
 \input{meat}
 \input{decompiler}
+\input{tool}
 \input{search}
 \input{related}
 \input{conclusion}

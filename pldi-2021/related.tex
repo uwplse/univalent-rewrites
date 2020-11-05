@@ -1,24 +1,20 @@
 \section{Related Work}
 \label{sec:related}
 
-% TODO check survey paper for more stuff/better stuff
-% TODO also remove any content that is too similar with survey paper
-
 We discuss related work in proof repair, proof refactoring, proof reuse, and proof design.
 More can be found in a recent survey of proof engineering~\cite{PGL-045}.
 
 \paragraph{Proof Repair}
 
 %\toolname is not the first proof repair tool.
-\textsc{Pumpkin Patch}~\cite{pumpkinpatch}, like \toolname, is also a proof repair tool for Coq.
-The search procedures in \textbf{Configure} are based partly on ideas from \textsc{Pumpkin Patch}, which includes
-similar search procedures for discovering patches to fix broken proofs.
+The search procedures in \textbf{Configure} are based partly on ideas from \textsc{Pumpkin Patch}, a proof repair tool for Coq.
+%which includes similar search procedures for discovering patches to fix broken proofs.
 Unlike \toolname, \textsc{Pumpkin Patch} does not apply the patches that it finds,
 handle changes in structure, or include support for tactics beyond the use of hints.
-\toolname addresses these limitations.
+%\toolname addresses these limitations.
 
 Proof repair can be viewed as a form of \textit{program repair}~\cite{Monperrus:2018:ASR:3177787.3105906, Gazzola:2018:ASR:3180155.3182526}
-specific to the domain of proof assistants.
+for proof assistants.
 Proof assistants like Coq are a good fit for program repair: A recent paper~\cite{Qi:2015:APP:2771783.2771791} 
 recommends that program repair tools draw on extra information
 such as specifications or example patches. In Coq, specifications and examples 
@@ -27,42 +23,50 @@ and examples thanks to constructivism.
 
 \paragraph{Proof Refactoring}
 
-Proof repair is closely related to proof refactoring~\cite{WhitesidePhD}. 
+%Proof repair is related to proof refactoring~\cite{WhitesidePhD}. 
 %and a number of the changes that \toolname supports can be viewed as refactorings.
 The proof refactoring tool Levity~\cite{Bourke12} for Isabelle/HOL has seen large-scale industrial use.
 Levity focuses on moving lemmas,
 whereas \toolname focuses on repairing proofs across type equivalences.
-Chick~\cite{robert2018} and RefactorAgda~\cite{wibergh2019} are proof refactoring tools that
-also support a few changes that can be viewed as repairs~\cite{PGL-045}.
+Chick~\cite{robert2018} and RefactorAgda~\cite{wibergh2019} are proof refactoring tools
+in a Gallina-like language and in Agda, respectively.
+% that also support a few changes that can be viewed as repairs~\cite{PGL-045}.
 %Chick operates over a Gallina-like language, while RefactorAgda is implemented in Agda.
-Unlike \toolname, these tools support primarily syntactic changes and do not have tactic support.
+These tools support primarily syntactic changes and do not have tactic support.
 % changes these tools support are still primarily syntactic,
 %and neither of these tools have tactic support.
 
 A few proof refactoring tools operate directly over tactics:
 POLAR~\cite{Dietrich2013} refactors proof scripts in languages based on Isabelle/Isar~\cite{Wenzel2007isar},
 CoqPIE~\cite{Roe2016} is an IDE with support for simple refactorings of Ltac scripts, and
-Tactician~\cite{adams2015} is a proof script refactoring tool that focuses on switching between tactics and tacticals.
-This approach is not tractable for handling more complex changes;
+Tactician~\cite{adams2015} is a proof script refactoring tool for switching between tactics and tacticals.
+This approach is not tractable for more complex changes;
 \citet{robert2018} discusses the challenges in detail.
 
 \paragraph{Proof Reuse}
 
 %Proof repair is proof reuse with the additional constraint that one specification ceases to exist.
 A few proof reuse tools work by proof term transformation and so can be repurposed for proof repair.
-\citet{Johnsen2004} describes a proof term transformation that generalizes theorems in Isabelle/HOL.
-\toolname's proof term transformation generalizes the proof term transformation from \textsc{Devoid}~\cite{Ringer2019},
+\citet{Johnsen2004} describes a transformation that generalizes theorems in Isabelle/HOL.
+\toolname's transformation generalizes the transformation from \textsc{Devoid}~\cite{Ringer2019},
 which transforms proofs along the specific class of changes called algebraic ornaments~\cite{mcbride}.
-\citet{magaud2000changing} implements a proof term transformation for translating proofs between
+\citet{magaud2000changing} implements a transformation for translating proofs between
 unary and binary natural numbers. 
 The latter two of these tools fit into configurations for \toolname,
 and none implements tactic support in Coq like \toolname does.
-The expansion algorithm from \citet{magaud2000changing} may further improve \toolname
-by automating some of the manual steps in expanding \lstinline{Iota}.
+%The expansion algorithm from \citet{magaud2000changing} may further improve \toolname
+%by providing unification heuristics for \lstinline{Iota}.
+
+The refinement framework CoqEAL~\cite{cohen:hal-01113453} transforms functions across relations,
+and these relations can be more general than \toolname's equivalences.
+However, while \toolname supports both functions and proofs, CoqEAL supports only simple functions,
+in particular due to the problem that \lstinline{Iota} addresses.
+CoqEAL may be most useful to chain with \toolname to get faster functions,
+as discussed in Section~\ref{sec:search}.
 
 The \toolname proof term transformation implements transport across equivalences.
 Transport is realizable as a function in univalent type theories~\cite{univalent2013homotopy}.
-The univalent parametricity framework~\cite{tabareau2017equivalences} realizes univalent transport for certain types
+Univalent parametricity~\cite{tabareau2017equivalences} approximates univalence
 in a non-univalent type theory, only sometimes relying on additional axioms beyond the core type theory of Coq.
 While powerful, neither of these approaches to transport remove references to the old type, making them poorly suited for repair.
 
@@ -71,15 +75,15 @@ a white-box transformation that may be well suited for proof repair.
 However, it relies on proof obligations from the proof engineer beyond those imposed by \toolname.
 %that establish what is effectively the correctness criteria
 %for the configuration in \toolname, while \toolname needs only that it holds metatheoretically.
-In addition, it does not include search procedures like \toolname to discover new equivalences from types,
+In addition, it does not include search procedures like \toolname to discover equivalences,
 and it does not include tactic script generation like \toolname.
-Finally, it does not implement any support for porting definitional equalities to propositional equalities,
-instead relying on the original black-box functionality of the univalent parametricity framework to handle those cases;
-the \lstinline{Iota} rule addresses this problem in \toolname and is based on lessons learned from reading that article.
+Finally, it does not support porting definitional equalities to propositional equalities,
+instead relying on its original black-box functionality to handle those cases;
+\lstinline{Iota} addresses this problem in \toolname and is based on lessons learned from reading that article.
 The most fruitful progress may come from integrating these tools together to take advantage of the benefits that both offer.
 
-The univalent parametricity framework implements type-directed search, a feature that \toolname does not yet support.
-The framework achieves this using type classes~\cite{Sozeau2008}; this does not always scale well~\cite{tabareau2019marriage}.
+Univalent parametricity implements type-directed search, a feature that \toolname does not yet support.
+It achieves this using type classes~\cite{Sozeau2008}; this does not always scale well~\cite{tabareau2019marriage}.
 Both \toolname and univalent parametricity could benefit from implementing type-directed search using e-graphs~\cite{egraph1}.
 Of particular interest are those developed for congruence in Cubical Agda~\cite{egraph6},
 which prove the theorem \lstinline{hcongr_ideal}~\cite{egraph7} necessary to use e-graphs not derivable in CIC$_{\omega}$,
@@ -87,13 +91,13 @@ and which should allow for efficient and elegant automatic transport.
 
 \paragraph{Proof Design}
 
-Much of the proof engineering work focuses on designing proofs
-to be robust to change, rather than fixing already broken proofs.
+Much work focuses on designing proofs
+to be robust to change, rather than fixing broken proofs.
 This can take the form of design principles, like using 
 information hiding techniques~\cite{Woos:2016:PCF:2854065.2854081, Klein:2014:CFV:2584468.2560537}
 or any of the structures~\cite{Chrzaszcz2003, Sozeau2008, Saibi:PhD} for encoding interfaces in Coq.
 %thereby localizing the burden of change to the interface.
-Design and repair are complementary: design requires foresight, whereas repair can be applied retroactively.
+Design and repair are complementary: design requires foresight, while repair can occur retroactively.
 Repair can help with changes that occur outside of the proof engineer's control,
 or with changes that are difficult to protect against even with informed design.
 
@@ -101,8 +105,7 @@ Another approach to this is to use heavy proof automation, for example through
 program-specific proof automation~\cite{Chlipala:2013:CPD:2584504}
 %implementations of decision procedures~\cite{Pugh1991},
 or general-purpose hammers~\cite{Blanchette2016b, Blanchette2013, Kaliszyk2014, Czajka2018}.
-The degree to which proof engineers rely on automation varies, as seen in the data from the
-\textsc{REPLica} user study of Coq proof engineers~\cite{replica}.
+The degree to which proof engineers rely on automation varies, as seen in the data from a user study of Coq proof engineers~\cite{replica}.
 Automation-heavy proof engineering styles localize the burden of change to the automation itself,
 but can result in terms that are large and slow to type check,
 and tactics that can be difficult to debug.
