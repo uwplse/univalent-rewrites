@@ -52,15 +52,15 @@ and may impose additional proof obligations like proving relations corresponding
 %\item The transformed proof terms can then be translated back to suggested tactic scripts (Section~\ref{sec:decompiler}).
 %\end{enumerate}
 
-Our progress toward these challenges leverages a configurable proof term transformation (Section~\ref{sec:key2})
-and search procedures to configure that proof term transformation, in combination with a prototype decompiler from proof terms
+Our approach combines a configurable proof term transformation (Section~\ref{sec:key2}),
+search procedures to configure that proof term transformation, and a prototype decompiler from proof terms
 back to suggested tactics (Section~\ref{sec:decompiler}).
-This is implemented in \toolname\footnote{Name changed for double-blind.} (Configurable Approach to Repairing \& Refactoring Outdated Tactics), a proof repair plugin for Coq 8.8 that is available on Github.\footnote{Link withheld for double-blind. See auxiliary material.}
+This is implemented (Section~\ref{sec:impl}) in \toolname\footnote{Name changed for double-blind.} (Configurable Approach to Repairing \& Refactoring Outdated Tactics), a proof repair plugin for Coq 8.8 that is available on Github.\footnote{For double-blind, rather than link to code in the paper, we annotate each claim to which the code is relevant with a circled number like \circled{1}. The auxiliary material contains a guide that maps to locations in the code.}
 The result is a flexible proof repair tool that: 
 
 \begin{enumerate}
 \item supports changes in types informed by proof engineers and not supported by other tools, and
-\item produces suggested tactic scripts and proves relations corresponding to changes as part of better workflow integration.
+\item suggests tactic scripts and proves relations corresponding to changes as part of better workflow integration.
 \end{enumerate}
 
 \subsection*{Addressing Challenge 1: Flexible Type Support}
@@ -106,22 +106,22 @@ Our partnership with an industrial proof engineer has informed other changes to 
 Figure~\ref{fig:system} shows how this comes together when the proof engineer invokes \toolname:
 
 \begin{enumerate}
-\item \toolname configures the proof term transformation, either:
+\item \toolname configures the transformation, either:
 \begin{enumerate}
-\item automatically (left), using \textbf{Configure} to discover the configuration, or
-\item manually (right), by taking the configuration as an argument.
+\item automatically (left), using \textbf{Configure}, or
+\item manually (right).
 \end{enumerate}
 \item The configured \textbf{Transform} transforms the old proof term into the new proof term.
-\item \textbf{Decompile} suggests a new proof script given the new proof term.
+\item \textbf{Decompile} suggests a new proof script. % given the new proof term.
 \end{enumerate}
 
 There are currently four search procedures for automatic configuration implemented in \toolname (see Table~\ref{fig:changes}).
 %All four search procedures generate equivalence proofs as in Figure~\ref{fig:equivalence} automatically (\href{https://github.com/uwplse/pumpkin-pi/%blob/master/plugin/src/automation/search/search.ml}{search.ml} and \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/equivalence.ml}{equivalence.ml}),
 %then configure (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) the transformation %to those equivalences.
 Manual configuration makes it possible
-for the proof engineer to directly configure the transformation to any other equivalence,
+for the proof engineer to configure the transformation to any other equivalence,
 even without a search procedure.
-Section~\ref{sec:search} shows examples of both workflows applied to real proof reuse and repair scenarios.
+Section~\ref{sec:search} shows examples of both workflows applied to real scenarios.
 
 %Our main technical advances are techniques for transforming proof terms directly to repair broken proofs in response to changes
 %in types, while our prototype decompiler up to tactics is important for usability in Coq.

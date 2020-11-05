@@ -4,10 +4,9 @@
 \toolname is a tool for \textit{proof repair}.
 Proof repair is the problem of updating a broken proof in response to a change in a program or specification~\cite{PGL-045, pumpkinpatch}---in the
 case of \toolname, a change in a type definition that corresponds to an equivalence (Section~\ref{sec:scope}).
-
-Given an equivalence between two types \A and \B,
+Given an equivalence between types \A and \B,
 \toolname repairs functions and proofs defined over \A to instead refer to \B.
-It does this in a way that allows for removing all references to \A, which is essential for proof repair,
+It does this in a way that allows for removing references to \A, which is essential for proof repair,
 since \A may be an old version of an updated type (Section~\ref{sec:repair}).
 
  %We can view proof repair as a form of 
@@ -28,9 +27,6 @@ since \A may be an old version of an updated type (Section~\ref{sec:repair}).
 %tool that can handle that additional challenge (Section~\ref{sec:time}).
 %\end{quote}
 
-\subsection{Scope: Type Equivalences}
-\label{sec:scope}
-
 \begin{figure*}
 \codeauto{%
 \begin{minipage}{0.48\textwidth}
@@ -45,8 +41,11 @@ since \A may be an old version of an updated type (Section~\ref{sec:repair}).
 \label{fig:equivalence}
 \end{figure*}
 
-\toolname supports a particular kind of repair: proof repair in response to certain changes in type definitions.
-In particular, these changes in type definitions must correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
+\subsection{Scope: Type Equivalences}
+\label{sec:scope}
+
+\toolname supports proof repair in response to changes in type definitions
+that correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
 or pairs of functions that map between two types and are mutual inverses.
 Figure~\ref{fig:equivalence} shows a type equivalence between the two versions of \lstinline{list}
 from Section~\ref{sec:overview}, Figure~\ref{fig:listswap} that \toolname discovered and proved automatically.
@@ -56,8 +55,8 @@ When such a type equivalence between two types \A and \B exists, we say those ty
 %Old.list $\simeq$ New.list
 %\end{lstlisting}
 
-All of the changes in Table~\ref{fig:changes} in Section~\ref{sec:search} can be described by equivalences.
-To give some more intuition for what kinds of changes can be described this way, we preview two changes below.
+To give some intuition for what kinds of changes can be described by equivalences, we preview two changes below.
+See Table~\ref{fig:changes} in Section~\ref{sec:search} for more examples.
 
 \subsubsection*{Factoring out Constructors}
 \label{sec:ex1}
@@ -85,9 +84,8 @@ as long as she first configures \toolname to describe which constructor
 of \lstinline{I} maps to \lstinline{true} and which maps to \lstinline{false}.
 This information about constructor mappings induces an equivalence \lstinline{I }$\simeq$\lstinline{ J}
 along which \toolname repairs functions and proofs.
-The file \lstinline{constr\_refactor.v} in auxiliary material
-shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false,
-and repairing proofs of De Morgan's laws.
+The repository shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false,
+and repairing proofs of De Morgan's laws~\circled{2}. % constr_refactor.v
 %
 %It uses \toolname to automatically repair functions and proofs over \lstinline{I}, like:
 
@@ -117,16 +115,16 @@ and repairing proofs of De Morgan's laws.
 \label{sec:ex2}
 
 At first glance, the word \textit{equivalence} may seem to imply that \toolname can support only changes in
-which the proof engineer does not add or remove any information.
+which the proof engineer does not add or remove information.
 But equivalences are more powerful than they may seem.
 For example, in cubical type theory, with the help of quotient types, it is possible to form an equivalence
-from a relation, even when the relation itself is not an equivalence~\cite{angiuli2020internalizing}.
+from a relation, even when the relation is not an equivalence~\cite{angiuli2020internalizing}.
 
 While Coq lacks quotient types,
 it is possible to achieve a similar outcome and use \toolname for changes that add or remove information
-whenever those change can be expressed as equivalences between $\Sigma$ types or between sum types.
+when those changes can be expressed as equivalences between $\Sigma$ types or sum types.
 The idea is, when possible, to separate out the new information
-into a projection of a $\Sigma$ type, or into a constructor of a sum type.
+into a projection of a $\Sigma$ type or a constructor of a sum type.
 Proofs about this new information become the proof obligation for the proof engineer,
 and \toolname automates the rest.
 
@@ -144,13 +142,12 @@ and \toolname automates the rest.
 \end{figure*}
 
 Consider, for example, changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
-\lstinline{Example.v} in auxiliary material shows how to use \toolname to repair functions and proofs
-about lists to functions and proofs about vectors of a particular length, since:
+\toolname can repair functions and proofs about lists to functions and proofs about vectors of a particular length~\circled{3}, % Example.v
+since:
 
 \begin{lstlisting}
 $\Sigma$(l : list T).length l = n $\simeq$ vector T n.
 \end{lstlisting}
-
 %
 %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}).%%
 %
@@ -183,7 +180,6 @@ $\Sigma$(l : list T).length l = n $\simeq$ vector T n.
 %\textsc{Devoid} leaves this step to the proof engineer.
 %\toolname, in contrast, can handle this step as well (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}).
 %The key is to repair functions and proofs across this equivalence:
-
 From the proof engineer's perspective, after updating specifications from \lstinline{list} to \lstinline{vector},
 to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists.
 \toolname makes it easy to separate out that proof obligation, then automates the rest.
@@ -207,7 +203,7 @@ equal up to transport along the equivalence from Figure~\ref{fig:equivalence}, s
 $\forall$ T (l1 l2 : Old.list T),
   swap T (l1 ++ l2) = (swap T l1) ++ (swap T l2).
 \end{lstlisting}
-by \lstinline{app_ok} in \lstinline{Swap.v}.
+by \lstinline{app_ok}~\circled{1}.
 The original \lstinline{rev_app_distr} is equal to the transformed proof along the same equivalence,
 since it proves the same thing the same way as the transformed proof up to the same equivalence, and up to the changes in \lstinline{++}
 and \lstinline{rev}.
@@ -218,7 +214,7 @@ Also note that, as Coq lacks univalence, and so equality up to transport cannot 
 this notation should be interpreted in the context of a univalent metatheory.
 The formal details of equality up to transport in such a theory can be found in \citet{univalent2013homotopy}, and an approximation in Coq without univalence can be found in \citet{tabareau2017equivalences}.
 
-Transport methods typically work by explicitly applying the functions that make up the equivalence to convert
+Transport typically works by applying the functions that make up the equivalence to convert
 inputs and outputs back and forth between equivalent types.
 This approach would not be suitable for repair, since it does not make it possible to remove the old specification.
 \toolname implements transport in a way that allows for removing references to the old specification---using a proof term transformation.
