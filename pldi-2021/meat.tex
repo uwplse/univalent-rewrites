@@ -313,9 +313,9 @@ It then runs the proof term transformation, which transports proofs across the e
 
 The transformation does not fully describe the search procedure for transforming terms that \toolname implements.
 Before running the transformation, \toolname \textit{unifies} the proof term with particular \A (fixing parameters and indices),
-and with applications of the terms in the configuration for \A. 
-The transformation then transforms the applications of the terms in the configuration of \A
-to applications of the terms in the configuration for \B.
+and with applications of the configuration terms over \A. 
+The transformation then transforms the applications of the configuration terms over \A
+to applications of the configuration terms over \B.
 Reducing the result produces the output term defined over \B.
 
 \begin{figure*}
@@ -355,7 +355,7 @@ $\lambda$ (T : Type) (l m : (@\codediff{B}@)) .(@\vspace{-0.04cm}@)
 \end{lstlisting}
 \end{minipage}
 \vspace{-0.3cm}
-\caption{Swapping cases of the append function, with names fully qualified only when needed for clarity, counterclockwise: 1) the input, 2) the term unified with the configuration, 3) the term ported to the updated type, and 4) the term reduced to the final output.}
+\caption{Swapping cases of the append function, with names fully qualified only when needed for clarity, counterclockwise, the input term: 1) unmodified, 2) unified with the configuration, 3) ported to the updated type, and 4) reduced to the output.}
 \label{fig:appswap1}
 \end{figure*}
 
@@ -375,7 +375,7 @@ which typically show up contracted in real code.
 %This problem is exactly why \citet{tabareau2019marriage} speculated that converting definitional to propositional equalities
 %like we do with \lstinline{Iota} may, in general, be intractable.
 
-To handle this, \toolname relies on \textit{unification heuristics} that tell \toolname how to unify subterms with applications of configuration terms, and how to instantiate parameters and dependent indices in those configuration subterms.
+To handle this, \toolname relies on \textit{unification heuristics} to unify subterms with applications of configuration terms, and how to instantiate parameters and dependent indices in those configuration subterms.
 The transformation in turn assumes that all parameters and indices are fixed.
 
 \toolname implements custom unification heuristics for each search procedure (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) as functions in OCaml that interact with type checking and equality in Coq.
@@ -465,8 +465,8 @@ in a way that preserves equivalence (Section~\ref{sec:equivalence}) coherently w
 \paragraph{Equivalence}
 To preserve equivalence (Figure~\ref{fig:spec}, top), \lstinline{DepConstr} and \lstinline{DepElim} must together induce an equivalence between \A and \B.
 That is, \lstinline{section} and \lstinline{retraction} must hold for two functions \lstinline{f} and \lstinline{g},
-where \lstinline{f} uses \lstinline{DepElim} to eliminate \A and \lstinline{DepConstr} to construct \B, and \lstinline{g} uses 
-\lstinline{DepElim} to eliminate \B and \lstinline{DepConstr} to construct \A.
+where \lstinline{f} uses \lstinline{DepElim} to eliminate \A and \lstinline{DepConstr} to construct \B, and similarly for \lstinline{g}. 
+%uses  \lstinline{DepElim} to eliminate \B and \lstinline{DepConstr} to construct \A.
 \lstinline{DepConstr} over \B must be equal to \lstinline{DepConstr} over \A up to transport along the induced equivalence (\lstinline{dep_constr_ok}), 
 and similarly for \lstinline{DepElim} (\lstinline{dep_elim_ok}).
 %An example proves this on the change from \lstinline{list T} to \lstinline{packed_vect T} in the 
@@ -485,7 +485,7 @@ to avoid applying \lstinline{f} and \lstinline{g} explicitly---instead porting t
 
 \paragraph{Equality}
 To ensure coherence with equality (Figure~\ref{fig:spec}, bottom),
-\lstinline{Eta} and \lstinline{Iota} must correctly prove the $\eta$ and $\iota$ rules.
+\lstinline{Eta} and \lstinline{Iota} must prove the $\eta$ and $\iota$ rules.
 That is, \lstinline{Eta} must have the same definitional behavior as the dependent eliminator (\lstinline{elim_eta}),
 and must behave like the identity function (\lstinline{eta_ok}).
 Each \lstinline{Iota} must prove and rewrite along the simplification (formally, \textit{refolding}~\cite{boutillier:tel-01054723}) behavior that corresponds to a case of the dependent eliminator (\lstinline{iota_ok}).
@@ -497,12 +497,12 @@ With this correctness criteria for a configuration, we get the completeness resu
 of this using a generic construction is in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/arbitrary.v}{arbitrary.v}.
 We also obtain an algorithm for the soundness result that every configuration induces an equivalence.
 The algorithm to prove \lstinline{section} is as follows (\lstinline{retraction} is similar):
-replace \lstinline{a} with \lstinline{Eta (A)} by \lstinline{eta_OK (A)}.
+replace \lstinline{a} with \lstinline{Eta(A)} by \lstinline{eta_ok(A)}.
 Then, induct using \lstinline{DepElim} over \A.
 For each case $i$, the proof obligation is to show that \lstinline{g (f a)} is equal to \lstinline{a},
-where \lstinline{a} is \lstinline{DepConstr(A, i)} applied to the non-inductive arguments (by \lstinline{elim_eta (A)}).
+where \lstinline{a} is \lstinline{DepConstr(A, i)} applied to the non-inductive arguments (by \lstinline{elim_eta(A)}).
 Expand the right-hand side using \lstinline{Iota(A, i)}, then expand it again using \lstinline{Iota(B, i)}
-(destructing over each \lstinline{eta_OK} to apply the corresponding \lstinline{Iota}).
+(destructing over each \lstinline{eta_ok} to apply the corresponding \lstinline{Iota}).
 The result follows by definition of \lstinline{g} and \lstinline{f}, and by reflexivity.
 
 The algorithm above is what
