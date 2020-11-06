@@ -15,7 +15,7 @@ Proof.(@\vspace{-0.04cm}@)
   simpl. rewrite app_nil_r; auto.(@\vspace{-0.04cm}@)
   intro y. simpl.(@\vspace{-0.04cm}@)
   rewrite (IHl y). rewrite app_assoc; trivial.(@\vspace{-0.04cm}@)
-Qed.
+Qed.(@\vspace{-0.04cm}@)
 \end{lstlisting}
 This theorem says that appending two lists and reversing the result behaves the same way as appending
 the reverse of the second list onto the reverse of the first list.
@@ -28,7 +28,7 @@ To repair this proof with \toolname, we just run this command:
 \begin{figure}
 %\includegraphics[width=\columnwidth]{workflowa.pdf}
 \includegraphics[width=\columnwidth]{workflowa.pdf}
-\vspace{-0.4cm}
+\vspace{-0.5cm}
 \caption{The workflow for \toolname.}
 \label{fig:system}
 \end{figure}
@@ -41,7 +41,7 @@ To repair this proof with \toolname, we just run this command:
 \begin{minipage}{0.46\textwidth}
    \lstinputlisting[firstline=5, lastline=7]{listswap.tex}
 \end{minipage}
-\vspace{-0.3cm}
+\vspace{-0.4cm}
 \caption{The updated \lstinline{list} (right) is the old \lstinline{list} (left) with its two constructors swapped (\codediff{orange}).}
 \label{fig:listswap}
 \end{figure*}
@@ -49,11 +49,11 @@ To repair this proof with \toolname, we just run this command:
 \begin{figure*}
 \codeauto{%
 \begin{minipage}{0.48\textwidth}
-\lstinputlisting[firstline=1, lastline=14]{equivproof.tex}
+\lstinputlisting[firstline=1, lastline=13]{equivproof.tex}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
-\lstinputlisting[firstline=16, lastline=30]{equivproof.tex}
+\lstinputlisting[firstline=15, lastline=28]{equivproof.tex}
 \end{minipage}}
 \vspace{-0.3cm}
 \caption{Two functions between \lstinline{Old.list} and \lstinline{New.list} (top) that form an equivalence (bottom).}
@@ -61,7 +61,7 @@ To repair this proof with \toolname, we just run this command:
 \end{figure*}
 
 \begin{lstlisting}
-Repair Old.list New.list in rev_app_distr.
+Repair Old.list New.list in rev_app_distr.(@\vspace{-0.04cm}@)
 \end{lstlisting}
 assuming the old and new list types from Figure~\ref{fig:listswap} are in modules \lstinline{Old} and \lstinline{New}.
 This suggests an updated proof script that succeeds (in $\codeauto{light blue}$ to denote that it is produced automatically
@@ -77,11 +77,11 @@ Proof.(@\vspace{-0.04cm}@)
     + simpl. rewrite (app_nil_r (rev l) (a::[])).(@\vspace{-0.04cm}@)
       auto.(@\vspace{-0.04cm}@)
     + auto.(@\vspace{-0.04cm}@)
-Qed.
+Qed.(@\vspace{-0.04cm}@)
 \end{lstlisting}
 where the dependencies (\lstinline{rev}, \lstinline{++}, \lstinline{app_assoc}, and \lstinline{app_nil_r}) have
 also been updated automatically~\circled{1}. % Swap.v
-If we'd like, we can manually modify this to something that more closely matches the style of the original proof:
+If we would like, we can manually modify this to something that more closely matches the style of the original proof:
 
 \begin{lstlisting}
 Proof.(@\vspace{-0.04cm}@)
@@ -91,7 +91,7 @@ Proof.(@\vspace{-0.04cm}@)
   induction y as [a l IHl|].(@\vspace{-0.04cm}@)
   simpl. rewrite app_nil_r; auto.(@\vspace{-0.04cm}@)
   simpl. auto.(@\vspace{-0.04cm}@)
-Qed.
+Qed.(@\vspace{-0.04cm}@)
 \end{lstlisting}
 We can even repair the entire list module from the Coq standard library all at once by running the \lstinline{Repair module}
 command~\circled{1}. % Swap.v

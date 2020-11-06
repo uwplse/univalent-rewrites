@@ -1,11 +1,8 @@
 \section{Problem Definition}
 \label{sec:key1}
 
-\toolname is a tool for \textit{proof repair}.
-Proof repair is the problem of updating a broken proof in response to a change in a program or specification~\cite{PGL-045, pumpkinpatch}---in the
-case of \toolname, a change in a type definition that corresponds to an equivalence (Section~\ref{sec:scope}).
 Given an equivalence between types \A and \B,
-\toolname repairs functions and proofs defined over \A to instead refer to \B.
+\toolname repairs functions and proofs defined over \A to instead refer to \B (Section~\ref{sec:scope}).
 It does this in a way that allows for removing references to \A, which is essential for proof repair,
 since \A may be an old version of an updated type (Section~\ref{sec:repair}).
 
@@ -30,12 +27,11 @@ since \A may be an old version of an updated type (Section~\ref{sec:repair}).
 \subsection{Scope: Type Equivalences}
 \label{sec:scope}
 
-\toolname supports proof repair in response to changes in type definitions
-that correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
+\toolname repairs proofs in response to changes in types that correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
 or pairs of functions that map between two types and are mutual inverses.
 Figure~\ref{fig:equivalence} shows a type equivalence between the two versions of \lstinline{list}
-from Section~\ref{sec:overview}, Figure~\ref{fig:listswap} that \toolname discovered and proved automatically~\circled{1}.
-When such a type equivalence between two types \A and \B exists, we say those types are \textit{equivalent} (denoted \A $\simeq$ \B). % for example:
+from Figure~\ref{fig:listswap} that \toolname discovered and proved automatically~\circled{1}.
+When a type equivalence between types \A and \B exists, those types are \textit{equivalent} (denoted \A $\simeq$ \B). % for example:
 %
 %\begin{lstlisting}
 %Old.list $\simeq$ New.list
@@ -55,7 +51,7 @@ See Table~\ref{fig:changes} in Section~\ref{sec:search} for more examples.
 \begin{minipage}{0.48\columnwidth}
 \lstinputlisting[firstline=5, lastline=7]{equiv2.tex}
 \end{minipage}
-\vspace{-0.3cm}
+\vspace{-0.4cm}
 \caption{The type \lstinline{J} (right) is \lstinline{I} (left) with \lstinline{A} and \lstinline{B} factored out to \lstinline{bool} (Coq standard library).}
 \label{fig:equivalence2}
 \end{figure}
@@ -108,7 +104,7 @@ and repairing proofs of De Morgan's laws~\circled{2}. % constr_refactor.v
 \begin{minipage}{0.58\textwidth}
    \lstinputlisting[firstline=5, lastline=7]{listtovect.tex}
 \end{minipage}
-\vspace{-0.3cm}
+\vspace{-0.4cm}
 \caption{A vector (right) is a list (left) indexed by its length.}
 \label{fig:listtovect}
 \end{figure*}
@@ -116,19 +112,22 @@ and repairing proofs of De Morgan's laws~\circled{2}. % constr_refactor.v
 At first glance, the word \textit{equivalence} may seem to imply that \toolname can support only changes in
 which the proof engineer does not add or remove information.
 But equivalences are more powerful than they may seem.
-For example, in cubical type theory, with the help of quotient types, it is possible to form an equivalence
-from a relation, even when the relation is not an equivalence~\cite{angiuli2020internalizing}.
-While Coq lacks quotient types,
-it is possible to achieve a similar outcome and use \toolname for changes that add or remove information
-when those changes can be expressed as equivalences between $\Sigma$ types or sum types.
 %The idea is, when possible, to separate out the new information
 %into a projection of a $\Sigma$ type or a constructor of a sum type.
 %roofs about this new information become the proof obligation for the proof engineer,
 %and \toolname automates the rest.
-
 Consider, for example, changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
 \toolname can repair functions and proofs about lists to functions and proofs about vectors of particular lengths~\circled{3}, % Example.v
 since $\Sigma$\lstinline{(l:list T).length l = n }$\simeq$\lstinline{ vector T n}.
+From the proof engineer's perspective, after updating specifications from \lstinline{list} to \lstinline{vector},
+to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists.
+\toolname makes it easy to separate out that proof obligation, then automates the rest.
+
+More generally, in cubical type theory, with the help of quotient types, it is possible to form an equivalence
+from a relation, even when the relation is not an equivalence~\cite{angiuli2020internalizing}.
+While Coq lacks quotient types,
+it is possible to achieve a similar outcome and use \toolname for changes that add or remove information
+when those changes can be expressed as equivalences between $\Sigma$ types or sum types.
 %
 %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}).%%
 %
@@ -161,39 +160,37 @@ since $\Sigma$\lstinline{(l:list T).length l = n }$\simeq$\lstinline{ vector T n
 %\textsc{Devoid} leaves this step to the proof engineer.
 %\toolname, in contrast, can handle this step as well (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}).
 %The key is to repair functions and proofs across this equivalence:
-From the proof engineer's perspective, after updating specifications from \lstinline{list} to \lstinline{vector},
-to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists.
-\toolname makes it easy to separate out that proof obligation, then automates the rest.
+
 %Section~\ref{sec:search} shows this and other case studies using \toolname to repair real proofs
 %informed by the needs of proof engineers.
 
 \subsection{Goal: Transport with a Twist}
 \label{sec:repair}
 
-The goal of a tool for proof repair across type equivalences is to implement a kind of proof reuse known as \textit{transport},
+The goal of \toolname is to implement a kind of proof reuse known as \textit{transport},
 but in a way that is suitable for repair.
-A transport method takes an input term $t$ and produces an output term $t'$ that is \textit{equal up to transport}
+Transport takes an input term $t$ and produces an output term $t'$ that is \textit{equal up to transport}
 along an equivalence $A \simeq B$ (denoted $t \equiv_{A \simeq B} t'$).
 Informally, equality up to transport means that if $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
 if $t$ is a proof, then $t'$ proves the same theorem the same way modulo the equivalence.
-For example, in Section~\ref{sec:overview}, the original append function \lstinline{++} over \lstinline{Old.list}
+
+In Section~\ref{sec:overview}, the original append function \lstinline{++} over \lstinline{Old.list}
 and the updated append function \lstinline{++} over \lstinline{New.list} that \toolname produces are
-equal up to transport along the equivalence from Figure~\ref{fig:equivalence}, since:
+equal up to transport along the equivalence from Figure~\ref{fig:equivalence}, since (by \lstinline{app_ok}~\circled{1}):
 
 \begin{lstlisting}
-$\forall$ T (l1 l2 : Old.list T),
-  swap T (l1 ++ l2) = (swap T l1) ++ (swap T l2).
+$\forall$ T (l1 l2 : Old.list T),(@\vspace{-0.04cm}@)
+  swap T (l1 ++ l2) = (swap T l1) ++ (swap T l2).(@\vspace{-0.04cm}@)
 \end{lstlisting}
-by \lstinline{app_ok}~\circled{1}.
 The original \lstinline{rev_app_distr} is equal to the transformed proof along the same equivalence,
 since it proves the same thing the same way as the transformed proof up to the same equivalence, and up to the changes in \lstinline{++}
 and \lstinline{rev}.
 
-Note that for any equivalent \A and \B, there can be many equivalences $A \simeq B$.
+For any equivalent \A and \B, there can be many equivalences $A \simeq B$.
 Equality up to transport is along a \textit{particular} equivalence, though we erase this in the notation.
-Also note that, as Coq lacks univalence, and so equality up to transport cannot be stated in Coq in general,
-this notation should be interpreted in the context of a univalent metatheory.
-The formal details of equality up to transport in such a theory can be found in \citet{univalent2013homotopy}, and an approximation in Coq without univalence can be found in \citet{tabareau2017equivalences}.
+The notation should be interpreted in the context of a metatheory with \textit{univalence}---a property that Coq lacks,
+and that makes it possible to define equality up to transport---or otherwise, it should be approximated inside of Coq.
+The formal details of equality up to transport in a univalent theory can be found in \citet{univalent2013homotopy}, and an approximation in Coq can be found in \citet{tabareau2017equivalences}.
 
 Transport typically works by applying the functions that make up the equivalence to convert
 inputs and outputs back and forth between equivalent types.
