@@ -152,6 +152,19 @@ That way, the rest of the \toolname transformation does not need to add, drop, o
 Furthermore, both examples use automatic configuration, which means that the \textbf{Configure} component of \toolname is able to 
 discover \lstinline{DepConstr} and \lstinline{DepElim} from just the types \A and \B, taking care of even the difficult work.
 
+\begin{figure}
+\begin{minipage}{0.44\columnwidth}
+   \lstinputlisting[firstline=1, lastline=8]{nattobin.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.54\columnwidth}
+   \lstinputlisting[firstline=10, lastline=17]{nattobin.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{Unary (left) and binary (right) natural numbers.}
+\label{fig:nattobin}
+\end{figure}
+
 \subsubsection{Producing Well-Typed Terms}
 \label{sec:equality}
 
@@ -168,19 +181,6 @@ which may be propositional rather than definitional, and so must be explicit in 
 $\eta$-expansion describes how to expand a term to apply a constructor to an eliminator in a way that preserves propositional equality,
 and is important for defining dependent eliminators~\cite{nlab:eta-conversion}.
 $\iota$-reduction ($\beta$-reduction for inductive types) describes how to reduce an elimination of a constructor~\cite{nlab:beta-reduction}.
-
-\begin{figure}
-\begin{minipage}{0.44\columnwidth}
-   \lstinputlisting[firstline=1, lastline=8]{nattobin.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.54\columnwidth}
-   \lstinputlisting[firstline=10, lastline=17]{nattobin.tex}
-\end{minipage}
-\vspace{-0.3cm}
-\caption{Unary (left) and binary (right) natural numbers.}
-\label{fig:nattobin}
-\end{figure}
 
 The configuration for the change from \lstinline{list} to \lstinline{packed_vect} has propositional \lstinline{Eta}.
 To describe \lstinline{Eta}, it is enough to use the standard definition of $\eta$-expansion for $\Sigma$:
@@ -213,7 +213,7 @@ $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
   (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
 goes through by reflexivity.
-The corresponding $\iota$ rule for \lstinline{N} is propositional, since:
+But $\iota$ for \lstinline{N} is propositional, since:
 
 \begin{lstlisting}
 $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
@@ -221,17 +221,17 @@ $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,
   (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).
 \end{lstlisting}
 no longer holds by reflexivity.
-The \lstinline{Iota} rules are exactly rewrites along proofs of the theorems above for the successor case~\circled{5}.
+The \lstinline{Iota} rules are rewrites along proofs of the theorems above for the successor case~\circled{5}.
 The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N}.
 That way, \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinline{N}.
 
-Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ from each other.
-The transformation requires that \lstinline{DepElim} over \A and over \B always have the same inductive structure
-as each other, so if \A and \B themselves have the same 
+Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ.
+The transformation requires that \lstinline{DepElim} over \A and over \B have the same structure
+as each other, so if \A and \B \textit{themselves} have the same 
 inductive structure (if they are \textit{ornaments}~\cite{mcbride}),
-then if $\iota$-reduction is definitional over \lstinline{DepElim} on \A, it will be possible to choose
-\lstinline{DepElim} with definitional $\iota$ on \B.
-Otherwise, if \A and \B have different inductive structures, as with \lstinline{nat} and \lstinline{N},
+then if $\iota$ is definitional for \A, it will be possible to choose
+\lstinline{DepElim} with definitional $\iota$ for \B.
+Otherwise, if \A and \B (like \lstinline{nat} and \lstinline{N}) have different inductive structures,
 then definitional $\iota$ over one would become propositional $\iota$ over the other.
 %For the case of \lstinline{nat} and \lstinline{N},
 %the need for propositional $\iota$ was noted as far back as \citet{magaud2000changing}.
@@ -294,7 +294,7 @@ then definitional $\iota$ over one would become propositional $\iota$ over the o
   {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t : T').b'}
 \end{mathpar}
 \vspace{-0.3cm}
-\caption{Transformation for transporting proof terms across an equivalence $A \simeq B$ described by configuration \lstinline{((DepConstr, DepElim), (Eta, Iota))}.}
+\caption{Transformation for transporting terms across $A \simeq B$ with configuration \lstinline{((DepConstr, DepElim), (Eta, Iota))}.}
 \label{fig:final}
 \end{figure*}
 
@@ -390,6 +390,27 @@ in the form of explicit annotations.
 \subsubsection{Specifying Correct Transformation}
 \label{sec:transfspecif}
 
+The goal of the proof term transformation is to preserve equality up to transport along the equivalence $A \simeq B$,
+while no longer referring to the old specification.
+That is, we need that $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
+%This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
+%with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
+The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
+to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
+The rest is straightforward.
+
+Note that this goal for correctness is metatheoretical, as
+stating and proving equality up to transport is in general not possible in Coq
+without additional axioms, though it is in some particular cases realizable~\cite{tabareau2017equivalences}.
+\toolname does not yet generate these proofs as we were focused on building a usable tool with axiomatic freedom and few dependencies.
+Coq ensures that all terms that plugins produce are well-typed; for now, %as with \textsc{Devoid},
+the proof engineer must vet the transformed specifications to ensure that they specify the expected behavior.
+
+\subsection{Specifying Correct Configurations}
+\label{sec:art}
+
+% TODO proof in one direction, algorithm in the other
+
 \begin{figure*}
 \begin{lstlisting}
 (* --- Equivalence --- *)(@\vspace{-0.04cm}@)
@@ -416,27 +437,6 @@ preserves equivalence (top) coherently with equality (bottom). Throughout, $\vec
 eliminator cases, constructor arguments, and inductive hypotheses.} %, respectively.}
 \label{fig:spec}
 \end{figure*} % TODO sigs for Iota here are not quite correct---Q is not bound. Also need to tweak to deal w/ eta, and to use eta_OK, and to relate both eta
-
-The goal of the proof term transformation is to preserve equality up to transport along the equivalence $A \simeq B$,
-while no longer referring to the old specification.
-That is, we need that $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
-%This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
-%with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
-The key steps in this transformation that make this possible are porting functions and proofs along the configuration corresponding
-to a particular equivalence (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
-The rest is straightforward.
-
-Note that this goal for correctness is metatheoretical, as
-stating and proving equality up to transport is in general not possible in Coq
-without additional axioms, though it is in some particular cases realizable~\cite{tabareau2017equivalences}.
-\toolname does not yet generate these proofs as we were focused on building a usable tool with axiomatic freedom and few dependencies.
-Coq ensures that all terms that plugins produce are well-typed; for now, %as with \textsc{Devoid},
-the proof engineer must vet the transformed specifications to ensure that they specify the expected behavior.
-
-\subsection{Specifying Correct Configurations}
-\label{sec:art}
-
-% TODO proof in one direction, algorithm in the other
 
 Both when designing a search procedure for an automatic configuration and when
 configuring \toolname manually, choosing a configuration is important,

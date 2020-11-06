@@ -128,12 +128,8 @@ Proofs about this new information become the proof obligation for the proof engi
 and \toolname automates the rest.
 
 Consider, for example, changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
-\toolname can repair functions and proofs about lists to functions and proofs about vectors of a particular length~\circled{3}, % Example.v
-since:
-
-\begin{lstlisting}
-$\Sigma$(l : list T).length l = n $\simeq$ vector T n.
-\end{lstlisting}
+\toolname can repair functions and proofs about lists to functions and proofs about vectors of particular lengths~\circled{3}, % Example.v
+since $\Sigma$\lstinline{(l:list T).length l = n }$\simeq$\lstinline{ vector T n}.
 %
 %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}).%%
 %
