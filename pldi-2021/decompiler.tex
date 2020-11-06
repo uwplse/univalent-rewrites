@@ -29,18 +29,6 @@ Section~\ref{sec:second} explains how we scale that up to the implementation. %,
 \subsubsection*{A Mini Decompiler}
 \label{sec:first}
 
-\begin{figure}
-\small
-\begin{grammar}
-<v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
-
-<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | left | right | split \{ <p>, <p> \} |induction <t> <t> \{ <p>, \ldots, <p> \} | <p> . <p>
-\end{grammar}
-\vspace{-0.3cm}
-\caption{Qtac syntax.}
-\label{fig:ltacsyntax1}
-\end{figure}
-
 The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call Qtac.
 The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
 Qtac includes hypothesis introduction (\lstinline{intro}),
@@ -52,6 +40,18 @@ composition (\lstinline{.}).
 Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always take a motive explicitly, rather than relying on unification.
 Similarly, \lstinline{apply} applies only the function without inferring any arguments, and leaves those arguments to proof obligations.
 The implementation reasons about Ltac and so does not make these assumptions.
+
+\begin{figure}
+\small
+\begin{grammar}
+<v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
+
+<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | left | right | split \{ <p>, <p> \} |induction <t> <t> \{ <p>, \ldots, <p> \} | <p> . <p>
+\end{grammar}
+\vspace{-0.3cm}
+\caption{Qtac syntax.}
+\label{fig:ltacsyntax1}
+\end{figure}
 
 \begin{figure}
 \begin{mathpar}
