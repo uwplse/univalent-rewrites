@@ -1,8 +1,8 @@
 \section{Related Work}
 \label{sec:related}
 
-We discuss related work in proof repair, proof refactoring, proof reuse, and proof design.
-More can be found in a recent survey of proof engineering~\cite{PGL-045}.
+%We discuss related work in proof repair, proof refactoring, proof reuse, and proof design.
+%More can be found in a recent survey of proof engineering~\cite{PGL-045}.
 
 \paragraph{Proof Repair}
 
@@ -64,10 +64,10 @@ in particular due to the problem that \lstinline{Iota} addresses.
 CoqEAL may be most useful to chain with \toolname to get faster functions,
 as discussed in Section~\ref{sec:search}.
 
-The \toolname proof term transformation implements transport across equivalences.
+The \toolname transformation implements transport.
 Transport is realizable as a function in univalent type theories~\cite{univalent2013homotopy}.
 Univalent parametricity~\cite{tabareau2017equivalences} approximates univalence
-in a non-univalent type theory, only sometimes relying on additional axioms beyond the core type theory of Coq.
+in a non-univalent type theory, only sometimes relying on functional extensionality.
 While powerful, neither of these approaches to transport remove references to the old type, making them poorly suited for repair.
 
 Recent work~\cite{tabareau2019marriage} extends univalent parametricity with 

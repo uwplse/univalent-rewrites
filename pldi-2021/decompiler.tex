@@ -22,12 +22,24 @@ manually massage it into something that works and is maintainable.
 The output language for the implementation of \textbf{Decompile} is Ltac, the proof script language for Coq.
 Ltac can be confusing to reason about, since Ltac tactics can refer to Gallina terms, and the semantics of Ltac depends both on the
 semantics of Gallina and on the implementation of proof search procedures written in OCaml.
-To give a sense of how the decompiler works without the clutter of these proof search details, we start by defining a mini
+To give a sense of how the decompiler works without the clutter of these details, we start by defining a mini
 decompiler from CIC$_{\omega}$ to a simple subset of Ltac containing just a few predefined tactics.
-Section~\ref{sec:second} explains how we scale that up to the actual implementation. %, and where we plan to go from there.
+Section~\ref{sec:second} explains how we scale that up to the implementation. %, and where we plan to go from there.
 
-\subsection*{A Mini Decompiler}
+\subsubsection*{A Mini Decompiler}
 \label{sec:first}
+
+\begin{figure}
+\small
+\begin{grammar}
+<v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
+
+<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | left | right | split \{ <p>, <p> \} |induction <t> <t> \{ <p>, \ldots, <p> \} | <p> . <p>
+\end{grammar}
+\vspace{-0.3cm}
+\caption{Qtac syntax.}
+\label{fig:ltacsyntax1}
+\end{figure}
 
 The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call Qtac.
 The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
@@ -37,24 +49,11 @@ application of a term to prove the goal (\lstinline{apply}), induction (\lstinli
 case splitting of conjunctions (\lstinline{split}),
 constructors of disjunctions (\lstinline{left} and \lstinline{right}), and
 composition (\lstinline{.}).
-Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always take a motive explicitly, rather than relying on a unification engine.
+Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always take a motive explicitly, rather than relying on unification.
 Similarly, \lstinline{apply} applies only the function without inferring any arguments, and leaves those arguments to proof obligations.
 The implementation reasons about Ltac and so does not make these assumptions.
 
 \begin{figure}
-\small
-\begin{grammar}
-<v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
-
-<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | \\
-induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right | <p> . <p>
-\end{grammar}
-\vspace{-0.3cm}
-\caption{Qtac syntax.}
-\label{fig:ltacsyntax1}
-\end{figure}
-
-\begin{figure*}
 \begin{mathpar}
 \mprset{flushleft}
 \small
@@ -70,15 +69,15 @@ induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right |
 
 \inferrule[Split]
   { \Gamma \vdash l \Rightarrow p \\ \Gamma \vdash r \Rightarrow q }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l r \Rightarrow \mathrm{split} \{ p, q \}.\ }\\
+  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l\ r \Rightarrow \mathrm{split} \{ p, q \}.\ }\\
 
 \inferrule[Left]
   { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }
+  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }\hspace{-0.3cm}
 
 \inferrule[Right]
   { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }
+  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }\\
 
 \inferrule[Rewrite]
   { \Gamma \vdash H_1 : x = y \\ \Gamma \vdash H_2 \Rightarrow p }
@@ -86,7 +85,7 @@ induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right |
 
 \inferrule[Induction]
   { \Gamma \vdash \vec{f} \Rightarrow \vec{p} }
-  { \Gamma \vdash \mathrm{Elim}(t,\ P)\ \vec{f} \Rightarrow \mathrm{induction}\ P\ t\ \vec{p} }
+  { \Gamma \vdash \mathrm{Elim}(t,\ P)\ \vec{f} \Rightarrow \mathrm{induction}\ P\ t\ \vec{p} }\\
 
 \inferrule[Apply]
   { \Gamma \vdash t \Rightarrow p }
@@ -96,10 +95,10 @@ induction <t> <t> \{ <p>, \ldots, <p> \} | split \{ <p>, <p> \} | left | right |
   { \\ }
   { \Gamma \vdash t \Rightarrow \mathrm{apply}\ t }
 \end{mathpar}
-\vspace{-0.3cm}
+\vspace{-0.4cm}
 \caption{Qtac decompiler semantics.}
 \label{fig:someantics}
-\end{figure*}
+\end{figure}
 
 The semantics for the mini decompiler $\Gamma \vdash t \Rightarrow p$ are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
 As with the real decompiler, the mini decompiler defaults to the proof script
@@ -116,7 +115,7 @@ In all cases, the decompiler recurses on the remaining body, breaking into cases
 case holds, at which point we are done.
 
 \begin{figure*}
-\begin{minipage}{0.50\textwidth}
+\begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
 fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
   (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
@@ -128,13 +127,14 @@ fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
 \hfill
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
+(@\vspace{-0.14cm}@)
 - (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
   (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
   + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
   + (@\codesime{auto.}@)
 \end{lstlisting}
 \end{minipage}
-\vspace{-0.3cm}
+\vspace{-0.4cm}
 \caption{Proof term (left) and corresponding decompiled proof script (right) for the base case of 
 \lstinline{rev_app_distr} from Section~\ref{sec:overview}, with corresponding terms and tactics 
 highlighted with the same color, and nothing else highlighted for clarity.}
@@ -143,8 +143,8 @@ highlighted with the same color, and nothing else highlighted for clarity.}
 
 While the mini decompiler is very simple, only a few small changes are needed
 to move this from CIC$_{\omega}$ to Coq.
-Furthermore, the result can already handle some of the example proofs \toolname has produced.
-The generated proof term of \lstinline{rev_app_distr} with swapped list constructors from Section~\ref{sec:overview},
+The result can already handle some of the example proofs \toolname has produced.
+The generated proof term of \lstinline{rev_app_distr} from Section~\ref{sec:overview},
 for example, consists only of induction, rewriting, simplification, and reflexivity (solved by \lstinline{auto}).
 Figure~\ref{fig:rainbow} shows the proof term for the base case of \lstinline{rev_app_distr} 
 alongside the decompiled tactic script that \toolname suggests.
@@ -155,9 +155,9 @@ for example handling of rewrites in both directions (\lstinline{eq_ind_r} as opp
 simplifying to handle motive inference for rewrites,
 and turning applications of \lstinline{eq_refl} into \lstinline{reflexivity} or \lstinline{auto}.
 
-In fact, since \toolname uses an existing command to translate pattern matching and fixpoints to eliminators,
-\textit{all} of the proof terms that \toolname produces will use induction and rewriting instead.
-Because we have control over output terms, even a mini decompiler gets us pretty far.
+%In fact, since \toolname uses an existing command to translate pattern matching and fixpoints to eliminators,
+%\textit{all} of the proof terms that \toolname produces will use induction and rewriting instead.
+%Because we have control over output terms, even a mini decompiler gets us pretty far.
 
 % TODO add any new things RanDair implements, like exists
 

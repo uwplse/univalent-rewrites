@@ -146,19 +146,6 @@ and the ability to tell \toolname not to $\delta$-reduce certain terms.
 
 \subsubsection*{Permute Constructors: Modifying a Language}
 
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=1, lastline=9]{replica.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=11, lastline=19]{replica.tex}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
-\label{fig:replica}
-\end{figure*}
-
 The constructor swapping example from Section~\ref{sec:overview} was inspired by two benchmarks 
 from the \textsc{Replica} user study of proof engineers~\cite{replica}.
 A change corresponding to part of one of the benchmarks is shown in Figure~\ref{fig:replica}.
@@ -191,13 +178,20 @@ and \toolname worked well for those. % TODO what happens with the tactic decompi
 
 \subsubsection*{Add new Constructors: Extending a Language}
 
-For the second part of the change in Figure~\ref{fig:replica},  we used \toolname to repair functions 
+\begin{figure}
+\lstinputlisting[firstline=1, lastline=18]{replica.tex}
+\vspace{-0.4cm}
+\caption{A language (top) and the same language with two swapped constructors and an added constructor (bottom).}
+\label{fig:replica}
+\end{figure}
+
+For the second part of the change in Figure~\ref{fig:replica}, we used \toolname to repair functions 
 after adding the new constructor, separating out the proof obligations for the new constructor from the old terms~\circled{19}.
 %The resulting functions were guaranteed to preserve the behavior of the old terms. % TODO do the proofs too
 This change combined a manual configuration with an automatic configuration.
-At a high level, we defined an inductive type \lstinline{Diff} and (using partial automation) a configuration to port the terms across the equivalence \lstinline{Old.Term + Diff} $\simeq$ \lstinline{New.Term}.
-This resulted in some case explosion, but was very formulaic, and pointed to a clear path for automation of this class of changes in the future.
-The repaired functions guaranteed preservation of the behavior over \lstinline{Old.Term} before the change.
+We defined an inductive type \lstinline{Diff} and (using partial automation) a configuration to port the terms across the equivalence \lstinline{Old.Term + Diff} $\simeq$ \lstinline{New.Term}.
+This resulted in some case explosion, but was formulaic, and pointed to a clear path for automation of this class of changes.
+The repaired functions guaranteed preservation of the behavior of the original functions. %over \lstinline{Old.Term} before the change.
 
 Extending constructors was less simple than swapping constructors.
 Most notably, the repaired terms were (unlike in the swap case) inefficient compared to human-written terms.
@@ -208,11 +202,10 @@ to get between proofs of the inefficient and efficient terms.
 
 \subsubsection*{Factor out Constructors: External Example}
 
-The change from Figure~\ref{fig:equivalence2} factoring out a constructor came at the request of a non-author.
-We used \toolname to support this change~\circled{2}. % in \lstinline{constr_refactor.v}.
-This changed used a manual configuration that essentially described which constructor to map to \lstinline{true}
-and which constructor to map to \lstinline{false}.
-The configuration was very simple for us to write, and the repaired tactic proofs were immediately useful.
+The change from Figure~\ref{fig:equivalence2} came at the request of a non-author.
+We supported this using a manual configuration that described which constructor to map to \lstinline{true}
+and which constructor to map to \lstinline{false}~\circled{2}.
+The configuration was very simple for us to write, and the repaired tactics were immediately useful.
 
 \subsubsection*{Permute Hypotheses: External Example}
 
@@ -230,14 +223,14 @@ manual configuration.
 In \circled{5}, we used \toolname to support a classic example of changing inductive structure:
 updating unary to binary natural numbers~\cite{magaud2000changing}.
 % TODO fin and vect? mention somewhere?
-In Coq, a binary number \lstinline{N} (see Section~\ref{sec:key2}, Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
+In Coq, a binary number \lstinline{N} (Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
 is either 1 (\lstinline{xH}), or the result of shifting left and adding 1 (\lstinline{xI})
 or nothing (\lstinline{xO}).
-This allows for a fast addition function, found in the Coq standard library.
+This allows for a fast addition function. %, found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we used \toolname to derive a slow binary
-addition function that does not refer to \lstinline{nat}.
-From that, we ported proofs over unary addition to binary addition,
-removing all references to \lstinline{nat}, and show that they hold over fast binary addition too.
+addition function that does not refer to \lstinline{nat},
+then ported proofs from unary to slow binary addition,
+and showed that they hold over fast binary addition too.
 
 %The implementation of this is in \lstinline{nonorn.v}.
 The configuration for \lstinline{N} used definitions from the Coq standard library
@@ -266,19 +259,19 @@ have different inductive structures.
 By writing a manual configuration with this \lstinline{Iota}, it was possible for us to implement this transformation 
 that had been its own tool.
 
-While porting addition from \lstinline{nat} to \lstinline{N} was fully automatic after configuring \toolname,
+While porting addition from \lstinline{nat} to \lstinline{N} was automatic after configuring \toolname,
 porting proofs about addition took more work.
 In particular, due to the lack of unification heuristics for manual configuration,
 we had to annotate the proof term to tell \toolname that implicit casts in the inductive cases of proofs were applications of \lstinline{Iota}
 over \lstinline{nat}.
 These annotations were formulaic, but tricky to write.
-Unification heuristics would go a long way toward improving the workflow for this use case.
+Unification heuristics would go a long way toward improving the workflow. % for this use case.
 
 After annotating, we obtained automatically repaired proofs about slow binary addition,
 which we found simple to port to fast binary addition.
 We hope to automate this last step in the future using CoqEAL. %~\cite{cohen:hal-01113453}.
-Repaired tactics were partially useful, but failed to understand custom eliminators like \lstinline{N.peano_rect}, and with generating useful
-tactics for applications of iota; both of these are clear paths to more useful proof scripts.
+Repaired tactics were partially useful, but failed to understand custom eliminators like \lstinline{N.peano_rect}, and to generate useful
+tactics for applications of \lstinline{Iota}; both of these are clear paths to more useful tactics.
 
 %\end{enumerate}
 %\item \toolname was flexible. Each search procedure for automatic configuration
