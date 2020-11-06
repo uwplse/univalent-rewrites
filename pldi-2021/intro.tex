@@ -30,12 +30,12 @@ or when change occurs outside of proof engineers' control~\cite{PGL-045}.
 Still, maintaining verified programs can be challenging: it means keeping not just the programs, but also specifications and proofs about those programs up-to-date.
 This remains so difficult that sometimes, even experts give up in the face of change~\cite{replica}.
 
-We make progress on two open challenges in \textit{proof repair} (Section~\ref{sec:key1}), the problem of automatically updating proofs in response
-to changes in programs or specifications:
+The problem of automatically updating proofs in response to changes in programs or specifications is known as \textit{proof repair}.
+While there are many ways proofs need to be repaired, one need is to respond to a changed type definition (Section~\ref{sec:key1}).
+We make progress on two open challenges in proof repair in response to changes in type definitions:
 
 \begin{enumerate}
-\item While there are many ways proofs need to be repaired, one need is to respond to a changed type definition.
-Existing work supports very limited classes of these changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
+\item Existing work supports very limited classes of these changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
 of changes~\cite{robert2018, wibergh2019}, and these are not informed by the needs of proof engineers~\cite{replica}.
 \item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018},
 and may impose additional proof obligations like proving relations corresponding to changes~\cite{Ringer2019}.
@@ -55,17 +55,18 @@ and may impose additional proof obligations like proving relations corresponding
 Our approach combines a configurable proof term transformation (Section~\ref{sec:key2}),
 search procedures to configure that proof term transformation, and a prototype decompiler from proof terms
 back to suggested tactics (Section~\ref{sec:decompiler}).
-This is implemented (Section~\ref{sec:impl}) in \toolname\footnote{Name changed for double-blind.} (Configurable Approach to Repairing \& Refactoring Outdated Tactics), a proof repair plugin for Coq 8.8 that is available on Github.\footnote{For double-blind, rather than link to code in the paper, we annotate each claim to which the code is relevant with a circled number like \circled{1}. The auxiliary material contains a guide that maps to locations in the code.}
+This is implemented (Section~\ref{sec:impl}) in \toolname\footnote{Name changed for double-blind.} (Configurable Approach to Repairing \& Refactoring Outdated Tactics), a proof repair plugin for Coq 8.8 that is available on Github.\footnote{For double-blind, we annotate each claim to which the code is relevant with a circled number like \circled{1}. The auxiliary material maps these to code.}
 The result is a flexible proof repair tool that: 
 
 \begin{enumerate}
 \item supports changes in types informed by proof engineers and not supported by other tools, and
-\item suggests tactic scripts and proves relations corresponding to changes as part of better workflow integration.
+\item suggests tactic scripts and proves relations corresponding to certain changes for better workflow integration.
 \end{enumerate}
 
 \subsection*{Addressing Challenge 1: Flexible Type Support}
 
-The case studies in Section~\ref{sec:search}---summarized in Table~\ref{fig:changes}---show that \toolname can support a flexible class of changes informed by the needs of proof engineers within a unified framework.
+The case studies in Section~\ref{sec:search}---summarized in Table~\ref{fig:changes}---show that \toolname is flexible enough to support
+a wide range of proof engineering use cases. % can support a flexible class of changes informed by the needs of proof engineers within a unified framework.
 In general, \toolname can support any change described by a type equivalence, though it takes the equivalence in a
 deconstructed form that we call a \textit{configuration}.
 The configuration expresses to the proof term transformation how to translate functions and proofs defined over the old version of a type
