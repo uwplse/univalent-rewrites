@@ -118,14 +118,13 @@ which the proof engineer does not add or remove information.
 But equivalences are more powerful than they may seem.
 For example, in cubical type theory, with the help of quotient types, it is possible to form an equivalence
 from a relation, even when the relation is not an equivalence~\cite{angiuli2020internalizing}.
-
 While Coq lacks quotient types,
 it is possible to achieve a similar outcome and use \toolname for changes that add or remove information
 when those changes can be expressed as equivalences between $\Sigma$ types or sum types.
-The idea is, when possible, to separate out the new information
-into a projection of a $\Sigma$ type or a constructor of a sum type.
-Proofs about this new information become the proof obligation for the proof engineer,
-and \toolname automates the rest.
+%The idea is, when possible, to separate out the new information
+%into a projection of a $\Sigma$ type or a constructor of a sum type.
+%roofs about this new information become the proof obligation for the proof engineer,
+%and \toolname automates the rest.
 
 Consider, for example, changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
 \toolname can repair functions and proofs about lists to functions and proofs about vectors of particular lengths~\circled{3}, % Example.v

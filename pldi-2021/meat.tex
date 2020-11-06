@@ -438,16 +438,15 @@ eliminator cases, constructor arguments, and inductive hypotheses.} %, respectiv
 \label{fig:spec}
 \end{figure*} % TODO sigs for Iota here are not quite correct---Q is not bound. Also need to tweak to deal w/ eta, and to use eta_OK, and to relate both eta
 
-Both when designing a search procedure for an automatic configuration and when
-configuring \toolname manually, choosing a configuration is important,
-and it is not always straightforward. This section specifies what it means for these
-to be correct and gives some intuition as to why.
+%Both when designing a search procedure for an automatic configuration and when
+%configuring \toolname manually, choosing a configuration is important,
+%and it is not always straightforward.
+%This section specifies what it means for a configuration to be correct. % and gives some intuition as to why.
 %Section~\ref{sec:search} shows some useful example configurations.
-
-The configuration instantiates the proof term transformation to a particular equivalence between \A and \B.
+%The configuration instantiates the proof term transformation to a particular equivalence between \A and \B.
 Choosing an equivalence necessarily depends in some way on the proof engineer's intentions:
 there can be infinitely many equivalences that correspond to a 
-given change in specification, only some of which are useful (for example~\circled{7}, any \A is equivalent to \lstinline{unit} refined by \A). % refine_unit.v
+change, only some of which are useful (for example~\circled{7}, any \A is equivalent to \lstinline{unit} refined by \A). % refine_unit.v
 Beyond that, even once we have chosen an equivalence, we could define many possible configurations that correspond
 to the equivalence, some of which will produce functions and proofs that are more useful or efficient than others
 (consider \lstinline{DepElim} converting through several intermediate types).
