@@ -44,8 +44,8 @@
      & \toolname & None \\
     \hline
   \end{tabular}
-  \caption{Some changes using \toolname, from left to right: class of changes (Class), whether the class of changes uses
-automatic or manual configuration (Config.), example changes in that class (Examples), and Coq tools we are aware of that can support repair along (Repair Tools) or automatic proof of (Search Tools) the equivalence correponding to each example change. The tools listed for comparison are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and a classic tool for changing data structures~\cite{magaud2000changing}. \toolname is the only one of these tools with support for tactic suggestions.
+  \caption{Some changes using \toolname, from left to right: class of changes, whether the class uses
+automatic or manual configuration, example changes in that class, and Coq tools we know of that can support repair along (Repair Tools) or automatic proof of (Search Tools) the equivalence correponding to each example change. The tools listed for comparison are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and a classic tool for changing data structures~\cite{magaud2000changing}. \toolname is the only with support for tactic suggestions.
 We provide more nuanced comparisons to these tools and more in Section~\ref{sec:related}.}
 \label{fig:changes}
 \end{figure*}
@@ -64,9 +64,9 @@ Detailed walkthroughs of these case studies can be found in the repository.
 
 The transformation in \toolname is a generalization of the transformation from the proof reuse tool \textsc{Devoid}.
 \textsc{Devoid} supports proof reuse across \textit{algebraic ornaments}, which describe relations
-between two inductive types, where one type is exactly the other type indexed by a fold~\cite{mcbride}.
-The standard example of this is the relation between a list and a
-length-indexed vector, like we saw in Figure~\ref{fig:listtovect} in Section~\ref{sec:key1}.
+between two inductive types, where one type is the other indexed by a fold~\cite{mcbride}.
+A standard example is the relation between a list and a
+length-indexed vector (Figure~\ref{fig:listtovect}).
 
 \toolname implements a search procedure for automatic configuration corresponding to algebraic ornaments.
 %The search procedure moves the work specific to algebraic ornaments into the \toolname configuration.
@@ -114,8 +114,8 @@ correct an implementation of the TLS handshake protocol.
 %While this is ongoing work, thus far,
 %\toolname has helped \company integrate Coq with their existing verification workflow.
 Before contact, \company had been using a custom solver-aided verification language to prove correct C programs.
-They had found that at times, those constraint solvers got stuck, and they could not
-progress on proofs about those programs.
+They had found that at times, those constraint solvers got stuck.
+%and they could not progress on proofs about those programs.
 They had built a compiler that translates their solver-aided language into Coq's specification language Gallina,
 that way their proof engineers could finish stuck proofs interactively using Coq.
 However, due to language differences, they had found that the generated Gallina programs and specifications were sometimes too difficult to work with.
@@ -136,9 +136,9 @@ Some examples of this can be found in a branch of the proof engineer's repositor
 %workflow using solver-aided tools at \company.
 The workflow was a bit nonstandard,
 and there was little need for tactic suggestions.
-In the initial days, we worked closely with the proof engineer;
-later, the proof engineer worked independently and reached out occasionally.
-\toolname was usable enough for this to work, but we found two challenges with workflow integration:
+%In the initial days, we worked closely with the proof engineer;
+%later, the proof engineer worked independently and reached out occasionally.
+\toolname was usable enough for the proof engineer to work independently, but we found two challenges with workflow integration:
 1) the proof engineer sometimes could not distinguish between user errors and bugs in our code,
 and 2) the proof engineer typically waited only about ten seconds at most for \toolname to return.
 Both observations informed improvements to \toolname, like better error messages, caching of transformed subterms,
@@ -178,25 +178,31 @@ and \toolname worked well for those. % TODO what happens with the tactic decompi
 
 \subsubsection*{Add new Constructors: Extending a Language}
 
-\begin{figure}
-\lstinputlisting[firstline=1, lastline=18]{replica.tex}
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=9]{replica.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=10, lastline=18]{replica.tex}
+\end{minipage}
 \vspace{-0.4cm}
-\caption{A language (top) and the same language with two swapped constructors and an added constructor (bottom).}
+\caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
 \label{fig:replica}
-\end{figure}
+\end{figure*}
 
-For the second part of the change in Figure~\ref{fig:replica}, we used \toolname to repair functions 
-after adding the new constructor, separating out the proof obligations for the new constructor from the old terms~\circled{19}.
+We then used \toolname to repair functions 
+after adding the new constructor in Figure~\ref{fig:replica}, separating out the proof obligations for the new constructor from the old terms~\circled{19}.
 %The resulting functions were guaranteed to preserve the behavior of the old terms. % TODO do the proofs too
-This change combined a manual configuration with an automatic configuration.
+This change combined manual and automatic configuration.
 We defined an inductive type \lstinline{Diff} and (using partial automation) a configuration to port the terms across the equivalence \lstinline{Old.Term + Diff} $\simeq$ \lstinline{New.Term}.
-This resulted in some case explosion, but was formulaic, and pointed to a clear path for automation of this class of changes.
+This resulted in case explosion, but was formulaic, and pointed to a clear path for automation of this class of changes.
 The repaired functions guaranteed preservation of the behavior of the original functions. %over \lstinline{Old.Term} before the change.
 
 Extending constructors was less simple than swapping constructors.
 Most notably, the repaired terms were (unlike in the swap case) inefficient compared to human-written terms.
 For now, they make good regression tests for the human-written terms---in the future,
-we hope to automate the discovery of the more efficient term as well,
+we hope to automate the discovery of the more efficient term,
 or use the refinement framework CoqEAL~\cite{cohen:hal-01113453}
 to get between proofs of the inefficient and efficient terms.
 
