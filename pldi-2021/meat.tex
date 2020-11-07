@@ -31,7 +31,7 @@ Section~\ref{sec:implementation} describes the additional work needed to go from
 \label{fig:syntax}
 \end{figure*}
 
-\paragraph{Conventions}
+\mysubsubsec{Conventions}
 All terms that we introduce in this section are in CIC$_{\omega}$ (the core calculus of Coq) with primitive eliminators,
 the syntax for which is in Figure~\ref{fig:syntax}.
 The typing rules are standard.
@@ -451,7 +451,7 @@ eliminator cases, constructor arguments, and inductive hypotheses.} %, respectiv
 \label{fig:spec}
 \end{figure*} % TODO sigs for Iota here are not quite correct---Q is not bound. Also need to tweak to deal w/ eta, and to use eta_OK, and to relate both eta
 
-\paragraph{Equivalence}
+\mysubsubsec{Equivalence}
 To preserve equivalence (Figure~\ref{fig:spec}, top), \lstinline{DepConstr} and \lstinline{DepElim} must together induce an equivalence. % between \A and \B.
 That is, \lstinline{section} and \lstinline{retraction} must hold for functions \lstinline{f} and \lstinline{g},
 where \lstinline{f} uses \lstinline{DepElim} to eliminate \A and \lstinline{DepConstr} to construct \B, and \lstinline{g} is similar.
@@ -472,7 +472,7 @@ to avoid applying \lstinline{f} and \lstinline{g}, instead porting terms from \A
 %So, as long as we are able to unify subterms with applications of \lstinline{DepConstr} and \lstinline{DepElim},
 %\textsc{Dep-Constr} and \textsc{Dep-Elim} should preserve correctness of the transformation and cover all values and eliminations of \A and \B.
 
-\paragraph{Equality}
+\mysubsubsec{Equality}
 To ensure coherence with equality (Figure~\ref{fig:spec}, bottom),
 \lstinline{Eta} and \lstinline{Iota} must prove $\eta$ and $\iota$.
 That is, \lstinline{Eta} must have the same definitional behavior as the dependent eliminator (\lstinline{elim_eta}),
@@ -481,7 +481,7 @@ Each \lstinline{Iota} must prove and rewrite along the simplification (\textit{r
 This makes it possible for the transformation to
 avoid applying \lstinline{section} and \lstinline{retraction}.
 
-\paragraph{Correctness}
+\mysubsubsec{Correctness}
 With this correctness criteria for a configuration, we get the completeness result (proven in Coq~\circled{8}) that every equivalence induces a configuration. % arbitrary.v
 We also obtain an algorithm for the soundness result that every configuration induces an equivalence.
 The algorithm to prove \lstinline{section} is as follows (\lstinline{retraction} is similar):

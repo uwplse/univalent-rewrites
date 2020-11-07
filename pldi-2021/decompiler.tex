@@ -26,21 +26,6 @@ To give a sense of how the decompiler works without the clutter of these details
 decompiler from CIC$_{\omega}$ to a simple subset of Ltac containing just a few predefined tactics.
 Section~\ref{sec:second} explains how we scale that up to the implementation. %, and where we plan to go from there.
 
-\subsubsection*{A Mini Decompiler}
-\label{sec:first}
-
-The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call Qtac.
-The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
-Qtac includes hypothesis introduction (\lstinline{intro}),
-rewriting by equalities (\lstinline{rewrite}), symmetry of equality (\lstinline{symmetry}),
-application of a term to prove the goal (\lstinline{apply}), induction (\lstinline{induction}),
-case splitting of conjunctions (\lstinline{split}),
-constructors of disjunctions (\lstinline{left} and \lstinline{right}), and
-composition (\lstinline{.}).
-Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always take a motive explicitly, rather than relying on unification.
-Similarly, \lstinline{apply} applies only the function without inferring any arguments, and leaves those arguments to proof obligations.
-The implementation reasons about Ltac and so does not make these assumptions.
-
 \begin{figure}
 \small
 \begin{grammar}
@@ -53,7 +38,20 @@ The implementation reasons about Ltac and so does not make these assumptions.
 \label{fig:ltacsyntax1}
 \end{figure}
 
-\begin{figure}
+\mysubsubsec{A Mini Decompiler}
+The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call Qtac.
+The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
+Qtac includes hypothesis introduction (\lstinline{intro}),
+rewriting by equalities (\lstinline{rewrite}), symmetry of equality (\lstinline{symmetry}),
+application of a term to prove the goal (\lstinline{apply}), induction (\lstinline{induction}),
+case splitting of conjunctions (\lstinline{split}),
+constructors of disjunctions (\lstinline{left} and \lstinline{right}), and
+composition (\lstinline{.}).
+Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always take a motive explicitly, rather than relying on unification.
+Similarly, \lstinline{apply} applies only the function without inferring any arguments, and leaves those arguments to proof obligations.
+The implementation reasons about Ltac and so does not make these assumptions.
+
+\begin{figure*}
 \begin{mathpar}
 \mprset{flushleft}
 \small
@@ -73,11 +71,11 @@ The implementation reasons about Ltac and so does not make these assumptions.
 
 \inferrule[Left]
   { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }\hspace{-0.3cm}
+  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }
 
 \inferrule[Right]
   { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }\\
+  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }
 
 \inferrule[Rewrite]
   { \Gamma \vdash H_1 : x = y \\ \Gamma \vdash H_2 \Rightarrow p }
@@ -85,7 +83,7 @@ The implementation reasons about Ltac and so does not make these assumptions.
 
 \inferrule[Induction]
   { \Gamma \vdash \vec{f} \Rightarrow \vec{p} }
-  { \Gamma \vdash \mathrm{Elim}(t,\ P)\ \vec{f} \Rightarrow \mathrm{induction}\ P\ t\ \vec{p} }\\
+  { \Gamma \vdash \mathrm{Elim}(t,\ P)\ \vec{f} \Rightarrow \mathrm{induction}\ P\ t\ \vec{p} }
 
 \inferrule[Apply]
   { \Gamma \vdash t \Rightarrow p }
@@ -98,7 +96,33 @@ The implementation reasons about Ltac and so does not make these assumptions.
 \vspace{-0.4cm}
 \caption{Qtac decompiler semantics.}
 \label{fig:someantics}
-\end{figure}
+\end{figure*}
+
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
+    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
+    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+(@\vspace{-0.14cm}@)
+- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
+  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
+  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{Proof term (left) and corresponding decompiled proof script (right) for the base case of 
+\lstinline{rev_app_distr} from Section~\ref{sec:overview}, with corresponding terms and tactics 
+highlighted with the same color, and nothing else highlighted for clarity.}
+\label{fig:rainbow}
+\end{figure*}
 
 The semantics for the mini decompiler $\Gamma \vdash t \Rightarrow p$ are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
 As with the real decompiler, the mini decompiler defaults to the proof script
@@ -113,33 +137,6 @@ and all other applications of eliminators become induction (\textsc{Induction}).
 The remaining applications become apply tactics (\textsc{Apply}).
 In all cases, the decompiler recurses on the remaining body, breaking into cases when relevant, until only the \textsc{Base}
 case holds, at which point we are done.
-
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
-    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
-    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
-    (@\codesima{y0}@)
-\end{lstlisting}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-(@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
-  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{auto.}@)
-\end{lstlisting}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{Proof term (left) and corresponding decompiled proof script (right) for the base case of 
-\lstinline{rev_app_distr} from Section~\ref{sec:overview}, with corresponding terms and tactics 
-highlighted with the same color, and nothing else highlighted for clarity.}
-\label{fig:rainbow}
-\end{figure*}
 
 While the mini decompiler is very simple, only a few small changes are needed
 to move this from CIC$_{\omega}$ to Coq.

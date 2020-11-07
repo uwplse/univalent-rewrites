@@ -1,32 +1,31 @@
 \section{Conclusions \& Future Work}
 \label{sec:discussion}
 
-We showed how to combine 1) search procedures for equivalences, 2) a proof term transformation for transport across equivalences,
-and 3) a proof term to tactic decompiler to build \toolname,
-a proof repair and reuse tool that is flexible and useful for real proof engineering scenarios.
-\toolname has helped an industrial proof engineer integrate Coq with a company workflow,
-and it has supported benchmarks common in the proof engineering community.
+We combined search procedures for equivalences, a proof term transformation for transport across equivalences,
+and a proof term to tactic decompiler to build \toolname,
+a proof repair tool for changes in datatypes that is flexible and useful for real proof engineering scenarios.
+%\toolname has helped an industrial proof engineer integrate Coq with a company workflow,
+%and it has supported benchmarks common in the proof engineering community.
 
 % encountered in scaling up the \toolname proof term 
 %transformation (Section~\ref{sec:problems}), and how we believe ideas from the rewrite system and constraint
 %solver communities can address those challenges and improve the state of the art in proof engineering (Section~\ref{sec:egraph}).
 %Our hope is to inspire research communities to come together and open the door to better tools for proof reuse and repair.
 
-\paragraph{Future Work}
-
-Moving forward, our goal is to make proofs easier to repair and reuse regardless of proof engineering expertise.
+\mysubsubsec{Future Work}
+Moving forward, our goal is to make proofs easier to repair and reuse regardless of proof engineering expertise and style.
 We want to reach more proof engineers, and we want \toolname to integrate seamlessly with Coq.
 
-Three of the biggest problems that we encountered scaling up the \toolname transformation were 1) lack of type-directed search,
-2) ad-hoc termination checks, and 3) inability for proof engineers to add custom unification heuristics.
-We hope to solve all three of these challenges elegantly and efficiently using \textit{e-graphs}~\cite{egraph1},
+Three of the biggest problems that we encountered scaling up the \toolname transformation were lack of type-directed search,
+ad-hoc termination checks, and inability for proof engineers to add custom unification heuristics.
+We hope to solve these challenges using \textit{e-graphs}~\cite{egraph1},
 a data structure %that is used in the constraint solver and rewrite system communities 
 for managing equivalences.
-E-graphs are built specifically to deal with multiple equivalences,
+E-graphs are built to implement search procedures,
 remove the burden of ad-hoc reasoning about termination,
 and make it simple for anyone to extend a system with new
 rewrite rules---even ones that can call out to external procedures~\cite{egraph5} 
-like unification heuristics implemented in OCaml.
+like our unification heuristics.
 E-graphs were recently adapted to express path equality in cubical type theory~\cite{egraph6}; we hope to repurpose this insight.
 
 Beyond that, we believe that the biggest gains will come from continuing to improve the prototype decompiler.

@@ -40,9 +40,6 @@ When a type equivalence between types \A and \B exists, those types are \textit{
 To give some intuition for what kinds of changes can be described by equivalences, we preview two changes below.
 See Table~\ref{fig:changes} in Section~\ref{sec:search} for more examples.
 
-\subsubsection*{Factoring out Constructors}
-\label{sec:ex1}
-
 \begin{figure}
 \begin{minipage}{0.48\columnwidth}
 \lstinputlisting[firstline=1, lastline=3]{equiv2.tex}
@@ -56,6 +53,7 @@ See Table~\ref{fig:changes} in Section~\ref{sec:search} for more examples.
 \label{fig:equivalence2}
 \end{figure}
 
+\mysubsubsec{Factoring out Constructors}
 Consider using \toolname to port functions and proofs across the change from the type \lstinline{I} to the type \lstinline{J} 
 in Figure~\ref{fig:equivalence2}.
 \lstinline{J} can be viewed as \lstinline{I} with its two constructors \lstinline{A} and \lstinline{B} pulled out to a
@@ -93,9 +91,6 @@ and repairing proofs of De Morgan's laws~\circled{2}. % constr_refactor.v
 %Otherwise, they behave the same way as the functions and proofs over \lstinline{I} up to the equivalence between
 %\lstinline{I} and \lstinline{J}---Section~\ref{sec:repair} explains this intuition more formally.
 
-\subsubsection*{Adding a Dependent Index}
-\label{sec:ex2}
-
 \begin{figure*}
 \begin{minipage}{0.40\textwidth}
    \lstinputlisting[firstline=1, lastline=3]{listtovect.tex}
@@ -109,6 +104,7 @@ and repairing proofs of De Morgan's laws~\circled{2}. % constr_refactor.v
 \label{fig:listtovect}
 \end{figure*}
 
+\mysubsubsec{Adding a Dependent Index}
 At first glance, the word \textit{equivalence} may seem to imply that \toolname can support only changes in
 which the proof engineer does not add or remove information.
 But equivalences are more powerful than they may seem.

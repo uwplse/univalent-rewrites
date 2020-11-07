@@ -53,35 +53,33 @@ We provide more nuanced comparisons to these tools and more in Section~\ref{sec:
 This section summarizes eight case studies using \toolname,
 corresponding to the eight classes of changes in Table~\ref{fig:changes}.
 %For each case study, we explain the configuration used, walk through an example, and describe lessons learned.
-These case studies demonstrate \toolname's flexibility in handling diverse changes in datatype and diverse reuse and repair scenarios.
+These case studies demonstrate \toolname's flexibility in handling diverse changes and scenarios.
 %including in one case for an industrial user with unanticipated workflow.
 They also demonstrate the success of automatic configuration for better workflow integration for supported changes,
 and the preliminary success of the prototype decompiler.
 Finally, they highlight clear paths to improvement to better serve proof engineers. 
-Detailed walkthroughs of these case studies can be found in the repository.
+Detailed walkthroughs of these case studies are in the code.
 
-\subsubsection*{Algebraic Ornaments: Lists to Packed Vectors}
-
+\mysubsubsec{Algebraic Ornaments: Lists to Packed Vectors}
 The transformation in \toolname is a generalization of the transformation from the proof reuse tool \textsc{Devoid}.
 \textsc{Devoid} supports proof reuse across \textit{algebraic ornaments}, which describe relations
 between two inductive types, where one type is the other indexed by a fold~\cite{mcbride}.
 A standard example is the relation between a list and a
 length-indexed vector (Figure~\ref{fig:listtovect}).
 
-\toolname implements a search procedure for automatic configuration corresponding to algebraic ornaments.
+\toolname implements a search procedure for automatic configuration of algebraic ornaments.
 %The search procedure moves the work specific to algebraic ornaments into the \toolname configuration.
 The result is all of the functionality from \textsc{Devoid}, plus tactic suggestions.
 %which allows it to implement the  functionality from \textsc{Devoid}.
 The file~\circled{3} shows this on an example from \textsc{Devoid}:
-porting two list functions and a proof relating them from lists to vectors of \textit{some} length, since \lstinline{list T} $\simeq$ \lstinline{packed_vect T}.
-The tactic decompiler helped us write tactic proofs that had been
-prohibitively difficult for us to write by hand,
+porting two list functions and a proof from lists to vectors of \textit{some} length, since \lstinline{list T} $\simeq$ \lstinline{packed_vect T}.
+The decompiler helped us write tactic proofs that we had found
+too difficult to write by hand,
 though the suggested tactics did need massaging. % as the decompiler struggled with motive inference
 %for induction with dependent types.
 %Additional effort is needed to improve tactic suggestions for dependent types.
 
-\subsubsection*{Unpack Sigma Types: Vectors of Particular Lengths}
-
+\mysubsubsec{Unpack Sigma Types: Vectors of Particular Lengths}
 %The previous case study showed how to get between lists and vectors of \textit{some} length.
 The same file~\circled{3} goes on to show how to port functions and proofs to vectors of a \textit{particular} length, 
 like \lstinline{vector T n}.
@@ -92,24 +90,23 @@ with one additional automatic configuration for unpacking sigma types.
 %This configuration corresponds to the equivalence between sigma types at a particular projection
 %and the same type escaping the sigma type. %, in our example $\Sigma$\lstinline{(s : packed_vect T).}$\pi_l$\lstinline{ s = n }$\simeq$\lstinline
 %{ vector T n}.
-By composition, this transported proofs across the equivalence from Section~\ref{sec:ex2}.
+By composition, this transported proofs across the equivalence from Section~\ref{sec:key1}.
 
-There were two tricks that were important for workflow integration for this change:
-1) have the search procedure view each \lstinline{vector T n} as 
-representing $\Sigma$\lstinline{(v : vector T m).n = m} for some \lstinline{m},
-then let \toolname instantiate those equalities using unification heuristics before transforming,
-and 2) generate a custom eliminator for easily combining
-functions and proofs about lists with functions and proofs about their lengths.
+Two tricks were important for workflow integration for this change:
+1) have the search procedure view \lstinline{vector T n} as 
+$\Sigma$\lstinline{(v : vector T m).n = m} for some \lstinline{m},
+then let \toolname instantiate those equalities via unification heuristics before transforming,
+and 2) generate a custom eliminator for combining
+list terms with length invariants.
 %This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths):
 The resulting workflow works not just for lists and vectors, but for any algebraic ornament,
-automating effort from \textsc{Devoid} that had previously been manual.
-The tactic decompiler yielded similar results to the previous case study: helpful for writing proofs
-that we had struggled with manually, but only after some massaging.
+automating manual effort from \textsc{Devoid}.
+The tactic decompiler yielded similar results to the first case study: helpful for writing proofs
+that we had struggled with manually, but only after massaging.
 More effort is needed to improve tactic suggestions for dependent types.
 
-\subsubsection*{Tuples \& Records: Industrial Use}
-
-An industrial proof engineer at \company has been using \toolname in proving
+\mysubsubsec{Tuples \& Records: Industrial Use}
+An industrial proof engineer at \company\footnote{Name withheld for double-blind.} has been using \toolname in proving
 correct an implementation of the TLS handshake protocol.
 %While this is ongoing work, thus far,
 %\toolname has helped \company integrate Coq with their existing verification workflow.
@@ -120,16 +117,16 @@ They had built a compiler that translates their solver-aided language into Coq's
 that way their proof engineers could finish stuck proofs interactively using Coq.
 However, due to language differences, they had found that the generated Gallina programs and specifications were sometimes too difficult to work with.
 
-The proof engineer 1) used \toolname to update the automatically generated functions and specifications into more
-human-readable functions and specifications, then 2) wrote Coq proofs about the more human-readable functions and specifications, then finally
-3) used \toolname again to update those proofs about human-readable functions and specifications back to
+The proof engineer used \toolname to port the automatically generated functions and specifications to more
+human-readable functions and specifications, wrote Coq proofs about those functons and specifications, then
+used \toolname again to port those proofs back to
 proofs about the original automatically generated functions and specifications.
 %This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
 %that would have otherwise been difficult.
 So far, the proof engineer has used at least three automatic configurations,
 but the proof engineer most often used an automatic configuration for porting anonymous tuples produced by \company's compiler
 to named records.
-Some examples of this can be found in a branch of the proof engineer's repository~\circled{18}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
+Some examples of this can be found in the proof engineer's repository~\circled{18}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
 
 
 %The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
@@ -144,40 +141,6 @@ and 2) the proof engineer typically waited only about ten seconds at most for \t
 Both observations informed improvements to \toolname, like better error messages, caching of transformed subterms,
 and the ability to tell \toolname not to $\delta$-reduce certain terms.
 
-\subsubsection*{Permute Constructors: Modifying a Language}
-
-The constructor swapping example from Section~\ref{sec:overview} was inspired by two benchmarks 
-from the \textsc{Replica} user study of proof engineers~\cite{replica}.
-A change corresponding to part of one of the benchmarks is shown in Figure~\ref{fig:replica}.
-The proof engineer had a simple language represented by an inductive type \lstinline{Term},
-as well as some definitions and proofs about the language.
-The proof engineer swapped two constructors in the term language,
-and added a new constructor \lstinline{Bool}.
-
-This case study and the next case study break this change into two parts.
-In the first part, we used \toolname with automatic configuration to repair functions and proofs about the language
-after swapping the two constructors~\circled{1}.
-%We also succeeded at more difficult variants of this,
-%like swapping constructors with the same type, renaming all of the constructors,
-%permuting more than two constructors,
-%or permuting and renaming constructors at the same time.
-With a small amount of human guidance to choose the correct permutation (from a multiple-choice list of suggestions),
-\toolname repaired the functions and proofs.
-The suggested tactics worked well, but the change was simple enough that keeping the 
-tactics the same would have also worked.
-%This is a property of the particular proofs that we had access to;
-As we saw in Sections~\ref{sec:overview} and~\ref{sec:key1}, even for simple changes, this is not always true.
-More advanced variants of this benchmark that we tried did necessitate \toolname,
-and \toolname worked well for those. % TODO what happens with the tactic decompiler for these?
-%The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
-%its dependencies, four variants of the \textsc{Replica} swapping change,
-%and testing a large and ambiguous permutation of a 30 constructor \lstinline{Enum},
-%took \toolname less than 90 seconds total. % TODO specs, reproduction
-%Each variant of the \textsc{Replica} swapping change took \toolname less than 5 seconds, % TODO specs, reproduction
-%and the change adding a constructor took \toolname less than 30 seconds. % TODO specs, reproduction
-
-\subsubsection*{Add new Constructors: Extending a Language}
-
 \begin{figure*}
 \begin{minipage}{0.48\textwidth}
    \lstinputlisting[firstline=1, lastline=9]{replica.tex}
@@ -191,6 +154,38 @@ and \toolname worked well for those. % TODO what happens with the tactic decompi
 \label{fig:replica}
 \end{figure*}
 
+\mysubsubsec{Permute Constructors: Modifying a Language}
+The swapping example from Section~\ref{sec:overview} was inspired by benchmarks 
+from the \textsc{Replica} user study of proof engineers~\cite{replica}.
+A change from one of the benchmarks is in Figure~\ref{fig:replica}.
+The proof engineer had a simple language represented by an inductive type \lstinline{Term},
+as well as some definitions and proofs about the language.
+The proof engineer swapped two constructors in the language,
+and added a new constructor \lstinline{Bool}.
+
+This case study and the next case study break this change into two parts.
+In the first part, we used \toolname with automatic configuration to repair functions and proofs about the language
+after swapping the two constructors~\circled{1}.
+%We also succeeded at more difficult variants of this,
+%like swapping constructors with the same type, renaming all of the constructors,
+%permuting more than two constructors,
+%or permuting and renaming constructors at the same time.
+With a bit of human guidance to choose the permutation from a list of suggestions,
+\toolname repaired everything.
+Suggested tactics worked well, but the 
+original tactics would have also worked.
+%This is a property of the particular proofs that we had access to;
+As Section~\ref{sec:overview}
+and more advanced variants of this benchmark show~\circled{1}, even for simple changes, this is not always true.
+% TODO what happens with the tactic decompiler for these?
+%The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
+%its dependencies, four variants of the \textsc{Replica} swapping change,
+%and testing a large and ambiguous permutation of a 30 constructor \lstinline{Enum},
+%took \toolname less than 90 seconds total. % TODO specs, reproduction
+%Each variant of the \textsc{Replica} swapping change took \toolname less than 5 seconds, % TODO specs, reproduction
+%and the change adding a constructor took \toolname less than 30 seconds. % TODO specs, reproduction
+
+\mysubsubsec{Add new Constructors: Extending a Language}
 We then used \toolname to repair functions 
 after adding the new constructor in Figure~\ref{fig:replica}, separating out the proof obligations for the new constructor from the old terms~\circled{19}.
 %The resulting functions were guaranteed to preserve the behavior of the old terms. % TODO do the proofs too
@@ -199,57 +194,53 @@ We defined an inductive type \lstinline{Diff} and (using partial automation) a c
 This resulted in case explosion, but was formulaic, and pointed to a clear path for automation of this class of changes.
 The repaired functions guaranteed preservation of the behavior of the original functions. %over \lstinline{Old.Term} before the change.
 
-Extending constructors was less simple than swapping constructors.
+Adding constructors was less simple than swapping.
 Most notably, the repaired terms were (unlike in the swap case) inefficient compared to human-written terms.
 For now, they make good regression tests for the human-written terms---in the future,
-we hope to automate the discovery of the more efficient term,
+we hope to automate the discovery of the more efficient terms,
 or use the refinement framework CoqEAL~\cite{cohen:hal-01113453}
 to get between proofs of the inefficient and efficient terms.
 
-\subsubsection*{Factor out Constructors: External Example}
-
+\mysubsubsec{Factor out Constructors: External Example}
 The change from Figure~\ref{fig:equivalence2} came at the request of a non-author.
 We supported this using a manual configuration that described which constructor to map to \lstinline{true}
 and which constructor to map to \lstinline{false}~\circled{2}.
 The configuration was very simple for us to write, and the repaired tactics were immediately useful.
 
-\subsubsection*{Permute Hypotheses: External Example}
-
+\mysubsubsec{Permute Hypotheses: External Example}
 The change in \circled{20} came at the request of a different non-author, and shows how to 
 use \toolname to swap two hypotheses of a type, since \lstinline{T1} $\rightarrow$ \lstinline{T2} $\rightarrow$ \lstinline{T3} $\simeq$
 \lstinline{T2} $\rightarrow$ \lstinline{T1} $\rightarrow$ \lstinline{T3}.
-This configuration was also manual.
-Since neither type was inductive, this change used the generic construction for any equivalence,
-instantiated to this particular equivalence.
+This configuration was manual.
+Since neither type was inductive, this change used the generic construction for any equivalence.
+%instantiated to this particular equivalence.
 This worked well, but necessitated some manual annotation due to the lack of custom unification heuristics for 
 manual configuration.
 
-\subsubsection*{Change Inductive Structure: Unary to Binary}
-
+\mysubsubsec{Change Inductive Structure: Unary to Binary}
 In \circled{5}, we used \toolname to support a classic example of changing inductive structure:
 updating unary to binary natural numbers~\cite{magaud2000changing}.
 % TODO fin and vect? mention somewhere?
 In Coq, a binary number \lstinline{N} (Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
 is either 1 (\lstinline{xH}), or the result of shifting left and adding 1 (\lstinline{xI})
-or nothing (\lstinline{xO}).
+0 (\lstinline{xO}).
 This allows for a fast addition function. %, found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we used \toolname to derive a slow binary
 addition function that does not refer to \lstinline{nat},
-then ported proofs from unary to slow binary addition,
-and showed that they hold over fast binary addition too.
+and to port proofs from unary to slow binary addition.
+We then showed that the ported proofs hold over fast binary addition.
 
 %The implementation of this is in \lstinline{nonorn.v}.
 The configuration for \lstinline{N} used definitions from the Coq standard library
 for \lstinline{DepConstr} and \lstinline{DepElim} that had the desired behavior with no changes.
-\lstinline{Iota} was almost written for us---the standard library had a lemma
-that reduced the successor case of the eliminator that we used for \lstinline{DepElim}:
+\lstinline{Iota} over the successor case was a rewrite by a lemma
+from the standard library that reduced the successor case of the eliminator that we used for \lstinline{DepElim}:
 
 \begin{lstlisting}
 N.peano_rect_succ : $\forall$ P pO pS n,(@\vspace{-0.04cm}@)
   N.peano_rect P pO pS (N.succ n) =(@\vspace{-0.04cm}@)
-  pS n (N.peano_rect P pO pS n).
+  pS n (N.peano_rect P pO pS n).(@\vspace{-0.04cm}@)
 \end{lstlisting}
-\lstinline{Iota} over the successor case was a rewrite by this lemma.
 %
 %\begin{lstlisting}
 %Lemma iota_1 :(@\vspace{-0.04cm}@)
@@ -267,7 +258,7 @@ that had been its own tool.
 
 While porting addition from \lstinline{nat} to \lstinline{N} was automatic after configuring \toolname,
 porting proofs about addition took more work.
-In particular, due to the lack of unification heuristics for manual configuration,
+Due to the lack of unification heuristics for manual configuration,
 we had to annotate the proof term to tell \toolname that implicit casts in the inductive cases of proofs were applications of \lstinline{Iota}
 over \lstinline{nat}.
 These annotations were formulaic, but tricky to write.
@@ -292,20 +283,20 @@ tactics for applications of \lstinline{Iota}; both of these are clear paths to m
 \subsection{\textsc{Replica} Benchmark Variants}
 \label{sec:replica}
 
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
+\begin{figure}
+\begin{minipage}{0.49\columnwidth}
    \lstinputlisting[firstline=1, lastline=9]{replica.tex}
 \end{minipage}
 \hfill
-\begin{minipage}{0.48\textwidth}
+\begin{minipage}{0.49\columnwidth}
    \lstinputlisting[firstline=11, lastline=19]{replica.tex}
 \end{minipage}
 \vspace{-0.4cm}
 \caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
 \label{fig:replica}
-\end{figure*}
+\end{figure}
 
-The constructor swapping example from Section~\ref{sec:overview} was inspired by two benchmarks 
+The swapping example from Section~\ref{sec:overview} was inspired by benchmarks 
 from the \textsc{Replica} user study of proof engineers~\cite{replica}.
 A change corresponding to part of one of the benchmarks is shown in Figure~\ref{fig:replica}.
 The proof engineer had a simple language represented by an inductive type \lstinline{Term},
