@@ -26,78 +26,40 @@ To give a sense of how the decompiler works without the clutter of these details
 decompiler from CIC$_{\omega}$ to a simple subset of Ltac containing just a few predefined tactics.
 Section~\ref{sec:second} explains how we scale that up to the implementation. %, and where we plan to go from there.
 
-\begin{figure}
-\small
-\begin{grammar}
-<v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
-
-<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | left | right | split \{ <p>, <p> \} |induction <t> <t> \{ <p>, \ldots, <p> \} | <p> . <p>
-\end{grammar}
-\vspace{-0.3cm}
-\caption{Qtac syntax.}
-\label{fig:ltacsyntax1}
-\end{figure}
-
 \mysubsubsec{A Mini Decompiler}
 The mini decompiler takes CIC$_{\omega}$ terms and produces tactics in a mini version of Ltac which we call Qtac.
 The syntax for Qtac is in Figure~\ref{fig:ltacsyntax1}.
 Qtac includes hypothesis introduction (\lstinline{intro}),
-rewriting by equalities (\lstinline{rewrite}), symmetry of equality (\lstinline{symmetry}),
+rewriting (\lstinline{rewrite}), symmetry of equality (\lstinline{symmetry}),
 application of a term to prove the goal (\lstinline{apply}), induction (\lstinline{induction}),
 case splitting of conjunctions (\lstinline{split}),
 constructors of disjunctions (\lstinline{left} and \lstinline{right}), and
 composition (\lstinline{.}).
-Unlike in Ltac, in Qtac, \lstinline{induction} and \lstinline{rewrite} always take a motive explicitly, rather than relying on unification.
-Similarly, \lstinline{apply} applies only the function without inferring any arguments, and leaves those arguments to proof obligations.
-The implementation reasons about Ltac and so does not make these assumptions.
+Unlike in Ltac, \lstinline{induction} and \lstinline{rewrite} take a motive explicitly, rather than relying on unification.
+Similarly, \lstinline{apply} leaves the arguments to proof obligations.
+%The implementation reasons about Ltac and so does not make these assumptions.
 
-\begin{figure*}
-\begin{mathpar}
-\mprset{flushleft}
-\small
-\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Rightarrow$ $p$}\vspace{-0.4cm}\\
-
-\inferrule[Intro]
-  { \Gamma,\ n : T \vdash b \Rightarrow p }
-  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{intro}\ n.\ p }
-
-\inferrule[Symmetry]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{symmetry}.\ p }
-
-\inferrule[Split]
-  { \Gamma \vdash l \Rightarrow p \\ \Gamma \vdash r \Rightarrow q }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l\ r \Rightarrow \mathrm{split} \{ p, q \}.\ }\\
-
-\inferrule[Left]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }
-
-\inferrule[Right]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }
-
-\inferrule[Rewrite]
-  { \Gamma \vdash H_1 : x = y \\ \Gamma \vdash H_2 \Rightarrow p }
-  { \Gamma \vdash \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{symmetry}.\ \mathrm{rewrite}\ P\ H_1.\ p }\\
-
-\inferrule[Induction]
-  { \Gamma \vdash \vec{f} \Rightarrow \vec{p} }
-  { \Gamma \vdash \mathrm{Elim}(t,\ P)\ \vec{f} \Rightarrow \mathrm{induction}\ P\ t\ \vec{p} }
-
-\inferrule[Apply]
-  { \Gamma \vdash t \Rightarrow p }
-  { \Gamma \vdash f t \Rightarrow \mathrm{apply}\ f.\ p }
-
-\inferrule[Base]
-  { \\ }
-  { \Gamma \vdash t \Rightarrow \mathrm{apply}\ t }
-\end{mathpar}
+\begin{figure}
+\begin{lstlisting}
+fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
+    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
+    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
+  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
+  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
 \vspace{-0.4cm}
-\caption{Qtac decompiler semantics.}
-\label{fig:someantics}
-\end{figure*}
+\caption{Proof term (top) and corresponding decompiled proof script (bottom) for the base case of 
+\lstinline{rev_app_distr} from Section~\ref{sec:overview}, with corresponding terms and tactics 
+highlighted with the same color, and nothing else highlighted for clarity.}
+\label{fig:rainbow}
+\end{figure}
 
+\iffalse
 \begin{figure*}
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
@@ -123,20 +85,21 @@ fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
 highlighted with the same color, and nothing else highlighted for clarity.}
 \label{fig:rainbow}
 \end{figure*}
+\fi
 
 The semantics for the mini decompiler $\Gamma \vdash t \Rightarrow p$ are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
 As with the real decompiler, the mini decompiler defaults to the proof script
 that applies the entire proof term with \lstinline{apply} (\textsc{Base}).
 Otherwise, it improves on that behavior by recursing over the proof term and constructing a proof script using a predefined set of tactics.
 
-For the mini decompiler, this is straightforward: Lambda terms become introduction of hypotheses (\textsc{Intro}), since they introduce new bindings
+For the mini decompiler, this is straightforward: Lambda terms become introduction 	(\textsc{Intro}), since they introduce new bindings
 in the environment of the body. Applications of \lstinline{eq_sym} become symmetry of equality (\textsc{Symmetry}).
 Constructors of conjunction and disjunction map to the respective tactics (\textsc{Split}, \textsc{Left}, and \textsc{Right}).
 Applications of equality eliminators compose symmetry (to orient the rewrite direction with the goal) with rewrites (\textsc{Rewrite}),
 and all other applications of eliminators become induction (\textsc{Induction}).
 The remaining applications become apply tactics (\textsc{Apply}).
-In all cases, the decompiler recurses on the remaining body, breaking into cases when relevant, until only the \textsc{Base}
-case holds, at which point we are done.
+In all cases, the decompiler recurses, breaking into cases when relevant, until only the \textsc{Base}
+case holds. % at which point we are done.
 
 While the mini decompiler is very simple, only a few small changes are needed
 to move this from CIC$_{\omega}$ to Coq.
@@ -151,6 +114,17 @@ There are very few differences from the mini decompiler needed to produce this,
 for example handling of rewrites in both directions (\lstinline{eq_ind_r} as opposed to \lstinline{eq_ind}),
 simplifying to handle motive inference for rewrites,
 and turning applications of \lstinline{eq_refl} into \lstinline{reflexivity} or \lstinline{auto}.
+
+\mysubsubsec{Better Proof Scripts}
+The mini decompiler reasons about tactics one subterm at a time, and produces simple tactic scripts.
+To produce a more natural set of tactics, \textbf{Decompile} first runs something similar to the mini decompiler, and then modifies those tactics to produce a more natural proof script~\circled{11}. % decompiler.ml
+For example, it cancels out sequences of \lstinline{intros} and \lstinline{revert} tactics.
+It removes redundant arguments to the \lstinline{apply} tactic, ensuring the result still holds. % TODO rewrite
+It can also take suggested tactics (like part of the old version of the proof script) from the proof engineer as hints,
+then iteratively replace tactics with those hints, checking the result as it recurses.
+This makes it possible for the tactic scripts \toolname suggests to include custom tactics and decision procedures.
+%Further improvements could come from preserving comments and indentation, or automatically using information from the old 
+%version of the proof script rather than asking for it explicitly.
 
 %In fact, since \toolname uses an existing command to translate pattern matching and fixpoints to eliminators,
 %\textit{all} of the proof terms that \toolname produces will use induction and rewriting instead.

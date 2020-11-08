@@ -127,19 +127,17 @@ So far, the proof engineer has used at least three automatic configurations,
 but the proof engineer most often used an automatic configuration for porting anonymous tuples produced by \company's compiler
 to named records.
 Some examples of this can be found in the proof engineer's repository~\circled{18}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
-
-
 %The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
 %workflow using solver-aided tools at \company.
 The workflow was a bit nonstandard,
 and there was little need for tactic suggestions.
 %In the initial days, we worked closely with the proof engineer;
 %later, the proof engineer worked independently and reached out occasionally.
-\toolname was usable enough for the proof engineer to work independently, but we found two challenges with workflow integration:
-1) the proof engineer sometimes could not distinguish between user errors and bugs in our code,
-and 2) the proof engineer typically waited only about ten seconds at most for \toolname to return.
-Both observations informed improvements to \toolname, like better error messages, caching of transformed subterms,
-and the ability to tell \toolname not to $\delta$-reduce certain terms.
+%The proof engineer was able to work independently, but found two challenges with workflow integration:
+%1) they sometimes could not distinguish between user errors and bugs,
+%and 2) they waited only about ten seconds at most for \toolname to return.
+%Both informed improvements to \toolname, like better error messages, caching,
+%and a way to tell \toolname not to $\delta$-reduce certain terms.
 
 \begin{figure*}
 \begin{minipage}{0.48\textwidth}
@@ -165,7 +163,7 @@ and added a new constructor \lstinline{Bool}.
 
 This case study and the next case study break this change into two parts.
 In the first part, we used \toolname with automatic configuration to repair functions and proofs about the language
-after swapping the two constructors~\circled{1}.
+after swapping the constructors~\circled{1}.
 %We also succeeded at more difficult variants of this,
 %like swapping constructors with the same type, renaming all of the constructors,
 %permuting more than two constructors,
@@ -175,8 +173,8 @@ With a bit of human guidance to choose the permutation from a list of suggestion
 Suggested tactics worked well, but the 
 original tactics would have also worked.
 %This is a property of the particular proofs that we had access to;
-As Section~\ref{sec:overview}
-and more advanced variants of this benchmark show~\circled{1}, even for simple changes, this is not always true.
+%As Section~\ref{sec:overview}
+%and more advanced variants of this benchmark show~\circled{1}, even for simple changes, this is not always true.
 % TODO what happens with the tactic decompiler for these?
 %The entire \lstinline{Swap.v} file, which includes swapping constructors of every function in the \lstinline{list} module and
 %its dependencies, four variants of the \textsc{Replica} swapping change,
@@ -228,7 +226,7 @@ This allows for a fast addition function. %, found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we used \toolname to derive a slow binary
 addition function that does not refer to \lstinline{nat},
 and to port proofs from unary to slow binary addition.
-We then showed that the ported proofs hold over fast binary addition.
+We then showed that the ported theorems hold over fast binary addition.
 
 %The implementation of this is in \lstinline{nonorn.v}.
 The configuration for \lstinline{N} used definitions from the Coq standard library
@@ -239,7 +237,7 @@ from the standard library that reduced the successor case of the eliminator that
 \begin{lstlisting}
 N.peano_rect_succ : $\forall$ P pO pS n,(@\vspace{-0.04cm}@)
   N.peano_rect P pO pS (N.succ n) =(@\vspace{-0.04cm}@)
-  pS n (N.peano_rect P pO pS n).(@\vspace{-0.04cm}@)
+  pS n (N.peano_rect P pO pS n).(@\vspace{-0.05cm}@)
 \end{lstlisting}
 %
 %\begin{lstlisting}
@@ -673,12 +671,12 @@ correct an implementation of the TLS handshake protocol.
 While this is ongoing work, thus far,
 \toolname has helped \company integrate Coq with their existing verification workflow.
 
-Before contact, \company had been using a custom solver-aided verification language to prove correct C programs.
+\company had been using a custom solver-aided verification language to prove correct C programs.
 They had found that at times, those constraint solvers got stuck, and they could not
 progress on proofs about those programs.
 They had built a compiler that translates their solver-aided language into Coq's specification language Gallina,
-that way their proof engineers could finish stuck proofs interactively using Coq.
-However, they had found that the generated Gallina programs and specifications were sometimes too difficult to work with.
+so proof engineers could finish stuck proofs interactively using Coq.
+However, the generated Gallina programs and specifications were sometimes too difficult to work with.
 
 A proof engineer at \company has used \toolname to work with those automatically generated programs and specifications
 with the following workflow:

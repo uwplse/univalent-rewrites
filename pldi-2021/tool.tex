@@ -4,7 +4,7 @@
 The transformation abstracts a lot of the details needed to build a proof repair tool that reaches proof engineers,
 and the mini decompiler abstracts a lot of the details that make Ltac so useful to proof engineers---and so painful to 
 reason about automatically.
-This section describes how we solved a sample of the implementation challenges that we encountered.
+This section describes how we solved some of the implementation challenges that we encountered.
 %for both the transformation (Section~\ref{sec:implementation}) and the decompiler (Section~\ref{sec:second}).
 %Section~\ref{sec:discussion} describes some remaining challenges and our plans to address them. % in the future.
 
@@ -13,7 +13,7 @@ This section describes how we solved a sample of the implementation challenges t
 
 \mysubsubsec{Termination \& Intent}
 When the correctness criteria for a configuration hold and a subterm unifies with a configuration term, this suggests that \toolname \textit{can}
-run the transformation rule, but it does not necessarily mean that it \textit{should}.
+transform the subterm, but it does not necessarily mean that it \textit{should}.
 In some cases, doing so would result in nontermination.
 For example, if \B is a refinement of \A, then we can always run \textsc{Equivalence}
 over and over again, forever.
@@ -56,17 +56,6 @@ These features along with our tactic decompiler helped with integration into pro
 
 \subsection{Implementing the Decompiler}
 \label{sec:second}
-
-\mysubsubsec{Better Proof Scripts}
-The mini decompiler reasons about tactics one subterm at a time, and produces simple tactic scripts.
-To produce a more natural set of tactics, \textbf{Decompile} first runs something similar to the mini decompiler, and then modifies those tactics to produce a more natural proof script~\circled{11}. % decompiler.ml
-For example, it cancels out sequences of \lstinline{intros} and \lstinline{revert} tactics.
-It removes redundant arguments to the \lstinline{apply} tactic, ensuring the result still holds. % TODO rewrite
-It can also take suggested tactics (like part of the old version of the proof script) from the proof engineer as hints,
-then iteratively replace tactics with those hints, checking the result as it recurses.
-This makes it possible for the tactic scripts \toolname suggests to include custom tactics and decision procedures.
-%Further improvements could come from preserving comments and indentation, or automatically using information from the old 
-%version of the proof script rather than asking for it explicitly.
 
 \mysubsubsec{Induction and Rewriting}
 The mini decompiler assumes more predictable versions of \lstinline{rewrite} and \lstinline{induction}
