@@ -61,10 +61,10 @@ CoqEAL may be most useful to chain with \toolname to get faster functions,
 as discussed in Section~\ref{sec:search}.
 
 The \toolname transformation implements transport.
-Transport is realizable as a function in univalent type theories~\cite{univalent2013homotopy}.
-Univalent parametricity~\cite{tabareau2017equivalences} approximates univalence
-in a non-univalent type theory, only sometimes relying on functional extensionality.
-While powerful, neither of these approaches to transport remove references to the old type. %making them poorly suited for repair.
+Transport is realizable as a function given univalence~\cite{univalent2013homotopy}.
+Univalent parametricity~\cite{tabareau2017equivalences} approximates it
+in Coq, only sometimes relying on functional extensionality.
+While powerful, neither approach removes references to the old type. %making them poorly suited for repair.
 
 Recent work~\cite{tabareau2019marriage} extends univalent parametricity with 
 a white-box transformation that may be well suited for proof repair.
@@ -78,8 +78,8 @@ instead relying on its original black-box functionality to handle those cases;
 \lstinline{Iota} addresses this problem in \toolname. % and is based on lessons learned from reading that article.
 The most fruitful progress may come from integrating these tools together to take advantage of the benefits that both offer.
 
-Univalent parametricity implements type-directed search, a feature that \toolname does not yet support.
-It achieves this using type classes~\cite{Sozeau2008}; this does not always scale well~\cite{tabareau2019marriage}.
+%Univalent parametricity implements type-directed search, a feature that \toolname does not yet support.
+%It achieves this using type classes~\cite{Sozeau2008}; this does not always scale well~\cite{tabareau2019marriage}.
 %Both \toolname and univalent parametricity could benefit from implementing type-directed search using e-graphs~\cite{egraph1}.
 %Of particular interest are those developed for congruence in Cubical Agda~\cite{egraph6},
 %which prove the theorem \lstinline{hcongr_ideal}~\cite{egraph7} necessary to use e-graphs not derivable in CIC$_{\omega}$,

@@ -54,6 +54,55 @@ to make it easier to reason about types refined by equalities like $\Sigma$\lsti
 by reasoning separately about the projections~\circled{15}. %smartelim.ml
 These features along with our tactic decompiler helped with integration into proof engineering workflows.
 
+\begin{table*}
+\small
+  \begin{tabular}{|l|l|l|l|l|}
+    \hline
+    \textbf{Class} & \textbf{Config.} & \textbf{Examples} & \textbf{Repair Tools} & \textbf{Search Tools} \\
+    \hline
+    \multirow[t]{2}{*}{Algebraic Ornaments} & \multirow[t]{2}{*}{Auto} & List to Packed Vector, hs-to-coq \circled{3} % Example.v
+    & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
+    & & List to Packed Vector, Standard Library \circled{16} % ListToVect.v
+    & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
+    \hline
+    Unpack Sigma Types & Auto & Vector of Particular Length, hs-to-coq \circled{3} % Example.v
+    & \toolname, UP & \toolname \\
+    \hline
+    \multirow[t]{3}{*}{Tuples \& Records} & \multirow[t]{3}{*}{Auto} & Simple Records \circled{13} % minimal_records.v 
+     & \toolname, UP & \toolname \\
+    & & Parameterized Records \circled{17} % more_records.v
+    & \toolname, UP & \toolname \\
+    & & Industrial Use \circled{18} %(\href{https://github.com/Ptival/saw-core-coq/tree/dump-wip}{saw-core-coq})
+    & \toolname, UP & \toolname \\
+    \hline
+    \multirow[t]{3}{*}{Permute Constructors} & \multirow[t]{3}{*}{Auto} & List, Standard Library \circled{1} % Swap.v 
+    & \toolname, UP & \toolname \\
+     & & Modifying a PL, \textsc{REPLica} Benchmark \circled{1} % Swap.v 
+     & \toolname, UP  & \toolname \\
+    & & Large Ambiguous Enum \circled{1} % Swap.v
+    & \toolname, UP & \toolname \\
+    \hline
+    Add new Constructors & Mixed & PL Extension, \textsc{REPLica} Benchmark \circled{19} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add_constr.v})
+    & \toolname & \toolname (partial) \\
+    \hline
+    Factor out Constructors & Manual & External Example \circled{2} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr_refactor.v}) 
+    & \toolname, UP & None \\
+    \hline
+    Permute Hypotheses & Manual & External Example \circled{20} %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/flip.v}{flip.v}) 
+    & \toolname, UP & None \\
+    \hline
+    \multirow[t]{2}{*}{Change Inductive Structure} & \multirow[t]{2}{*}{Manual} & Unary to Binary, Classic Benchmark \circled{5} %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{nonorn.v})
+     & \toolname, Classic & None \\
+     & & Vector to Finite Set, External Example \circled{21} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/fin.v}{fin.v}) 
+     & \toolname & None \\
+    \hline
+  \end{tabular}
+  \caption{Some changes using \toolname, from left to right: class of changes, whether the class uses
+automatic or manual configuration, example changes in the class, and Coq tools we know of that support repair along (Repair Tools) or automatic proof of (Search Tools) the equivalence correponding to each example change. Tools listed for comparison are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and a classic tool for changing data structures~\cite{magaud2000changing}. \toolname is the only one with support for tactic suggestions.
+We provide more nuanced comparisons to these tools and more in Section~\ref{sec:related}.}
+\label{fig:changes}
+\end{table*}
+
 \subsection{Implementing the Decompiler}
 \label{sec:second}
 
