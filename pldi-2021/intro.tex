@@ -5,7 +5,7 @@ especially when it comes to the scale of programs that can be verified.
 The seL4~\cite{Klein2009} verified operating system kernel, for example,
 is the effort of a team of proof engineers spanning more than
 a million lines of proof, costing over 20 person-years.
-Given historical critique of verification~\cite{DeMillo1977} (emphasis ours):
+Given a famous 1977 critique of verification~\cite{DeMillo1977} (emphasis ours):
 
 \begin{quote}
 A \textit{sufficiently fanatical researcher}
@@ -14,8 +14,8 @@ three years} to verifying a significant
 piece of software if he could be 
 assured that the software would remain stable.
 \end{quote}
-we could argue that, since 1977, either verification has become easier,
-or researchers have become much more fanatical. Unfortunately, not all has changed (emphasis still ours):
+we could argue that, over 40 years, either verification has become easier,
+or researchers have become more fanatical. Unfortunately, not all has changed (emphasis still ours):
 
 \begin{quote}
 But real-life programs need to 
@@ -56,18 +56,18 @@ Our approach combines a configurable proof term transformation (Section~\ref{sec
 search procedures to configure that proof term transformation, and a prototype decompiler from proof terms
 back to suggested tactics (Section~\ref{sec:decompiler}).
 This is implemented (Section~\ref{sec:impl}) in \toolname\footnote{Name changed for double-blind.} (Configurable Approach to Repairing \& Refactoring Outdated Tactics), a proof repair plugin for Coq 8.8 that is available on Github.\footnote{For double-blind, we annotate each claim to which the code is relevant with a circled number like \circled{1}. The auxiliary material maps these to code.}
-The result is a flexible proof repair tool that: 
+%The result is a flexible proof repair tool that: 
 
-\begin{enumerate}
-\item supports changes in types informed by proof engineers and not supported by other tools, and
-\item suggests tactic scripts and proves relations corresponding to certain changes for better workflow integration.
-\end{enumerate}
+%\begin{enumerate}
+%\item supports changes in types informed by proof engineers and not supported by other tools, and
+%\item suggests tactic scripts and proves relations corresponding to certain changes for better workflow integration.
+%\end{enumerate}
 
 \subsection*{Addressing Challenge 1: Flexible Type Support}
 
 The case studies in Section~\ref{sec:search}---summarized in Table~\ref{fig:changes}---show that \toolname is flexible enough to support
 a wide range of proof engineering use cases. % can support a flexible class of changes informed by the needs of proof engineers within a unified framework.
-In general, \toolname can support any change described by a type equivalence, though it takes the equivalence in a
+In general, \toolname can support any change described by an equivalence, though it takes the equivalence in a
 deconstructed form that we call a \textit{configuration}.
 The configuration expresses to the proof term transformation how to translate functions and proofs defined over the old version of a type
 to refer only to the new version, and how to do so in a way that does not break definitional equality.

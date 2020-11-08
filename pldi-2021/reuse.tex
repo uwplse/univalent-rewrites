@@ -1,6 +1,7 @@
 \section{Problem Definition}
 \label{sec:key1}
 
+\toolname can do much more than just permute constructors. % approach is more general than just permuting constructors:
 Given an equivalence between types \A and \B,
 \toolname repairs functions and proofs defined over \A to instead refer to \B (Section~\ref{sec:scope}).
 It does this in a way that allows for removing references to \A, which is essential for proof repair,
@@ -54,10 +55,10 @@ See Table~\ref{fig:changes} in Section~\ref{sec:search} for more examples.
 \end{figure}
 
 \mysubsubsec{Factoring out Constructors}
-Consider using \toolname to port functions and proofs across the change from the type \lstinline{I} to the type \lstinline{J} 
+Consider changing the type \lstinline{I} to the type \lstinline{J} 
 in Figure~\ref{fig:equivalence2}.
 \lstinline{J} can be viewed as \lstinline{I} with its two constructors \lstinline{A} and \lstinline{B} pulled out to a
-new hypothesis of type \lstinline{bool} for a single constructor.
+new argument of type \lstinline{bool} for a single constructor.
 
 With \toolname, the proof engineer can repair functions and proofs about \lstinline{I} to instead use \lstinline{J},
 as long as she first configures \toolname to describe which constructor 
@@ -160,10 +161,22 @@ when those changes can be expressed as equivalences between $\Sigma$ types or su
 %Section~\ref{sec:search} shows this and other case studies using \toolname to repair real proofs
 %informed by the needs of proof engineers.
 
+\begin{figure*}
+\small
+\begin{grammar}
+<i> $\in \mathbbm{N}$, <v> $\in$ Vars, <s> $\in$ \{ Prop, Set, Type<i> \}
+
+<t> ::= <v> | <s> | $\Pi$ (<v> : <t>) . <t> | $\lambda$ (<v> : <t>) . <t> | <t> <t> | Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\}
+\end{grammar}
+\vspace{-0.3cm}
+\caption{Syntax for CIC$_\omega$ from \citet{Timany2015FirstST} with (from left to right) variables, sorts, dependent types, functions, application, inductive types, inductive constructors, and primitive eliminators.}
+\label{fig:syntax}
+\end{figure*}
+
 \subsection{Goal: Transport with a Twist}
 \label{sec:repair}
 
-The goal of \toolname is to implement a kind of proof reuse known as \textit{transport},
+The goal of \toolname is to implement a kind of proof reuse known as \textit{transport}~\cite{univalent2013homotopy},
 but in a way that is suitable for repair.
 Transport takes an input term $t$ and produces an output term $t'$ that is \textit{equal up to transport}
 along an equivalence $A \simeq B$ (denoted $t \equiv_{A \simeq B} t'$).
@@ -183,11 +196,10 @@ since it proves the same thing the same way as the transformed proof up to the s
 and \lstinline{rev}.
 
 For any equivalent \A and \B, there can be many equivalences $A \simeq B$.
-Equality up to transport is along a \textit{particular} equivalence, though we erase this in the notation.
-The notation should be interpreted in the context of a metatheory with \textit{univalence}---a property that Coq lacks,
-and that makes it possible to define equality up to transport---or otherwise, it should be approximated inside of Coq.
-The formal details of equality up to transport in a univalent theory can be found in \citet{univalent2013homotopy}, and an approximation in Coq can be found in \citet{tabareau2017equivalences}.
-
+Equality up to transport is along a \textit{particular} equivalence, though we erase this in the 
+notation.\footnote{The notation should be interpreted in a metatheory with \textit{univalence}---a property that Coq lacks,
+and that makes it possible to define equality up to transport---or it should be approximated in Coq.
+The formal details of equality up to transport in a univalent theory are in \citet{univalent2013homotopy}, and an approximation in Coq is in \citet{tabareau2017equivalences}.}
 Transport typically works by applying the functions that make up the equivalence to convert
 inputs and outputs back and forth between equivalent types.
 This approach would not be suitable for repair, since it does not make it possible to remove the old specification.
