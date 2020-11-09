@@ -41,19 +41,6 @@ When a type equivalence between types \A and \B exists, those types are \textit{
 To give some intuition for what kinds of changes can be described by equivalences, we preview two changes below.
 See Table~\ref{fig:changes} in Section~\ref{sec:search} for more examples.
 
-\begin{figure}
-\begin{minipage}{0.48\columnwidth}
-\lstinputlisting[firstline=1, lastline=3]{equiv2.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\columnwidth}
-\lstinputlisting[firstline=5, lastline=7]{equiv2.tex}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{The type \lstinline{J} (right) is \lstinline{I} (left) with \lstinline{A} and \lstinline{B} factored out to \lstinline{bool} (Coq standard library).}
-\label{fig:equivalence2}
-\end{figure}
-
 \mysubsubsec{Factoring out Constructors}
 Consider changing the type \lstinline{I} to the type \lstinline{J} 
 in Figure~\ref{fig:equivalence2}.
@@ -92,6 +79,33 @@ and repairing proofs of De Morgan's laws~\circled{2}. % constr_refactor.v
 %Otherwise, they behave the same way as the functions and proofs over \lstinline{I} up to the equivalence between
 %\lstinline{I} and \lstinline{J}---Section~\ref{sec:repair} explains this intuition more formally.
 
+\begin{figure}
+\begin{minipage}{0.48\columnwidth}
+\lstinputlisting[firstline=1, lastline=3]{equiv2.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\columnwidth}
+\lstinputlisting[firstline=5, lastline=7]{equiv2.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{\lstinline{J} is \lstinline{I} with \lstinline{A} and \lstinline{B} factored out to \lstinline{bool} (\codediff{orange}).}
+\label{fig:equivalence2}
+\end{figure}
+
+\begin{figure}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=3]{listtovect.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.58\textwidth}
+   \lstinputlisting[firstline=5, lastline=7]{listtovect.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{A vector is a list indexed by its length (\codediff{orange}).}
+\label{fig:listtovect}
+\end{figure}
+
+\iffalse
 \begin{figure*}
 \begin{minipage}{0.40\textwidth}
    \lstinputlisting[firstline=1, lastline=3]{listtovect.tex}
@@ -104,6 +118,7 @@ and repairing proofs of De Morgan's laws~\circled{2}. % constr_refactor.v
 \caption{A vector (right) is a list (left) indexed by its length.}
 \label{fig:listtovect}
 \end{figure*}
+\fi
 
 \mysubsubsec{Adding a Dependent Index}
 At first glance, the word \textit{equivalence} may seem to imply that \toolname can support only changes in

@@ -1,6 +1,19 @@
 \section{Case Studies: \textsc{Carrot} Eight Ways}
 \label{sec:search}
 
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=9]{replica.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=10, lastline=18]{replica.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
+\label{fig:replica}
+\end{figure*}
+
 This section summarizes eight case studies using \toolname,
 corresponding to the eight classes of changes in Table~\ref{fig:changes}.
 %For each case study, we explain the configuration used, walk through an example, and describe lessons learned.
@@ -75,7 +88,7 @@ proofs about the original automatically generated functions and specifications.
 %This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
 %that would have otherwise been difficult.
 So far, the proof engineer has used at least three automatic configurations,
-but the proof engineer most often used an automatic configuration for porting anonymous tuples produced by \company's compiler
+but they most often used an automatic configuration for porting anonymous tuples produced by \company's compiler
 to named records.
 Some examples of this can be found in the proof engineer's repository~\circled{18}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
 %The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
@@ -89,19 +102,6 @@ and there was little need for tactic suggestions.
 %and 2) they waited only about ten seconds at most for \toolname to return.
 %Both informed improvements to \toolname, like better error messages, caching,
 %and a way to tell \toolname not to $\delta$-reduce certain terms.
-
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=1, lastline=9]{replica.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=10, lastline=18]{replica.tex}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
-\label{fig:replica}
-\end{figure*}
 
 \mysubsubsec{Permute Constructors: Modifying a Language}
 The swapping example from Section~\ref{sec:overview} was inspired by benchmarks 

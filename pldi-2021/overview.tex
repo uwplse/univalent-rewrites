@@ -1,9 +1,9 @@
 \section{A Simple Motivating Example}
 \label{sec:overview}
 
-Consider a simple example of using \toolname: fixing broken list proofs after swapping the two list constructors (Figure~\ref{fig:listswap}).
+Consider a simple example of using \toolname: repairing proofs after swapping the list constructors (Figure~\ref{fig:listswap}).
 This change is inspired by a similar change from a user study of proof engineers (Section~\ref{sec:search}).
-Even such a simple change can cause trouble in proofs, like this proof from the Coq standard library:\footnote{We use induction instead of pattern matching.}
+Even such a simple change can cause trouble, as in this proof from the Coq standard library:\footnote{We use induction instead of pattern matching.}
 
 \begin{lstlisting}
 Lemma rev_app_distr {A} :
@@ -15,7 +15,7 @@ Proof.(@\vspace{-0.04cm}@)
   simpl. rewrite app_nil_r; auto.(@\vspace{-0.04cm}@)
   intro y. simpl.(@\vspace{-0.04cm}@)
   rewrite (IHl y). rewrite app_assoc; trivial.(@\vspace{-0.04cm}@)
-Qed.(@\vspace{-0.04cm}@)
+Qed.(@\vspace{-0.05cm}@)
 \end{lstlisting}
 This theorem says that appending two lists and reversing the result behaves the same as appending
 the reverse of the second list onto the reverse of the first list.
@@ -26,13 +26,19 @@ When we change the \lstinline{list} type, the proof no longer works.
 To repair this proof with \toolname, we just run this command:
 
 \begin{figure}
-%\includegraphics[width=\columnwidth]{workflowa.pdf}
-\includegraphics[width=\columnwidth]{workflowa.pdf}
-\vspace{-0.5cm}
-\caption{The workflow for \toolname.}
-\label{fig:system}
+\begin{minipage}{0.46\textwidth}
+   \lstinputlisting[firstline=1, lastline=3]{listswap.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.46\textwidth}
+   \lstinputlisting[firstline=5, lastline=7]{listswap.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{The updated \lstinline{list} (bottom) is the old \lstinline{list} (top) with its two constructors swapped (\codediff{orange}).}
+\label{fig:listswap}
 \end{figure}
 
+\iffalse
 \begin{figure*}
 \begin{minipage}{0.46\textwidth}
    \lstinputlisting[firstline=1, lastline=3]{listswap.tex}
@@ -45,6 +51,7 @@ To repair this proof with \toolname, we just run this command:
 \caption{The updated \lstinline{list} (right) is the old \lstinline{list} (left) with its two constructors swapped (\codediff{orange}).}
 \label{fig:listswap}
 \end{figure*}
+\fi
 
 \begin{figure*}
 \codeauto{%
@@ -61,10 +68,10 @@ To repair this proof with \toolname, we just run this command:
 \end{figure*}
 
 \begin{lstlisting}
-Repair Old.list New.list in rev_app_distr.(@\vspace{-0.04cm}@)
+Repair Old.list New.list in rev_app_distr.(@\vspace{-0.05cm}@)
 \end{lstlisting}
 assuming the old and new list types from Figure~\ref{fig:listswap} are in modules \lstinline{Old} and \lstinline{New}.
-This suggests an updated proof script that succeeds (in $\codeauto{light blue}$ to denote that \toolname produces it automatically):
+This suggests a proof script that succeeds (in $\codeauto{light blue}$ to denote \toolname produces it automatically):
 
 \begin{lstlisting}[backgroundcolor=\color{cyan!30}]
 Proof.(@\vspace{-0.04cm}@)
@@ -76,7 +83,7 @@ Proof.(@\vspace{-0.04cm}@)
     + simpl. rewrite (app_nil_r (rev l) (a::[])).(@\vspace{-0.04cm}@)
       auto.(@\vspace{-0.04cm}@)
     + auto.(@\vspace{-0.04cm}@)
-Qed.(@\vspace{-0.04cm}@)
+Qed.(@\vspace{-0.05cm}@)
 \end{lstlisting}
 where the dependencies (\lstinline{rev}, \lstinline{++}, \lstinline{app_assoc}, and \lstinline{app_nil_r}) have
 also been updated automatically~\circled{1}. % Swap.v
