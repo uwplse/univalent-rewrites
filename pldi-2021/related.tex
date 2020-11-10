@@ -36,9 +36,8 @@ These tools support primarily syntactic changes and do not have tactic support.
 A few proof refactoring tools operate directly over tactics:
 POLAR~\cite{Dietrich2013} refactors proof scripts in languages based on Isabelle/Isar~\cite{Wenzel2007isar},
 CoqPIE~\cite{Roe2016} is an IDE with support for simple refactorings of Ltac scripts, and
-Tactician~\cite{adams2015} is a proof script refactoring tool for switching between tactics and tacticals.
-This approach is not tractable for more complex changes;
-\citet{robert2018} discusses the challenges in detail.
+Tactician~\cite{adams2015} is a refactoring tool for switching between tactics and tacticals.
+This approach is not tractable for more complex changes~\cite{robert2018}.
 
 \mysubsubsec{Proof Reuse}
 %Proof repair is proof reuse with the additional constraint that one specification ceases to exist.
@@ -67,15 +66,14 @@ in Coq, only sometimes relying on functional extensionality.
 While powerful, neither approach removes references to the old type. %making them poorly suited for repair.
 
 Recent work~\cite{tabareau2019marriage} extends univalent parametricity with 
-a white-box transformation that may be well suited for proof repair.
-However, it relies on proof obligations from the proof engineer beyond those imposed by \toolname.
+a white-box transformation that may be suitable for repair.
+However, this relies on proof obligations from the proof engineer beyond those imposed by \toolname,
 %that establish what is effectively the correctness criteria
 %for the configuration in \toolname, while \toolname needs only that it holds metatheoretically.
-In addition, it does not include search procedures like \toolname to discover equivalences,
-and it does not include tactic script generation like \toolname.
-Finally, it does not support porting definitional equalities to propositional equalities,
-instead relying on its original black-box functionality to handle those cases;
-\lstinline{Iota} addresses this problem in \toolname. % and is based on lessons learned from reading that article.
+and it includes neither search procedures for equivalences nor tactic script generation, unlike \toolname.
+It also does not support changes in inductive structure,
+instead relying on its original black-box functionality;
+\lstinline{Iota} solves this in \toolname. % and is based on lessons learned from reading that article.
 The most fruitful progress may come from integrating these tools together to take advantage of the benefits that both offer.
 
 %Univalent parametricity implements type-directed search, a feature that \toolname does not yet support.

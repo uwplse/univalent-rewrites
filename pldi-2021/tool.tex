@@ -36,6 +36,54 @@ We use the existing \lstinline{Preprocess}~\cite{Ringer2019} command to turn pat
 eliminators.
 We handle refolding of constants in constructors using \lstinline{DepConstr}.
 
+\begin{figure}
+\begin{lstlisting}
+fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
+    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
+    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
+  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
+  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\vspace{-0.4cm}
+\caption{Proof term (top) and decompiled proof script (bottom) for the base case of 
+\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
+highlighted the same color.}
+\label{fig:rainbow}
+\end{figure}
+
+\iffalse
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
+    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
+    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+(@\vspace{-0.14cm}@)
+- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
+  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
+  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{Proof term (left) and decompiled proof script (right) for the base case of 
+\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
+highlighted the same color.}
+\label{fig:rainbow}
+\end{figure*}
+\fi
+
 \mysubsubsec{Reaching Real Proof Engineers}
 Many of our design decisions in implementing \toolname were informed by our partnership with
 an industrial proof engineer (see Section~\ref{sec:search}).
@@ -97,9 +145,11 @@ These features along with our tactic decompiler helped with integration into pro
      & \toolname & None \\
     \hline
   \end{tabular}
+\vspace{0.05cm}
   \caption{Some changes using \toolname, from left to right: class of changes, whether the class uses
 automatic or manual configuration, example changes in the class, and Coq tools we know of that support repair along (Repair Tools) or automatic proof of (Search Tools) the equivalence correponding to each example change. Tools listed for comparison are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and a classic tool for changing data structures~\cite{magaud2000changing}. \toolname is the only one with support for tactic suggestions.
 We provide more nuanced comparisons to these tools and more in Section~\ref{sec:related}.}
+\vspace{-0.5cm}
 \label{fig:changes}
 \end{table*}
 
@@ -138,11 +188,11 @@ In all other cases, it uses \lstinline{pose}, a catch-all for let bindings.
 \mysubsubsec{Pretty Printing}
 After decompiling proof terms, \textbf{Decompile} pretty prints the result~\circled{11}.
 Like the mini decompiler, \textbf{Decompile} represents its output language using a predefined grammar of Ltac tactics,
-albeit one that is larger than Qtac.
-It maintains the recursive proof structure as it recurses, then uses that to print proofs of subgoals using bullet points.
+albeit one larger than Qtac.
+It maintains the recursive proof structure and uses that for formatting. %, then uses that to print proofs of subgoals using bullet points.
 %It displays the resulting proof script to the proof engineer, who can modify it as needed.
-For convenience, it includes scripts that automate the process of printing all of these tactic proofs to a Coq file,
-in case the proof engineer does not want an interactive workflow.
+%It includes scripts that automate the process of printing all of these tactic proofs to a Coq file,
+%in case the proof engineer does not want an interactive workflow.
 \toolname keeps all output proof terms from the proof term transformation in the Coq environment in case the decompiler does not succeed.
 Once the proof engineer has this new proof, she can remove the old version.
 

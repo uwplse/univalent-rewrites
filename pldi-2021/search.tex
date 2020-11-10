@@ -45,11 +45,11 @@ though the suggested tactics did need massaging. % as the decompiler struggled w
 
 \mysubsubsec{Unpack Sigma Types: Vectors of Particular Lengths}
 %The previous case study showed how to get between lists and vectors of \textit{some} length.
-The same file~\circled{3} goes on to show how to port functions and proofs to vectors of a \textit{particular} length, 
+The same file~\circled{3} goes on to port functions and proofs to vectors of a \textit{particular} length, 
 like \lstinline{vector T n}.
 \textsc{Devoid} had left this step to the proof engineer.
-We supported this in \toolname by chaining the change from the previous case study
-with one additional automatic configuration for unpacking sigma types.
+We supported this in \toolname by chaining the previous change
+with an automatic configuration for unpacking sigma types.
 %To support this, we used one additional automatic configuration for unpacking sigma types.
 %This configuration corresponds to the equivalence between sigma types at a particular projection
 %and the same type escaping the sigma type. %, in our example $\Sigma$\lstinline{(s : packed_vect T).}$\pi_l$\lstinline{ s = n }$\simeq$\lstinline
@@ -84,13 +84,13 @@ However, due to language differences, they had found that the generated Gallina 
 The proof engineer used \toolname to port the automatically generated functions and specifications to more
 human-readable functions and specifications, wrote Coq proofs about those functons and specifications, then
 used \toolname again to port those proofs back to
-proofs about the original automatically generated functions and specifications.
+proofs about the original functions and specifications.
 %This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
 %that would have otherwise been difficult.
-So far, the proof engineer has used at least three automatic configurations,
-but they most often used an automatic configuration for porting anonymous tuples produced by \company's compiler
+So far, they have used at least three automatic configurations,
+but they most often used an automatic configuration for porting anonymous tuples produced by their compiler
 to named records.
-Some examples of this can be found in the proof engineer's repository~\circled{18}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
+Some examples of this can be found in their repository~\circled{18}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
 %The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
 %workflow using solver-aided tools at \company.
 The workflow was a bit nonstandard,

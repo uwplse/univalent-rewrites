@@ -68,10 +68,10 @@ simplifying to handle motive inference for rewrites,
 and turning applications of \lstinline{eq_refl} into \lstinline{reflexivity} or \lstinline{auto}.
 
 \mysubsubsec{Better Proof Scripts}
-The mini decompiler reasons about tactics one subterm at a time, and produces simple tactic scripts.
-To produce a more natural set of tactics, \textbf{Decompile} first runs something similar to the mini decompiler, and then modifies those tactics to produce a more natural proof script~\circled{11}. % decompiler.ml
-For example, it cancels out sequences of \lstinline{intros} and \lstinline{revert} tactics.
-It removes redundant arguments to the \lstinline{apply} tactic, ensuring the result still holds. % TODO rewrite
+The mini decompiler produces simple tactic scripts.
+The implementation of \textbf{Decompile} first runs something similar to the mini decompiler, and then modifies those tactics to produce a more natural proof script~\circled{11}. % decompiler.ml
+For example, it cancels out sequences of \lstinline{intros} and \lstinline{revert} tactics,
+inserts semicolons, and removes redundant arguments to the \lstinline{apply} tactic. %, ensuring the result still holds. % TODO rewrite
 It can also take suggested tactics (like part of the old version of the proof script) from the proof engineer as hints,
 then iteratively replace tactics with those hints, checking the result as it recurses.
 This makes it possible for the tactic scripts \toolname suggests to include custom tactics and decision procedures.
@@ -84,51 +84,5 @@ This makes it possible for the tactic scripts \toolname suggests to include cust
 
 % TODO add any new things RanDair implements, like exists
 
-\begin{figure}
-\begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
-    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
-    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
-    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
-(@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
-  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\vspace{-0.4cm}
-\caption{Proof term (top) and decompiled proof script (bottom) for the base case of 
-\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
-highlighted the same color.}
-\label{fig:rainbow}
-\end{figure}
 
-\iffalse
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
-    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
-    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
-    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-(@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
-  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{Proof term (left) and decompiled proof script (right) for the base case of 
-\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
-highlighted the same color.}
-\label{fig:rainbow}
-\end{figure*}
-\fi
 
