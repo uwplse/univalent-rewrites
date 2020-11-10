@@ -67,14 +67,14 @@ While powerful, neither approach removes references to the old type. %making the
 
 Recent work~\cite{tabareau2019marriage} extends univalent parametricity with 
 a white-box transformation that may be suitable for repair.
-However, this relies on proof obligations from the proof engineer beyond those imposed by \toolname,
+This imposes proof obligations on the proof engineer beyond those imposed by \toolname,
 %that establish what is effectively the correctness criteria
 %for the configuration in \toolname, while \toolname needs only that it holds metatheoretically.
-and it includes neither search procedures for equivalences nor tactic script generation, unlike \toolname.
+and it includes neither search procedures for equivalences nor tactic script generation.
 It also does not support changes in inductive structure,
 instead relying on its original black-box functionality;
 \lstinline{Iota} solves this in \toolname. % and is based on lessons learned from reading that article.
-The most fruitful progress may come from integrating these tools together to take advantage of the benefits that both offer.
+The most fruitful progress may come from combining these tools. % to take advantage of the benefits of both.
 
 %Univalent parametricity implements type-directed search, a feature that \toolname does not yet support.
 %It achieves this using type classes~\cite{Sozeau2008}; this does not always scale well~\cite{tabareau2019marriage}.

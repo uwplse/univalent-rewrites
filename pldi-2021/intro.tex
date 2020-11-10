@@ -62,8 +62,7 @@ This is implemented (Section~\ref{sec:impl}) in \toolname\footnote{Name changed 
 %\item suggests tactic scripts and proves relations corresponding to certain changes for better workflow integration.
 %\end{enumerate}
 
-\subsection*{Addressing Challenge 1: Flexible Type Support}
-
+\mysubsubsec{Addressing Challenge 1: Flexible Type Support}
 The case studies in Section~\ref{sec:search}---summarized in Table~\ref{fig:changes}---show that \toolname is flexible enough to support
 a wide range of proof engineering use cases. % can support a flexible class of changes informed by the needs of proof engineers within a unified framework.
 In general, \toolname can support any change described by an equivalence, though it takes the equivalence in a
@@ -73,8 +72,7 @@ to refer only to the new version, and how to do so in a way that does not break 
 The proof engineer can write this configuration in Coq and feed it to \toolname (\textit{manual configuration} in Table~\ref{fig:changes}),
 configuring \toolname to support the corresponding change. %from directly within Coq.
 
-\subsection*{Addressing Challenge 2: Workflow Integration}
-
+\mysubsubsec{Addressing Challenge 2: Workflow Integration}
 Research on workflow integration for proof repair tools is in its infancy.
 \toolname is built with workflow integration in mind.
 For example, \toolname is the only proof repair tool we are aware of that produces suggested tactic scripts for repaired proofs,
@@ -87,16 +85,16 @@ decreasing the burden of proof obligations imposed on the proof engineer.
 Our partnership with an industrial proof engineer has informed other changes to further improve workflow integration
 (Sections~\ref{sec:implementation} and~\ref{sec:search}).
 
-\subsection*{Bringing it Together}
-
 \begin{figure}
 %\includegraphics[width=\columnwidth]{workflowa.pdf}
 \includegraphics[width=\columnwidth]{workflowa.pdf}
-\vspace{-0.5cm}
+\vspace{-0.7cm}
 \caption{The workflow for \toolname.}
+\vspace{-0.1cm}
 \label{fig:system}
 \end{figure}
 
+\mysubsubsec{Bringing it Together}
 Figure~\ref{fig:system} shows how this comes together when the proof engineer invokes \toolname:
 
 \begin{enumerate}

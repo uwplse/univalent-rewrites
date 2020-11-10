@@ -1,10 +1,11 @@
 \section{Implementation}
 \label{sec:impl}
 
-The transformation abstracts a lot of the details needed to build a proof repair tool that reaches proof engineers,
-and the mini decompiler abstracts a lot of the details that make Ltac so useful to proof engineers---and so painful to 
-reason about automatically.
-This section describes how we solved some of the implementation challenges that we encountered.
+The transformation and mini decompiler abstract many of the challenges
+of building a tool for proof engineers. % many details needed to build a tool that reaches proof engineers.
+%and the mini decompiler abstracts a lot of the details that make Ltac so useful to proof engineers---and so painful to 
+%reason about automatically.
+This section describes how we solved some of these challenges.
 %for both the transformation (Section~\ref{sec:implementation}) and the decompiler (Section~\ref{sec:second}).
 %Section~\ref{sec:discussion} describes some remaining challenges and our plans to address them. % in the future.
 
@@ -36,71 +37,26 @@ We use the existing \lstinline{Preprocess}~\cite{Ringer2019} command to turn pat
 eliminators.
 We handle refolding of constants in constructors using \lstinline{DepConstr}.
 
-\begin{figure}
-\begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
-    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
-    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
-    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
-(@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
-  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\vspace{-0.4cm}
-\caption{Proof term (top) and decompiled proof script (bottom) for the base case of 
-\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
-highlighted the same color.}
-\label{fig:rainbow}
-\end{figure}
-
-\iffalse
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
-    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
-    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
-    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-(@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
-  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{Proof term (left) and decompiled proof script (right) for the base case of 
-\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
-highlighted the same color.}
-\label{fig:rainbow}
-\end{figure*}
-\fi
-
 \mysubsubsec{Reaching Real Proof Engineers}
 Many of our design decisions in implementing \toolname were informed by our partnership with
-an industrial proof engineer (see Section~\ref{sec:search}).
+an industrial proof engineer (Section~\ref{sec:search}).
 For example, we found that the proof engineer rarely had the patience to wait more than ten seconds
-for \toolname to port a function or proof.
-In response, we implemented aggressive caching (with an option to disable the cache), even caching intermediate subterms that
-we encounter in the course of running our proof term transformation~\circled{14}.
-We also added a cache to tell \toolname not to $\delta$-reduce certain terms~\circled{14}. % caching.ml
+for \toolname to port a function or proof,
+so we implemented optional aggressive caching, even caching intermediate subterms that
+we encounter in the course of running our proof term transformation~\circled{14}. % TODO caching.ml
+We added a cache to tell \toolname not to $\delta$-reduce certain terms~\circled{14}.
+We wrote informative error messages~\circled{22}. % TODO link to errors
+
+ % caching.ml
 %These caches are implemented in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/cache/caching.ml}{caching.ml}.
 %or recurse into certain modules.
 % set certain terms or modules as opaque to \toolname, to prevent unnecessary $\delta$-reduction.
 
 The experiences of proof engineers also inspired new features.
 For example, we implemented a special search procedure to generate custom eliminators %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/smartelim.ml}{smartelim.ml})
-to make it easier to reason about types refined by equalities like $\Sigma$\lstinline{(l : list T).length l = n}
+to make it easier to reason about types like $\Sigma$\lstinline{(l : list T).length l = n}
 by reasoning separately about the projections~\circled{15}. %smartelim.ml
-These features along with our tactic decompiler helped with integration into proof engineering workflows.
+These features helped with workflow integration. % tactic decompiler helped with integration into proof engineering workflows.
 
 \begin{table*}
 \small
@@ -161,14 +117,15 @@ than those in Coq. \textbf{Decompile} includes additional logic to reason about 
 For example, Qtac assumes that there is only one \lstinline{rewrite} direction. Ltac has two rewrite directions,
 and so the decompiler infers the direction from the motive.
 
-Qtac also assumes that both tactics take the inductive motive explicitly.
-In Coq, however, both tactics infer the motive automatically.
-Consequentially, Coq will sometimes infer the wrong motive, % without manipulation of goals and hypotheses,
-or will fail to infer a motive at all.
-This is especially common for the \lstinline{rewrite} tactic, which is purely syntactic.
-To handle induction, the decompiler strategically uses the \lstinline{revert} tactic to manipulate the goal
+Qtac also assumes that both tactics take the inductive motive explicitly,
+while in Coq, both tactics infer the motive automatically.
+Consequentially, Coq sometimes fails to infer the correct motive.
+% infers the wrong motive, % without manipulation of goals and hypotheses,
+%or fails to infer a motive at all.
+This is especially common for \lstinline{rewrite}, which is purely syntactic.
+To handle induction, the decompiler strategically uses \lstinline{revert} to manipulate the goal
 so that Coq can better infer the motive.
-To handle rewrites, it uses the \lstinline{simpl} tactic to refold the goal before rewriting.
+To handle rewrites, it uses \lstinline{simpl} to refold the goal before rewriting.
 Neither of these approaches are guaranteed to work, so the proof engineer may sometimes need to tweak the output proof script appropriately.
 We have found that even if we pass Coq's induction principle an explicit motive, Coq still sometimes fails due
 to unrepresented assumptions.
@@ -186,13 +143,13 @@ In all other cases, it uses \lstinline{pose}, a catch-all for let bindings.
 
 \mysubsubsec{Pretty Printing}
 After decompiling proof terms, \textbf{Decompile} pretty prints the result~\circled{11}.
-Like the mini decompiler, \textbf{Decompile} represents its output language using a predefined grammar of Ltac tactics,
+Like the mini decompiler, \textbf{Decompile} represents its output using a predefined grammar of Ltac tactics,
 albeit one larger than Qtac.
-It maintains the recursive proof structure and uses that for formatting. %, then uses that to print proofs of subgoals using bullet points.
+It maintains the recursive proof structure for formatting. %, then uses that to print proofs of subgoals using bullet points.
 %It displays the resulting proof script to the proof engineer, who can modify it as needed.
 %It includes scripts that automate the process of printing all of these tactic proofs to a Coq file,
 %in case the proof engineer does not want an interactive workflow.
-\toolname keeps all output proof terms from the proof term transformation in the Coq environment in case the decompiler does not succeed.
-Once the proof engineer has this new proof, she can remove the old version.
+\toolname keeps all output terms from \textbf{Transform} in the Coq environment in case the decompiler does not succeed.
+Once the proof engineer has the new proof, she can remove the old one.
 
 

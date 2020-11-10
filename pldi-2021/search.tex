@@ -1,27 +1,14 @@
 \section{Case Studies: \textsc{Carrot} Eight Ways}
 \label{sec:search}
 
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=1, lastline=9]{replica.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=10, lastline=18]{replica.tex}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
-\label{fig:replica}
-\end{figure*}
-
 This section summarizes eight case studies using \toolname,
-corresponding to the eight classes of changes in Table~\ref{fig:changes}.
+corresponding to the eight rows in Table~\ref{fig:changes}.
 %For each case study, we explain the configuration used, walk through an example, and describe lessons learned.
-These case studies demonstrate \toolname's flexibility in handling diverse changes and scenarios.
+These case studies highlight \toolname's flexibility in handling diverse scenarios,
 %including in one case for an industrial user with unanticipated workflow.
-They also demonstrate the success of automatic configuration for better workflow integration for supported changes,
-and the preliminary success of the prototype decompiler.
-Finally, they highlight clear paths to improvement to better serve proof engineers. 
+the success of automatic configuration for better workflow integration, % for supported changes,
+the preliminary success of the prototype decompiler,
+and clear paths to better serving proof engineers.
 Detailed walkthroughs of these case studies are in the code.
 
 \mysubsubsec{Algebraic Ornaments: Lists to Packed Vectors}
@@ -33,19 +20,19 @@ length-indexed vector (Figure~\ref{fig:listtovect}).
 
 \toolname implements a search procedure for automatic configuration of algebraic ornaments.
 %The search procedure moves the work specific to algebraic ornaments into the \toolname configuration.
-The result is all of the functionality from \textsc{Devoid}, plus tactic suggestions.
+The result is all functionality from \textsc{Devoid}, plus tactic suggestions.
 %which allows it to implement the  functionality from \textsc{Devoid}.
-The file~\circled{3} shows this on an example from \textsc{Devoid}:
-porting two list functions and a proof from lists to vectors of \textit{some} length, since \lstinline{list T} $\simeq$ \lstinline{packed_vect T}.
-The decompiler helped us write tactic proofs that we had found
-too difficult to write by hand,
+In file~\circled{3}, we used this to port
+functions and a proof from lists to vectors of \textit{some} length, since \lstinline{list T} $\simeq$ \lstinline{packed_vect T}.
+The decompiler helped us write proofs that we had found
+too hard to write by hand,
 though the suggested tactics did need massaging. % as the decompiler struggled with motive inference
 %for induction with dependent types.
 %Additional effort is needed to improve tactic suggestions for dependent types.
 
 \mysubsubsec{Unpack Sigma Types: Vectors of Particular Lengths}
 %The previous case study showed how to get between lists and vectors of \textit{some} length.
-The same file~\circled{3} goes on to port functions and proofs to vectors of a \textit{particular} length, 
+In the same file~\circled{3}, we went on to port functions and proofs to vectors of a \textit{particular} length, 
 like \lstinline{vector T n}.
 \textsc{Devoid} had left this step to the proof engineer.
 We supported this in \toolname by chaining the previous change
@@ -56,7 +43,7 @@ with an automatic configuration for unpacking sigma types.
 %{ vector T n}.
 By composition, this transported proofs across the equivalence from Section~\ref{sec:key1}.
 
-Two tricks were important for workflow integration for this change:
+Two tricks helped with workflow integration for this change:
 1) have the search procedure view \lstinline{vector T n} as 
 $\Sigma$\lstinline{(v : vector T m).n = m} for some \lstinline{m},
 then let \toolname instantiate those equalities via unification heuristics before transforming,
@@ -65,7 +52,7 @@ list terms with length invariants.
 %This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths):
 The resulting workflow works not just for lists and vectors, but for any algebraic ornament,
 automating manual effort from \textsc{Devoid}.
-The tactic decompiler yielded similar results to the first case study: helpful for writing proofs
+The suggested tactics were again helpful for writing proofs
 that we had struggled with manually, but only after massaging.
 More effort is needed to improve tactic suggestions for dependent types.
 
@@ -74,12 +61,12 @@ An industrial proof engineer at \company\footnote{Name withheld for double-blind
 correct an implementation of the TLS handshake protocol.
 %While this is ongoing work, thus far,
 %\toolname has helped \company integrate Coq with their existing verification workflow.
-Before contact, \company had been using a custom solver-aided verification language to prove correct C programs.
-They had found that at times, those constraint solvers got stuck.
+\company had been using a custom solver-aided verification language to prove correct C programs,
+but had found that at times, the constraint solvers got stuck.
 %and they could not progress on proofs about those programs.
-They had built a compiler that translates their solver-aided language into Coq's specification language Gallina,
-that way their proof engineers could finish stuck proofs interactively using Coq.
-However, due to language differences, they had found that the generated Gallina programs and specifications were sometimes too difficult to work with.
+They had built a compiler that translates their language into Coq's specification language Gallina,
+that way proof engineers could finish stuck proofs interactively using Coq.
+However, due to language differences, they had found the generated Gallina programs and specifications difficult to work with.
 
 The proof engineer used \toolname to port the automatically generated functions and specifications to more
 human-readable functions and specifications, wrote Coq proofs about those functons and specifications, then
@@ -88,13 +75,12 @@ proofs about the original functions and specifications.
 %This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
 %that would have otherwise been difficult.
 So far, they have used at least three automatic configurations,
-but they most often used an automatic configuration for porting anonymous tuples produced by their compiler
-to named records.
-Some examples of this can be found in their repository~\circled{18}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
+but they most often used an automatic configuration for porting compiler-produced anonymous tuples
+to named records, as in file~\circled{18}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
 %The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
 %workflow using solver-aided tools at \company.
 The workflow was a bit nonstandard,
-and there was little need for tactic suggestions.
+so there was little need for tactic suggestions.
 %In the initial days, we worked closely with the proof engineer;
 %later, the proof engineer worked independently and reached out occasionally.
 %The proof engineer was able to work independently, but found two challenges with workflow integration:
@@ -166,12 +152,34 @@ Since neither type was inductive, this change used the generic construction for 
 This worked well, but necessitated some manual annotation due to the lack of custom unification heuristics for 
 manual configuration.
 
+\begin{figure}
+\lstinputlisting[firstline=1, lastline=18]{replica.tex}
+\vspace{-0.4cm}
+\caption{A language (top) and the same language with two swapped constructors and an added constructor (bottom).}
+\label{fig:replica}
+\end{figure}
+
+\iffalse
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=9]{replica.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=10, lastline=18]{replica.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
+\label{fig:replica}
+\end{figure*}
+\fi
+
 \mysubsubsec{Change Inductive Structure: Unary to Binary}
 In \circled{5}, we used \toolname to support a classic example of changing inductive structure:
-updating unary to binary natural numbers~\cite{magaud2000changing}.
+updatings unary to binary numbers~\cite{magaud2000changing}.
 % TODO fin and vect? mention somewhere?
 In Coq, a binary number \lstinline{N} (Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
-is either 1 (\lstinline{xH}), or the result of shifting left and adding 1 (\lstinline{xI})
+is either 1 (\lstinline{xH}), or the result of shifting left and adding 1 (\lstinline{xI}) or
 0 (\lstinline{xO}).
 This allows for a fast addition function. %, found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we used \toolname to derive a slow binary
@@ -242,6 +250,7 @@ tactics for applications of \lstinline{Iota}; both of these are clear paths to m
 \end{minipage}
 \vspace{-0.4cm}
 \caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
+\vspace{-0.1cm}
 \label{fig:replica}
 \end{figure}
 

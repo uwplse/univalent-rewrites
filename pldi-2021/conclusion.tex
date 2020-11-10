@@ -20,13 +20,14 @@ Three of the biggest problems that we encountered scaling up the \toolname trans
 ad hoc termination checks, and inability for proof engineers to add custom unification heuristics.
 We hope to solve these challenges using \textit{e-graphs}~\cite{egraph1},
 a data structure %that is used in the constraint solver and rewrite system communities 
-for managing equivalences.
-E-graphs are built to implement search procedures,
-remove the burden of ad hoc reasoning about termination,
-and make it simple for anyone to extend a system with new
-rewrite rules---even ones that can call out to external procedures~\cite{egraph5} 
-like our unification heuristics.
-E-graphs were recently adapted to express path equality in cubical type theory~\cite{egraph6}; we hope to repurpose this insight.
+for managing equivalences
+built with these kinds of problems in mind.
+% to implement search procedures,
+%remove the burden of ad hoc reasoning about termination,
+%and make it simple for anyone to extend a system with new
+%rewrite rules---even ones that can call out to external procedures~\cite{egraph5} 
+%like our unification heuristics.
+E-graphs were recently adapted to express path equality in cubical~\cite{egraph6}; we hope to repurpose this insight.
 
 Beyond that, we believe that the biggest gains will come from continuing to improve the prototype decompiler.
 Two particularly helpful features would be preserving indentation and comments, and automatically using information from the old 

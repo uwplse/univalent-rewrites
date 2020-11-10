@@ -90,6 +90,7 @@ DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.0
 \end{minipage}
 \vspace{-0.3cm}
 \caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}.}
+\vspace{-0.1cm}
 \label{fig:listconfig}
 \end{figure*}
 
@@ -167,6 +168,7 @@ Thanks to this, we can forego the assumption that our language has primitive pro
 \end{minipage}
 \vspace{-0.4cm}
 \caption{Unary (left) and binary (right) natural numbers.}
+\vspace{-0.2cm}
 \label{fig:nattobin}
 \end{figure}
 
@@ -288,16 +290,16 @@ $\iota$-reduction is definitional over \lstinline{nat}, since a proof of:\vspace
 
 \begin{lstlisting}
 $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,(@\vspace{-0.04cm}@)
-  DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } =(@\vspace{-0.04cm}@)
-  (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
+  DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ } =(@\vspace{-0.04cm}@)
+  (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
 \end{lstlisting}
 goes through by reflexivity.
 But $\iota$ for \lstinline{N} is propositional, since:
 
 \begin{lstlisting}
 $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,(@\vspace{-0.04cm}@)
-  DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$ p$_\texttt{S}$ } =(@\vspace{-0.04cm}@)
-  (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$ p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
+  DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ } =(@\vspace{-0.04cm}@)
+  (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
 \end{lstlisting}
 no longer holds by reflexivity.
 The \lstinline{Iota} rules are rewrites along proofs of the theorems above for the successor case~\circled{5}.
@@ -335,7 +337,6 @@ It then runs the proof term transformation, which transports proofs across the e
 \begin{figure*}
 \begin{minipage}{0.43\textwidth}
 \begin{lstlisting}
-(* Equivalence *)
 section: $\forall$ (a : A), g (f a) = a.(@\vspace{-0.04cm}@)
 retraction: $\forall$ (b : B), f (g b) = b.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
@@ -352,7 +353,6 @@ elim_ok: $\forall$ a b P$_A$ P$_B$ $\vec{f_A}$ $\vec{f_B}$,(@\vspace{-0.04cm}@)
 \hfill
 \begin{minipage}{0.56\textwidth}
 \begin{lstlisting}
-(* Equality (shown for A; B is similar) *)
 elim_eta(A): $\forall$ a P $\vec{f}$, DepElim(a, P) $\vec{f}$ : P (Eta(A) a).(@\vspace{-0.04cm}@)
 eta_ok(A): $\forall$ (a : A), Eta(A) a = a.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
@@ -440,8 +440,8 @@ iota_ok(A) : $\forall$ j (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$(@\vspace
 \fi
 \vspace{-0.4cm}
 \caption{Correctness criteria for a configuration to ensure that the transformation
-preserves equivalence coherently with equality. \lstinline{f} and \lstinline{g} are defined as explained in text. $s$, $\vec{f}$, $\vec{x}$, and $\vec{\mathtt{IH}}$ represent
-sorts, eliminator cases, constructor arguments, and inductive hypotheses, and $\xi$ $(T,$ $P,$ $j)$ is the type 
+preserves equivalence (left) coherently with equality (right, shown for \A; \B is similar). \lstinline{f} and \lstinline{g} are defined in text. $s$, $\vec{f}$, $\vec{x}$, and $\vec{\mathtt{IH}}$ represent
+sorts, eliminator cases, constructor arguments, and inductive hypotheses. $\xi$ $(A,$ $P,$ $j)$ is the type 
 of \lstinline{DepElim(A, P)} at \lstinline{DepConstr(j, A)} (similarly for \B).} %, respectively.}
 \label{fig:spec}
 \end{figure*}
@@ -450,7 +450,7 @@ of \lstinline{DepElim(A, P)} at \lstinline{DepConstr(j, A)} (similarly for \B).}
 % ж(A, B) := λ(a : A).DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
 % ж(A, B) := λ(b : B).DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
 
-  $\mathrm{E}_{A_i}\ (p_A : \mathrm{P}_A)$ := $\xi(A,\ p_A,\ \mathrm{Constr}(i,\ A),\ C_{A_i})$
+% $\mathrm{E}_{A_i}\ (p_A : \mathrm{P}_A)$ := $\xi(A,\ p_A,\ \mathrm{Constr}(i,\ A),\ C_{A_i})$
 
 \mysubsubsec{Unification Heuristics}
 The transformation does not fully describe the search procedure for transforming terms that \toolname implements.
@@ -523,17 +523,18 @@ These criteria relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta
 in a way that preserves equivalence coherently with equality.
 
 \mysubsubsec{Equivalence}
-To preserve the equivalence (Figure~\ref{fig:spec}, left), \lstinline{DepConstr} and \lstinline{DepElim} must form an equivalence. % between \A and \B.
-That is, \lstinline{section} and \lstinline{retraction} must hold for \lstinline{f} and \lstinline{g}.
+To preserve the equivalence (Figure~\ref{fig:spec}, left), \lstinline{DepConstr} and \lstinline{DepElim} must form an equivalence
+% between \A and \B.
+(\lstinline{section} and \lstinline{retraction} must hold for \lstinline{f} and \lstinline{g}).
 %uses  \lstinline{DepElim} to eliminate \B and \lstinline{DepConstr} to construct \A.
-\lstinline{DepConstr} over \B must be equal to \lstinline{DepConstr} over \A up to transport along the induced equivalence (\lstinline{constr_ok}), 
+\lstinline{DepConstr} over \A and \B must be equal up to transport along that equivalence (\lstinline{constr_ok}), 
 and similarly for \lstinline{DepElim} (\lstinline{elim_ok}).
 %An example proves this on the change from \lstinline{list T} to \lstinline{packed_vect T} in the 
 %univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
 Intuitively, \lstinline{constr_ok} and \lstinline{elim_ok} guarantee that the transformation
 correctly transports dependent constructors and dependent eliminators,
 as doing so will preserve equality up to transport for those subterms.
-This makes it possible for the transformation
+This makes it possible %for the transformation
 to avoid applying \lstinline{f} and \lstinline{g}, instead porting terms from \A directly to \B.
 
 %Furthermore, since CIC$_{\omega}$ is constructive, the \textit{only} way to construct an \A (respectively \B) is to use its constructors,
@@ -550,66 +551,6 @@ and must behave like identity (\lstinline{eta_ok}).
 Each \lstinline{Iota} must prove and rewrite along the simplification (\textit{refolding}~\cite{boutillier:tel-01054723}) behavior that corresponds to a case of the dependent eliminator (\lstinline{iota_ok}).
 This makes it possible for the transformation to
 avoid applying \lstinline{section} and \lstinline{retraction}.
-
-\begin{figure*}
-\small
-\begin{grammar}
-<v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
-
-<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | left | right | split \{ <p>, <p> \} |induction <t> <t> \{ <p>, \ldots, <p> \} | <p> . <p>
-\end{grammar}
-\vspace{-0.3cm}
-\caption{Qtac syntax.}
-\vspace{-0.19cm}
-\label{fig:ltacsyntax1}
-\end{figure*}
-
-\begin{figure*}
-\begin{mathpar}
-\mprset{flushleft}
-\small
-\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Rightarrow$ $p$}\vspace{-0.4cm}\\
-
-\inferrule[Intro]
-  { \Gamma,\ n : T \vdash b \Rightarrow p }
-  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{intro}\ n.\ p }
-
-\inferrule[Symmetry]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{symmetry}.\ p }
-
-\inferrule[Split]
-  { \Gamma \vdash l \Rightarrow p \\ \Gamma \vdash r \Rightarrow q }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l\ r \Rightarrow \mathrm{split} \{ p, q \}.\ }\\
-
-\inferrule[Left]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }
-
-\inferrule[Right]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }
-
-\inferrule[Rewrite]
-  { \Gamma \vdash H_1 : x = y \\ \Gamma \vdash H_2 \Rightarrow p }
-  { \Gamma \vdash \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{symmetry}.\ \mathrm{rewrite}\ P\ H_1.\ p }\\
-
-\inferrule[Induction]
-  { \Gamma \vdash \vec{f} \Rightarrow \vec{p} }
-  { \Gamma \vdash \mathrm{Elim}(t,\ P)\ \vec{f} \Rightarrow \mathrm{induction}\ P\ t\ \vec{p} }
-
-\inferrule[Apply]
-  { \Gamma \vdash t \Rightarrow p }
-  { \Gamma \vdash f t \Rightarrow \mathrm{apply}\ f.\ p }
-
-\inferrule[Base]
-  { \\ }
-  { \Gamma \vdash t \Rightarrow \mathrm{apply}\ t }
-\end{mathpar}
-\vspace{-0.4cm}
-\caption{Qtac decompiler semantics.}
-\label{fig:someantics}
-\end{figure*}
 
 \mysubsubsec{Correctness}
 With this correctness criteria for a configuration, we get the completeness result (proven in Coq~\circled{8}) that every equivalence induces a configuration. % arbitrary.v
