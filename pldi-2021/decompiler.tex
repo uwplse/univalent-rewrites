@@ -39,54 +39,6 @@ Unlike in Ltac, \lstinline{induction} and \lstinline{rewrite} take a motive expl
 Similarly, \lstinline{apply} leaves the arguments to proof obligations.
 %The implementation reasons about Ltac and so does not make these assumptions.
 
-\begin{figure}
-\begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
-    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
-    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
-    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
-(@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
-  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\vspace{-0.4cm}
-\caption{Proof term (top) and corresponding decompiled proof script (bottom) for the base case of 
-\lstinline{rev_app_distr} from Section~\ref{sec:overview}, with corresponding terms and tactics 
-highlighted with the same color, and nothing else highlighted for clarity.}
-\label{fig:rainbow}
-\end{figure}
-
-\iffalse
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
-    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
-    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
-    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-(@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
-  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{Proof term (left) and corresponding decompiled proof script (right) for the base case of 
-\lstinline{rev_app_distr} from Section~\ref{sec:overview}, with corresponding terms and tactics 
-highlighted with the same color, and nothing else highlighted for clarity.}
-\label{fig:rainbow}
-\end{figure*}
-\fi
-
 The semantics for the mini decompiler $\Gamma \vdash t \Rightarrow p$ are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).
 As with the real decompiler, the mini decompiler defaults to the proof script
 that applies the entire proof term with \lstinline{apply} (\textsc{Base}).
@@ -131,4 +83,52 @@ This makes it possible for the tactic scripts \toolname suggests to include cust
 %Because we have control over output terms, even a mini decompiler gets us pretty far.
 
 % TODO add any new things RanDair implements, like exists
+
+\begin{figure}
+\begin{lstlisting}
+fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
+    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
+    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
+  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
+  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\vspace{-0.4cm}
+\caption{Proof term (top) and decompiled proof script (bottom) for the base case of 
+\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
+highlighted the same color.}
+\label{fig:rainbow}
+\end{figure}
+
+\iffalse
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
+    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
+    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+(@\vspace{-0.14cm}@)
+- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
+  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
+  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{Proof term (left) and decompiled proof script (right) for the base case of 
+\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
+highlighted the same color.}
+\label{fig:rainbow}
+\end{figure*}
+\fi
 

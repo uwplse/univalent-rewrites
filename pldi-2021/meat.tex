@@ -13,18 +13,19 @@ This proof term transformation is a generalization of the transformation from
 %and the result can handle many different kinds of changes.
 %\end{quote}
 
-The proof term transformation takes as input a deconstructed equivalence that we call a \textit{configuration}.
+The transformation takes as input a deconstructed equivalence that we call a \textit{configuration}.
 This section introduces the configuration (Section~\ref{sec:configurable}),
 defines the transformation that builds on that (Section~\ref{sec:generic}),
-then finally specifies correctness criteria for the configuration (Section~\ref{sec:art}).
-Section~\ref{sec:implementation} describes the additional work needed to go from this transformation to the implementation.
+then specifies correctness criteria for the configuration (Section~\ref{sec:art}).
+Section~\ref{sec:implementation} describes the additional work needed to implement this transformation.
 
 \mysubsubsec{Conventions}
 All terms that we introduce in this section are in CIC$_{\omega}$ (the core calculus of Coq) with primitive eliminators,
 the syntax for which is in Figure~\ref{fig:syntax}.
 The typing rules are standard.
-We assume the existence of an inductive type $\Sigma$ with constructor $\exists$ and projections $\pi_l$ and $\pi_r$.
-Throughout, we use $\vec{t}$ and $\{t_1, \ldots, t_n\}$ to denote lists of terms.
+We assume inductive types $\Sigma$ with constructor $\exists$ and projections $\pi_l$ and $\pi_r$,
+and \lstinline{=} with constructor \lstinline{eq_refl}.
+We use $\vec{t}$ and $\{t_1, \ldots, t_n\}$ to denote lists of terms.
 
 \subsection{The Configuration}
 \label{sec:configurable}
@@ -54,9 +55,10 @@ Each of these is defined in CIC$_{\omega}$ for each equivalence.
 \mysubsubsec{Preserving the Equivalence}
 To preserve the equivalence, the configuration ports terms over \A to terms over \B by viewing each
 term of type \B as if it is an \A.
-This way, the rest of the transformation can replace values of \A with values of \B and
-inductive proofs about \A with inductive proofs about \B, then recursively transform
-subterms without changing the order or number of arguments.
+This way, the rest of the transformation can replace values of \A with values of \B, and
+inductive proofs about \A with inductive proofs about \B, %, then recursively transform
+%subterms 
+all without changing the order or number of arguments.
 
 The two configuration parts responsible for preserving this are \lstinline{DepConstr}
 and \lstinline{DepElim} (\textit{dependent constructors} and \textit{eliminators}).
@@ -331,31 +333,124 @@ terms explicitly.
 It then runs the proof term transformation, which transports proofs across the equivalence that corresponds to the configuration.
 
 \begin{figure*}
+\begin{minipage}{0.43\textwidth}
 \begin{lstlisting}
-(* --- Equivalence --- *)(@\vspace{-0.04cm}@)
-f : A $\rightarrow$ B := DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }(@\vspace{-0.04cm}@)
-g : B $\rightarrow$ A := DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }(@\vspace{-0.04cm}@)
-section : $\forall$ (a : A), g (f a) = a.(@\vspace{-0.04cm}@)
-retraction : $\forall$ (b : B), f (g b) = b.(@\vspace{-0.04cm}@)
+(* Equivalence *)
+section: $\forall$ (a : A), g (f a) = a.(@\vspace{-0.04cm}@)
+retraction: $\forall$ (b : B), f (g b) = b.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
-dep_constr_ok : $\forall$ j, DepConstr(j, A) $\equiv_{A \simeq B}$ DepConstr(j, B).(@\vspace{-0.04cm}@)
-dep_elim_ok : $\forall$ a b (P : A $\rightarrow$ Type) (Q : B $\rightarrow$ Type), a $\equiv_{A \simeq B}$ b $\rightarrow$ P $\equiv_{A \simeq B}$ Q $\rightarrow$ DepElim(a, P) $\equiv_{A \simeq B}$ DepElim(b, Q).(@\vspace{-0.04cm}@)
+constr_ok: $\forall$ $j$ $\vec{x_A}$ $\vec{x_B}$,(@\vspace{-0.04cm}@)
+  DepConstr($j$, A) $\vec{x_A}$ $\equiv_{A \simeq B}$ DepConstr(j, B) $\vec{x_B}$.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
-(* --- Equality (shown over A; B is similar) --- *)(@\vspace{-0.04cm}@)
+elim_ok: $\forall$ a b P$_A$ P$_B$ $\vec{f_A}$ $\vec{f_B}$,(@\vspace{-0.04cm}@)
+  a $\equiv_{A \simeq B}$ b $\rightarrow$(@\vspace{-0.04cm}@)
+  P$_A$ $\equiv_{(A \rightarrow s) \simeq (B \rightarrow s)}$ P$_B$ $\rightarrow$(@\vspace{-0.04cm}@)
+  $\forall$ $j$, $\vec{f_A}$[j] $\equiv_{\xi (A, P_A, j) \simeq \xi (B, P_B, j)}$ $\vec{f_B}$[j]$\rightarrow$(@\vspace{-0.04cm}@)
+  DepElim(a, P$_A$) $\vec{f_A}$ $\equiv_{(P a) \simeq (P b)}$ DepElim(b, P$_B$) $\vec{f_A}$.(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.56\textwidth}
+\begin{lstlisting}
+(* Equality (shown for A; B is similar) *)
+elim_eta(A): $\forall$ a P $\vec{f}$, DepElim(a, P) $\vec{f}$ : P (Eta(A) a).(@\vspace{-0.04cm}@)
+eta_ok(A): $\forall$ (a : A), Eta(A) a = a.(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+(@\phantom{constr_ok: $\forall$ $j$ $\vec{x_A}$ $\vec{x_B}$,}@)(@\vspace{-0.04cm}@)
+(@\phantom{  DepConstr($j$, A) $\vec{x_A}$ $\equiv_{A \simeq B}$ DepConstr(j, B) $\vec{x_B}$.}@)(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+iota_ok(A): $\forall$ $j$ P $\vec{f}$ $\vec{x}$ (Q: P(Eta(A) (DepConstr($j$, A) $\vec{x}$)) $\rightarrow$ s),(@\vspace{-0.04cm}@)
+  Iota(A, j, Q) : (@\vspace{-0.04cm}@)
+    Q (DepElim(DepConstr(j, A) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
+    Q (rew $\leftarrow$ eta_ok(A) (DepConstr(j, A) $\vec{x}$) in(@\vspace{-0.04cm}@)
+      ($\vec{f}$[j]$\ldots$(DepElim(IH$_0$, P) $\vec{f}$)$\ldots$(DepElim(IH$_n$, P) $\vec{f}$)$\ldots$)).(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+% Q (eq_rect (dep_constr_A_0 b) (fun H : A => P H) (f0 b) (eta_A (dep_constr_A_0 b)) (eq_sym (eta_OK_A (dep_constr_A_0 b)))).
+\iffalse
+\begin{minipage}{0.44\textwidth}
+\smallmath{$f := \lambda(a : A).\mathrm{DepElim}(a, \lambda(a : A).B) { \lambda \ldots \mathrm{DepConstr}(0, B) \ldots, \ldots }.$}
+%[\
+%g := \lambda(b : B).\mathrm{DepElim}(b, \lambda(b : B).A)\\
+%  { \lambda \ldots \mathrm{DepConstr}(0, A) \ldots, \ldots }.\\
+%section : \forall (a : A), g (f a) = a.\\
+%retraction : \forall (b : B), f (g b) = b.\\
+%\\
+%constr_ok :\\
+%  \forall j, DepConstr(j, A) \equiv_{A \simeq B} DepConstr(j, B).\\
+%\\
+%elim_ok : \forall a b (P : A \rightarrow s) (Q : B \rightarrow s),\\
+%  a \equiv_{A \simeq B} b \rightarrow\\
+%  P \equiv_{A \simeq B} Q \rightarrow\\
+%  DepElim(a, P) \equiv_{A \simeq B} DepElim(b, Q).\\
+%\]
+\end{minipage}
+\hfill
+\begin{minipage}{0.55\textwidth}
+\begin{lstlisting}
 elim_eta(A) : $\forall$ (a : A) (P : A $\rightarrow$ Type) $\vec{f}$, DepElim(a, P) $\vec{f}$ : P (Eta(A) a).(@\vspace{-0.04cm}@)
 eta_ok(A) : $\forall$ (a : A), Eta(A) a = a.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
-iota_ok(j, A) : $\forall$ (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$ (Q : P (Eta(A) (DepConstr(j, A) $\vec{x}$)) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+iota_ok(A) : $\forall$ j (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$(@\vspace{-0.04cm}@)
+    (Q : P (Eta(A) (DepConstr(j, A) $\vec{x}$)) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
   Q (DepElim(DepConstr(j, A) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
-  Q (rew $\leftarrow$ eta_ok(A) (DepConstr(j, A) $\vec{x}$) in ($\vec{f}$[j] ... (DepElim(IH$_0$, P) $\vec{f}$) ... (DepElim(IH$_n$, P) $\vec{f}$) ...))(@\vspace{-0.04cm}@)
+  Q (rew $\leftarrow$ eta_ok(A) (DepConstr(j, A) $\vec{x}$) (@\vspace{-0.04cm}@)
+     in ($\vec{f}$[j] $\ldots$ (DepElim(IH$_0$, P) $\vec{f}$) $\ldots$ (DepElim(IH$_n$, P) $\vec{f}$) $\ldots$))(@\vspace{-0.04cm}@)
 := Iota(A, j, Q).(@\vspace{-0.04cm}@)
 \end{lstlisting}
+% Q (eq_rect (dep_constr_A_0 b) (fun H : A => P H) (f0 b) (eta_A (dep_constr_A_0 b)) (eq_sym (eta_OK_A (dep_constr_A_0 b)))).
+\end{minipage}
+\fi
+\iffalse
+\begin{mathpar}
+\mprset{flushleft}
+\small
+
+%f := $\lambda$(a : A).DepElim(a, $\lambda$(a : A).B)(@\vspace{-0.04cm}@)
+%  { $\lambda$ $\ldots$ DepConstr(0, B) $\ldots$, $\ldots$ }.(@\vspace{-0.04cm}@)
+%g := $\lambda$(b : B).DepElim(b, $\lambda$(b : B).A)(@\vspace{-0.04cm}@)
+%  { $\lambda$ $\ldots$ DepConstr(0, A) $\ldots$, $\ldots$ }.(@\vspace{-0.04cm}@)
+
+\inferrule[Is-Equivalence]
+ {  \Gamma \vdash \mathrm{section} : \Pi (a : A) . \mathrm{g}\ (\mathrm{f}\ a)\ =\ a \\\\ \Gamma \vdash \mathrm{retraction} : \Pi (b : B) . \mathrm{f}\ (\mathrm{g}\ b)\ =\ b }
+ { \Gamma \vdash \mathrm{is\_equivalence}(\mathrm{f}, \mathrm{g}, \mathrm{section}, \mathrm{retraction}) }
+
+\inferrule[Constr-OK]
+  { \Gamma \vdash \mathrm{DepConstr}(j, A)\ \vec{x_A} \equiv_{A \simeq B} \mathrm{DepConstr}(j, B)\ \vec{x_B} }
+  { \Gamma \vdash \mathrm{constr\_ok}(j) }
+
+\inferrule[Elim-OK]
+  { \Gamma \vdash a \equiv_{A \simeq B} b \\\\ \Gamma \vdash P_A \equiv_{A \simeq B} P_B \\\\ \Gamma \vdash \vec{f_A} \equiv_{A \simeq B} \vec{f_B} \\\ \Gamma \vdash \mathrm{DepElim}(a,\ P_A)\ \vec{f_A} \equiv_{A \simeq B} \mathrm{DepElim}(b,\ P_B)\ \vec{f_B}  }
+  { \Gamma \vdash \mathrm{elim\_ok}(j) }
+
+\inferrule[Elim-Eta]
+  { \Gamma \vdash a : A \\ \Gamma \vdash P : \Pi (a : A) . s }
+  { \Gamma \vdash \mathrm{DepElim}(a, P)\ \vec{f} : P\ (\mathrm{Eta}(A)\ a) }
+
+\inferrule[Eta-OK]
+  { \Gamma \vdash T \in \{A, B\} }
+  { \Gamma \vdash \mathrm{eta\_ok}(T) : \Pi (t : T) . \mathrm{Eta}(T)\ t\ =\ t }
+
+%iota_ok(A) : $\forall$ j (P : A $\rightarrow$ Type) $\vec{f}$ $\vec{x}$(@\vspace{-0.04cm}@)
+%    (Q : P (Eta(A) (DepConstr(j, A) $\vec{x}$)) $\rightarrow$ Type),(@\vspace{-0.04cm}@)
+%  Q (DepElim(DepConstr(j, A) $\vec{x}$, P) $\vec{f}$) $\rightarrow$ (@\vspace{-0.04cm}@)
+%  Q (rew $\leftarrow$ eta_ok(A) (DepConstr(j, A) $\vec{x}$) in ($\vec{f}$[j] $\ldots$ (DepElim(IH$_0$, P) $\vec{f}$) $\ldots$ (DepElim(IH$_n$, P) $\vec{f}$) $\ldots$))(@\vspace{-0.04cm}@)
+%:= Iota(A, j, Q).(@\vspace{-0.04cm}@)
+\end{mathpar}
+\fi
 \vspace{-0.4cm}
 \caption{Correctness criteria for a configuration to ensure that the transformation
-preserves equivalence (top) coherently with equality (bottom). Throughout, $\vec{f}$, $\vec{x}$, and $\vec{\mathtt{IH}}$ represent
-eliminator cases, constructor arguments, and inductive hypotheses.} %, respectively.}
+preserves equivalence coherently with equality. \lstinline{f} and \lstinline{g} are defined as explained in text. $s$, $\vec{f}$, $\vec{x}$, and $\vec{\mathtt{IH}}$ represent
+sorts, eliminator cases, constructor arguments, and inductive hypotheses, and $\xi$ $(T,$ $P,$ $j)$ is the type 
+of \lstinline{DepElim(A, P)} at \lstinline{DepConstr(j, A)} (similarly for \B).} %, respectively.}
 \label{fig:spec}
-\end{figure*} % TODO sigs for Iota here are not quite correct---Q is not bound. Also need to tweak to deal w/ eta, and to use eta_OK, and to relate both eta
+\end{figure*}
+ % TODO sigs for Iota here are not quite correct---Q is not bound. Also need to tweak to deal w/ eta, and to use eta_OK, and to relate both eta
+% TODO (!!) Define f and g with some schema like:
+% ж(A, B) := λ(a : A).DepElim(a, $\lambda$(a : A).B){ $\lambda$ ... DepConstr(0, B) ..., ... }
+% ж(A, B) := λ(b : B).DepElim(b, $\lambda$(b : B).A){ $\lambda$ ... DepConstr(0, A) ..., ... }
+
+  $\mathrm{E}_{A_i}\ (p_A : \mathrm{P}_A)$ := $\xi(A,\ p_A,\ \mathrm{Constr}(i,\ A),\ C_{A_i})$
 
 \mysubsubsec{Unification Heuristics}
 The transformation does not fully describe the search procedure for transforming terms that \toolname implements.
@@ -421,22 +516,21 @@ And there can be many configurations that correspond
 to an equivalence, some of which will produce terms that are more useful or efficient than others
 (consider \lstinline{DepElim} converting through several intermediate types).
 
-While we cannot control for intentions, we \textit{can} specify what it means for a chosen configuration to be correct.
-Figure~\ref{fig:spec} specifies the correctness criteria for any given configuration (assuming a univalent metatheory in which equality up
-to transport is defined).
+While we cannot control for intentions, we \textit{can} specify what it means for a chosen configuration to be correct:
+Fix a configuration. Let \lstinline{f} be the function that uses \lstinline{DepElim} to eliminate \A and \lstinline{DepConstr} to construct \B, and let \lstinline{g} be similar. Assume a univalent metatheory in which equality up to transport is defined.
+Figure~\ref{fig:spec} specifies the correctness criteria for the configuration.
 These criteria relate \lstinline{DepConstr}, \lstinline{DepElim}, \lstinline{Eta}, and \lstinline{Iota}
 in a way that preserves equivalence coherently with equality.
 
 \mysubsubsec{Equivalence}
 To preserve equivalence (Figure~\ref{fig:spec}, top), \lstinline{DepConstr} and \lstinline{DepElim} must together induce an equivalence. % between \A and \B.
-That is, \lstinline{section} and \lstinline{retraction} must hold for functions \lstinline{f} and \lstinline{g},
-where \lstinline{f} uses \lstinline{DepElim} to eliminate \A and \lstinline{DepConstr} to construct \B, and \lstinline{g} is similar.
+That is, \lstinline{section} and \lstinline{retraction} must hold for functions \lstinline{f} and \lstinline{g}.
 %uses  \lstinline{DepElim} to eliminate \B and \lstinline{DepConstr} to construct \A.
-\lstinline{DepConstr} over \B must be equal to \lstinline{DepConstr} over \A up to transport along the induced equivalence (\lstinline{dep_constr_ok}), 
-and similarly for \lstinline{DepElim} (\lstinline{dep_elim_ok}).
+\lstinline{DepConstr} over \B must be equal to \lstinline{DepConstr} over \A up to transport along the induced equivalence (\lstinline{constr_ok}), 
+and similarly for \lstinline{DepElim} (\lstinline{elim_ok}).
 %An example proves this on the change from \lstinline{list T} to \lstinline{packed_vect T} in the 
 %univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}
-Intuitively, \lstinline{dep_constr_ok} and \lstinline{dep_elim_ok} guarantee that the transformation
+Intuitively, \lstinline{constr_ok} and \lstinline{elim_ok} guarantee that the transformation
 correctly transports dependent constructors and dependent eliminators,
 as doing so will preserve equality up to transport for those subterms.
 This makes it possible for the transformation
@@ -534,7 +628,7 @@ The result follows by definition of \lstinline{g} and \lstinline{f}, and by refl
 due to space constraints, we do not discuss these search procedures in detail.
 The algorithm above is essentially what \textbf{Configure} uses to generate functions \lstinline{f} and \lstinline{g} for these configurations~\circled{9}, % search.ml
 and also generate proofs \lstinline{section} and \lstinline{retraction} that these functions form an equivalence~\circled{10}. % equivalence.ml
-To minimize dependencies, \toolname does not produce proofs of \lstinline{dep_constr_ok} and \lstinline{dep_elim_ok} directly,
+To minimize dependencies, \toolname does not produce proofs of \lstinline{constr_ok} and \lstinline{elim_ok} directly,
 as stating these theorems cleanly would require either a special framework~\cite{tabareau2017equivalences}
 or a univalent type theory~\cite{univalent2013homotopy}.
 If the proof engineer wishes, it is possible to prove these in individual cases~\circled{8}, % arbitray.v

@@ -46,14 +46,13 @@ Consider changing the type \lstinline{I} to the type \lstinline{J}
 in Figure~\ref{fig:equivalence2}.
 \lstinline{J} can be viewed as \lstinline{I} with its two constructors \lstinline{A} and \lstinline{B} pulled out to a
 new argument of type \lstinline{bool} for a single constructor.
-
 With \toolname, the proof engineer can repair functions and proofs about \lstinline{I} to instead use \lstinline{J},
 as long as she first configures \toolname to describe which constructor 
 of \lstinline{I} maps to \lstinline{true} and which maps to \lstinline{false}.
 This information about constructor mappings induces an equivalence \lstinline{I }$\simeq$\lstinline{ J}
 along which \toolname repairs functions and proofs.
-The repository shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false,
-and repairing proofs of De Morgan's laws~\circled{2}. % constr_refactor.v
+File \circled{2} shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false,
+and repairing proofs of De Morgan's laws. % constr_refactor.v
 %
 %It uses \toolname to automatically repair functions and proofs over \lstinline{I}, like:
 
@@ -89,6 +88,7 @@ and repairing proofs of De Morgan's laws~\circled{2}. % constr_refactor.v
 \end{minipage}
 \vspace{-0.4cm}
 \caption{\lstinline{J} is \lstinline{I} with \lstinline{A} and \lstinline{B} factored out to \lstinline{bool} (\codediff{orange}).}
+\vspace{-0.1cm}
 \label{fig:equivalence2}
 \end{figure}
 
@@ -199,12 +199,12 @@ Informally, equality up to transport means that if $t$ is a function, then $t'$ 
 if $t$ is a proof, then $t'$ proves the same theorem the same way modulo the equivalence.
 
 In Section~\ref{sec:overview}, the original append function \lstinline{++} over \lstinline{Old.list}
-and the updated append function \lstinline{++} over \lstinline{New.list} that \toolname produces are
+and the repaired append function \lstinline{++} over \lstinline{New.list} that \toolname produces are
 equal up to transport along the equivalence from Figure~\ref{fig:equivalence}, since (by \lstinline{app_ok}~\circled{1}):
 
 \begin{lstlisting}
 $\forall$ T (l1 l2 : Old.list T),(@\vspace{-0.04cm}@)
-  swap T (l1 ++ l2) = (swap T l1) ++ (swap T l2).(@\vspace{-0.04cm}@)
+  swap T (l1 ++ l2) = (swap T l1) ++ (swap T l2).(@\vspace{-0.05cm}@)
 \end{lstlisting}
 The original \lstinline{rev_app_distr} is equal to the transformed proof along the same equivalence,
 since it proves the same thing the same way as the transformed proof up to the same equivalence, and up to the changes in \lstinline{++}
@@ -212,13 +212,12 @@ and \lstinline{rev}.
 
 For any equivalent \A and \B, there can be many equivalences $A \simeq B$.
 Equality up to transport is along a \textit{particular} equivalence, though we erase this in the 
-notation.\footnote{The notation should be interpreted in a metatheory with \textit{univalence}---a property that Coq lacks,
-and that makes it possible to define equality up to transport---or it should be approximated in Coq.
-The formal details of equality up to transport in a univalent theory are in \citet{univalent2013homotopy}, and an approximation in Coq is in \citet{tabareau2017equivalences}.}
+notation.\footnote{The notation should be interpreted in a metatheory with \textit{univalence}---a property that Coq lacks---or it should be approximated in Coq.
+The details of equality up to transport with univalence are in \citet{univalent2013homotopy}, and an approximation in Coq is in \citet{tabareau2017equivalences}.}
 Transport typically works by applying the functions that make up the equivalence to convert
-inputs and outputs back and forth between equivalent types.
-This approach would not be suitable for repair, since it does not make it possible to remove the old specification.
-\toolname implements transport in a way that allows for removing references to the old specification---using a proof term transformation.
+inputs and outputs between equivalent types.
+This approach would not be suitable for repair, since it does not make it possible to remove the old type \A.
+\toolname implements transport in a way that allows for removing references to \A---by proof term transformation.
 
 %The goal of a proof repair tool like \toolname is to define a transport method that
 %can remove references to the old specification, %rather than converting back and forth like standard transport methods.
