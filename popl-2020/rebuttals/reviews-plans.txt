@@ -103,11 +103,10 @@ B: First, I was really frustrated by the paper's lack of explicit clarity about 
 B, Line 829: "One ongoing challenge is defining and discovering useful configurations to support adding new constructors."  Yes, sounds really important to scale to most real use cases.
 
 Actions:
-1. If time, evaluate a case like adding constructors or adding hypotheses
-2. Consider predicate examples
-3. Maybe revisit the positive example
-4. Anonymize code!
-5. Consider more formal classification & John email
+1. Consider predicate examples
+2. Maybe revisit the positive example
+3. Anonymize code!
+4. Consider more formal classification & John email
 
 --- Formalization ---
 
@@ -142,17 +141,6 @@ A, L521: The heterogeneous equality between P and Q should be in
 Actions:
 1. Clarify and maybe prove under what assumptions the transformation is sound and complete
 2. Consider fixing a particular implementation of a univalent metatheory
-3. Clarify the particular example on line 521
-4. Clarify the notation for equality up to transport
-
---- 6.1 ---
-
-B: The paragraph at line 798 describes a number of cases of permuting/renaming constructors.  At least one of these, "renaming all constructors", seems to actually have zero effect on Coq's internal representations of proof terms, so it's not too impressive as a refactoring.  In general, all of these could be handled by a much simpler tool that only renames constructors globally and tweaks argument order to eliminators, though such examples make fine regression tests.
-
-Actions:
-1. Show an example that cannot be handled by a very simple tool (honestly, did this person even read the overview section?)
-2. Or clarify context (not meant to be impressive)
-3. Or just skip this one and note it briefly somewhere
 
 --- 6.2 ---
 
@@ -194,10 +182,8 @@ B: The industrial engineer's scenario doesn't sound so compelling to me.  He doe
 
 Actions:
 1. Clarify what each case study shows
-2. Make more explicit that the proof engineer also used some other configurations
-3. Include more repair case studies, maybe
-4. Fix introduction so as not to misrepresent this somehow
-5. Explain the context of the solver-aided language and tuples (ask Val about this)
+2. Fix introduction so as not to misrepresent this somehow
+3. Explain the context of the solver-aided language and tuples (ask Val about this)
 
 --- Tactics and Workflow ---
 
@@ -216,15 +202,13 @@ B: The workflow discussed in Section 6.4 doesn't sound so ergonomic.  Which vers
 B: You describe your industrial engineer's experience in terms of transform code, edit code, transform code again.  How does that play with version control?
 
 Actions:
-1. Make this story more explicit (prototype for suggestions)
-2. Discuss version control, or clarify with Val
-3. Continue to improve the tactic decompiler:
+1. Continue to improve the tactic decompiler:
   a. Comment & format preservaton
-  b. Removing additional arguments to apply and rewrite
+  b. Removing additional arguments to ewrite
   c. Looking directly at old tactic scripts instead of just taking tactics as arguments
   d. Improving performance
   e. Custom tactics that aren't decision procedures
-4. Adjust examples with improvements
+2. Adjust examples with improvements
 
 --- Readability ---
 
@@ -236,7 +220,6 @@ Actions:
 1. Maybe cancel out rewrites in implementation
 2. Discuss somewhere
 3. Show examples discussed in response
-4. Fix optimizations from DEVOID
 
 --- Line by Line ---
 
@@ -246,26 +229,6 @@ A, L411: "The transformation replaces rewrites by reflexivity...".
   by the transformation. Maybe you can point this out here.
 
 Action: Make sure clarification of matching adds a pointer here that helps with this.
-  
-A, L540: It would be good to provide a proof sketch that shows why the
-  definitions of Iota and Eta allow to derive an equivalence.
-    
-  As I can see now, the translation can use Iota in any proof 
-  where `DepElim (DepConstr ...)` is mentioned to mimick the 
-  unfolding behavior of the eliminator.
-
-Action: Do this.
-
-A, L1151: I'm wondering what e-graphs and congruence closure algorithms
-  have to do with type-directed proof search? Can you be more specific?
-  You further this point L1195 but I do not see how e-graphs
-  would be able to scale to convertibility of terms: i.e. wouldn't
-  expansion rules that would allow the proof term transformation to
-  apply generally be the β, ι reduction rules of definitional equality?
-  Constructing explicitly the e-graph representing a "quotient"
-  by β, ι equivalence is likely going to be prohibitive.
-
-Action: Explain.
 
 B: Obligatory hardball question: what happens when we are transforming sets of related types simultaneously?
 
