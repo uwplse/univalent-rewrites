@@ -193,11 +193,16 @@ when those changes can be expressed as equivalences between $\Sigma$ types or su
 
 The goal of \toolname is to implement a kind of proof reuse known as \textit{transport}~\cite{univalent2013homotopy},
 but in a way that is suitable for repair.
-Transport takes an input term $t$ and produces an output term $t'$ that is \textit{equal up to transport}
-along an equivalence $A \simeq B$ (denoted $t \equiv_{A \simeq B} t'$).
-Informally, equality up to transport means that if $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
+Informally, transport takes a term $t$ and produces an output term $t'$ that is the same as $t$ modulo an equivalence $A \simeq B$.
+If $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
 if $t$ is a proof, then $t'$ proves the same theorem the same way modulo the equivalence.
 
+When transport along $A \simeq B$ takes $t$ to $t'$ ,
+we say that $t$ and $t'$ are \textit{equal up to transport}
+along that equivalence (denoted $t \equiv_{A \simeq B} t'$).\footnote{This notation should be interpreted in a metatheory with \textit{univalence}---a property that Coq lacks---or it should be approximated in Coq.
+The details of equality up to transport with univalence are in \citet{univalent2013homotopy}, and an approximation in Coq is in \citet{tabareau2017equivalences}. For equivalent \A and \B, there can be many equivalences $A \simeq B$.
+Equality up to transport is along a \textit{particular} equivalence, but we erase this in the 
+notation.}
 In Section~\ref{sec:overview}, the original append function \lstinline{++} over \lstinline{Old.list}
 and the repaired append function \lstinline{++} over \lstinline{New.list} that \toolname produces are
 equal up to transport along the equivalence from Figure~\ref{fig:equivalence}, since (by \lstinline{app_ok}~\circled{1}):
@@ -210,10 +215,6 @@ The original \lstinline{rev_app_distr} is equal to the transformed proof along t
 since it proves the same thing the same way as the transformed proof up to the same equivalence, and up to the changes in \lstinline{++}
 and \lstinline{rev}.
 
-For any equivalent \A and \B, there can be many equivalences $A \simeq B$.
-Equality up to transport is along a \textit{particular} equivalence, though we erase this in the 
-notation.\footnote{The notation should be interpreted in a metatheory with \textit{univalence}---a property that Coq lacks---or it should be approximated in Coq.
-The details of equality up to transport with univalence are in \citet{univalent2013homotopy}, and an approximation in Coq is in \citet{tabareau2017equivalences}.}
 Transport typically works by applying the functions that make up the equivalence to convert
 inputs and outputs between equivalent types.
 This approach would not be suitable for repair, since it does not make it possible to remove the old type \A.

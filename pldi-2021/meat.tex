@@ -1,6 +1,34 @@
 \section{The Transformation}
 \label{sec:key2}
 
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+DepConstr(0, list T) : list T := Constr((@\codediff{0}@), list T).(@\vspace{-0.04cm}@)
+DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
+  Constr ((@\codediff{1}@), list T) t l.(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
+  Elim(l, P) { (@\codediff{p$_{\mathtt{nil}}$}@), (@\codediff{p$_{\mathtt{cons}}$}@) }.(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+DepConstr(0, list T) : list T := Constr((@\codediff{1}@), list T).(@\vspace{-0.04cm}@)
+DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
+  Constr((@\codediff{0}@), list T) t l.(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
+  Elim(l, P) { (@\codediff{p$_{\mathtt{cons}}$}@), (@\codediff{p$_{\mathtt{nil}}$}@) }.(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}.}
+\vspace{-0.1cm}
+\label{fig:listconfig}
+\end{figure*}
+
 At the heart of \toolname is a configurable proof term transformation for transporting
 proofs across equivalences~\circled{4}. % lift.ml
 This proof term transformation is a generalization of the transformation from 
@@ -41,7 +69,7 @@ between \A and \B, and produce well-typed terms.
 This configuration is a pair of pairs:
 
 \begin{lstlisting}
-((DepConstr, DepElim), (Eta, Iota))
+((DepConstr, DepElim), (Eta, Iota))(@\vspace{-0.05cm}@)
 \end{lstlisting}
 each of which corresponds to one of the two goals:
 \lstinline{DepConstr} and \lstinline{DepElim} define how to transform constructors and eliminators, thereby preserving the equivalence, and 
@@ -66,34 +94,6 @@ These describe how to construct and eliminate \A and \B, wrapping the types with
 There must be the same number of dependent constructors and cases in dependent eliminators for \A and \B,
 even if \A and \B are types with different numbers of constructors.
 
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-DepConstr(0, list T) : list T := Constr((@\codediff{0}@), list T).(@\vspace{-0.04cm}@)
-DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
-  Constr ((@\codediff{1}@), list T) t l.(@\vspace{-0.04cm}@)
-(@\vspace{-0.14cm}@)
-DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
-  Elim(l, P) { (@\codediff{p$_{\mathtt{nil}}$}@), (@\codediff{p$_{\mathtt{cons}}$}@) }.(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-DepConstr(0, list T) : list T := Constr((@\codediff{1}@), list T).(@\vspace{-0.04cm}@)
-DepConstr(1, list T) t l : list T :=(@\vspace{-0.04cm}@)
-  Constr((@\codediff{0}@), list T) t l.(@\vspace{-0.04cm}@)
-(@\vspace{-0.14cm}@)
-DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.04cm}@)
-  Elim(l, P) { (@\codediff{p$_{\mathtt{cons}}$}@), (@\codediff{p$_{\mathtt{nil}}$}@) }.(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\vspace{-0.3cm}
-\caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}.}
-\vspace{-0.1cm}
-\label{fig:listconfig}
-\end{figure*}
-
 For the \lstinline{list} change from Section~\ref{sec:overview},
 the configuration that \toolname discovers uses the dependent constructors
 and eliminators in Figure~\ref{fig:listconfig}. The dependent constructors for \lstinline{Old.list}
@@ -109,8 +109,8 @@ Consider the type of vectors of some length:
 \begin{lstlisting}
 packed_vect T := $\Sigma$(n : nat).vector T n.(@\vspace{-0.05cm}@)
 \end{lstlisting}
-This type is equivalent to \lstinline{list T}, and so \toolname can port proofs along that equivalence~\circled{3}. % Example.v
-The configuration \toolname discovers for this configures the dependent constructors to pack the index into an existential, for example:
+\toolname can port proofs along the equivalence between this type and \lstinline{list T}~\circled{3}. % Example.v
+The dependent constructors \toolname discovers for this pack the index into an existential, like:
 
 \begin{lstlisting}
 DepConstr(0, packed_vect) : packed_vect T :=(@\vspace{-0.04cm}@)
