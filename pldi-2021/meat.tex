@@ -150,7 +150,7 @@ and is important for defining dependent eliminators~\cite{nlab:eta-conversion}.
 $\iota$-reduction ($\beta$-reduction for inductive types) describes how to reduce an elimination of a constructor~\cite{nlab:beta-reduction}.
 
 The configuration for the change from \lstinline{list} to \lstinline{packed_vect} has propositional \lstinline{Eta}.
-To describe \lstinline{Eta}, it is enough to use the standard definition of $\eta$-expansion for $\Sigma$:
+It uses $\eta$-expansion for $\Sigma$:
 
 \begin{lstlisting}
 Eta(packed_vect) := $\lambda$(s:packed_vect).$\exists$ ($\pi_l$ s) ($\pi_r$ s).(@\vspace{-0.05cm}@)
@@ -217,13 +217,21 @@ Thanks to this, we can forego the assumption that our language has primitive pro
 
 % Lamda
 \inferrule[Lam]
-  { \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
-  {\Gamma \vdash \lambda (t : T).b \Uparrow \lambda (t : T').b'}
+  { \Gamma \vdash t \Uparrow t' \\ \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
+  {\Gamma \vdash \lambda (t : T).b \Uparrow \lambda (t' : T').b'}
 
 % Product
 \inferrule[Prod]
-  { \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
-  {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t : T').b'}
+  { \Gamma \vdash t \Uparrow t' \\ \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
+  {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t' : T').b'}
+
+\inferrule[Var]
+  { v \in \mathrm{Vars} }
+  {\Gamma \vdash v \Uparrow v}
+
+%\inferrule[Sort]
+%  { \\ }
+%  {\Gamma \vdash s \Uparrow s}
 \end{mathpar}
 \vspace{-0.5cm}
 \caption{Transformation for transporting terms across $A \simeq B$ with configuration \lstinline{((DepConstr, DepElim), (Eta, Iota))}.}
@@ -324,11 +332,13 @@ then definitional $\iota$ over one would become propositional $\iota$ over the o
 Figure~\ref{fig:final} shows the proof term transformation $\Gamma \vdash t \Uparrow t'$ that forms the core of \toolname.
 %Like the transformation from \textsc{Devoid},
 The transformation is parameterized over equivalent types \A and \B (\textsc{Equivalence})
-as well as the configuration terms. % which appear in the transformation explicitly.
+as well as the configuration. %terms, which appear in the transformation explicitly.
 It assumes $\eta$-expanded functions.
+It implicitly constructs an updated context $\Gamma'$ in which to interpret $t'$, but this is not needed for computation.
 
-The proof term transformation is (perhaps deceptively) simple because it moves the bulk of the work into the configuration,
-and because it represents the configuration explicitly.
+The proof term transformation is (perhaps deceptively) simple by design:
+it moves the bulk of the work into the configuration,
+and represents the configuration explicitly.
 Of course, typical proof terms in Coq do not apply these configuration
 terms explicitly.
 \toolname does some additional work (using \textit{unification heuristics}) to get real proof terms into this format before running the transformation.
@@ -484,7 +494,8 @@ When even Coq's unification is not enough, \toolname relies on proof engineers t
 in the form of explicit annotations.
 
 \mysubsubsec{Specifying a Correct Transformation}
-The implementation of this transformation in \toolname produces a term that Coq type checks, so the transformation is not trusted.
+The implementation of this transformation in \toolname produces a term that Coq type checks, and so does not
+add to the trusted computing base.
 As \toolname is an engineering tool, there is no need to formally prove the transformation correct, though doing so would be satisfying.
 The goal of such a proof would be to show that % the transformation preserves equality up to transport along the equivalence $A \simeq B$,
 %while no longer referring to the old specification.
@@ -492,7 +503,7 @@ The goal of such a proof would be to show that % the transformation preserves eq
 $\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
 %This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
 %with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
-The key steps in this transformation that make this possible are porting functions and proofs along the configuration % corresponding
+The key steps in this transformation that make this possible are porting terms along the configuration % corresponding
 %to a particular equivalence 
 (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
 %The rest is straightforward.

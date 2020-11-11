@@ -122,12 +122,12 @@ while in Coq, both tactics infer the motive automatically.
 Consequentially, Coq sometimes fails to infer the correct motive.
 % infers the wrong motive, % without manipulation of goals and hypotheses,
 %or fails to infer a motive at all.
-This is especially common for \lstinline{rewrite}, which is purely syntactic.
+%This is especially common for \lstinline{rewrite}, which is purely syntactic.
 To handle induction, the decompiler strategically uses \lstinline{revert} to manipulate the goal
 so that Coq can better infer the motive.
 To handle rewrites, it uses \lstinline{simpl} to refold the goal before rewriting.
 Neither of these approaches are guaranteed to work, so the proof engineer may sometimes need to tweak the output proof script appropriately.
-We have found that even if we pass Coq's induction principle an explicit motive, Coq still sometimes fails due
+Even if we pass Coq's induction principle an explicit motive, Coq still sometimes fails due
 to unrepresented assumptions.
 Long term, using another tactic like \lstinline{change} or \lstinline{refine} before applying these tactics
 may help with cases for which Coq cannot infer the correct motive.
@@ -144,7 +144,7 @@ In all other cases, it uses \lstinline{pose}, a catch-all for let bindings.
 \mysubsubsec{Pretty Printing}
 After decompiling proof terms, \textbf{Decompile} pretty prints the result~\circled{11}.
 Like the mini decompiler, \textbf{Decompile} represents its output using a predefined grammar of Ltac tactics,
-albeit one larger than Qtac.
+albeit one larger that is larger than Qtac and that also includes tacticals.
 It maintains the recursive proof structure for formatting. %, then uses that to print proofs of subgoals using bullet points.
 %It displays the resulting proof script to the proof engineer, who can modify it as needed.
 %It includes scripts that automate the process of printing all of these tactic proofs to a Coq file,

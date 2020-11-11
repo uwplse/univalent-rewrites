@@ -61,12 +61,12 @@ as discussed in Section~\ref{sec:search}.
 
 The \toolname transformation implements transport.
 Transport is realizable as a function given univalence~\cite{univalent2013homotopy}.
-Univalent parametricity~\cite{tabareau2017equivalences} approximates it
+UP~\cite{tabareau2017equivalences} approximates it
 in Coq, only sometimes relying on functional extensionality.
 While powerful, neither approach removes references to the old type. %making them poorly suited for repair.
 
-Recent work~\cite{tabareau2019marriage} extends univalent parametricity with 
-a white-box transformation that may be suitable for repair.
+Recent work~\cite{tabareau2019marriage} extends UP with 
+a white-box transformation that may work for repair.
 This imposes proof obligations on the proof engineer beyond those imposed by \toolname,
 %that establish what is effectively the correctness criteria
 %for the configuration in \toolname, while \toolname needs only that it holds metatheoretically.
