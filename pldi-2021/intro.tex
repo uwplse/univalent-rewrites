@@ -82,7 +82,7 @@ In addition, \toolname implements search procedures that
 automatically discover configurations and prove the equivalences they induce for four different classes of 
 changes (\textit{automatic configuration} in Table~\ref{fig:changes}),
 decreasing the burden of proof obligations imposed on the proof engineer.
-Our partnership with an industrial proof engineer has informed other changes to further improve workflow integration
+Our partnership with an industrial proof engineer\footnote{Note for double-blind: the anonymized proof engineer is not an author.} has informed other changes to further improve workflow integration
 (Sections~\ref{sec:implementation} and~\ref{sec:search}).
 
 \begin{figure}
@@ -102,7 +102,6 @@ Figure~\ref{fig:system} shows how this comes together when the proof engineer in
 \item The configured \textbf{Transform} transforms the old proof term into the new proof term.
 \item \textbf{Decompile} suggests a new proof script. % given the new proof term.
 \end{enumerate}
-
 There are currently four search procedures for automatic configuration implemented in \toolname (see Table~\ref{fig:changes}).
 %All four search procedures generate equivalence proofs as in Figure~\ref{fig:equivalence} automatically (\href{https://github.com/uwplse/pumpkin-pi/%blob/master/plugin/src/automation/search/search.ml}{search.ml} and \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/equivalence.ml}{equivalence.ml}),
 %then configure (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) the transformation %to those equivalences.

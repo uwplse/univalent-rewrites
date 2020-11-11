@@ -57,13 +57,11 @@
 \usepackage{listings} % for code
 \usepackage{xspace} % so we don't need to figure out spacing after \toolname every time
 \usepackage{mathpartir} % for inference rules
-\usepackage{scalerel} % to render definitional equality
 \usepackage{bbm} % to render N for the natural numbers
 \usepackage{syntax} % for code highlighting
 \usepackage{xcolor} % for code highlighting
 \usepackage{colortbl} % to black out table cells
 \usepackage{multirow} % for tables
-%\usepackage[russian,english]{babel} % for "zh"
 
 % Nice rendering of Coq code
 \lstdefinelanguage{coq}{
@@ -131,7 +129,6 @@
   \endgroup
 } % to highlight automatically-generated terms
 \newcommand{\mysubsubsec}[1]{\vspace{0.40em} \noindent {{\textbf{#1.}}}}
-\newcommand{\smallmath}[1]{$\text{\small #1}$} % inline math looks terrible at normal size
 
 % https://tex.stackexchange.com/questions/7032/good-way-to-make-textcircled-numbers
 \usepackage{tikz}
