@@ -23,12 +23,11 @@ over and over again, forever.
 We thus include some simple termination checks in our code~\circled{12}. % liftrules.ml
 
 Even when termination is guaranteed, whether to transform a subterm depends on intent.
-For example, our industrial proof engineer sometimes wished to port only some occurrences of \A,
-especially when \A was a tuple that could appear elsewhere
-with a different meaning.
-\toolname has some support for this using an interactive workflow~\circled{13}. % minimal_records.v, but show this
+That is, \toolname automates the case of porting \textit{every} \A to \B,
+but the industrial proof engineer sometimes wished to port only \textit{some} $A$s to $B$s.
+\toolname has some support for this using an interactive workflow~\circled{13},
+with plans for automatic support in the future. % minimal_records.v, but show this
 %We helped the proof engineer do this by interacting with \toolname using a particular workflow.
-%We plan to support this automatically using type-directed search in the future.
 
 \mysubsubsec{From CIC$_{\omega}$ to Coq}
 The implementation~\circled{4} % lift.ml

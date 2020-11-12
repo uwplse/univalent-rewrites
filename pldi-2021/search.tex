@@ -89,6 +89,28 @@ so there was little need for tactic suggestions.
 %Both informed improvements to \toolname, like better error messages, caching,
 %and a way to tell \toolname not to $\delta$-reduce certain terms.
 
+\iffalse
+\begin{figure}
+\lstinputlisting[firstline=1, lastline=18]{replica.tex}
+\vspace{-0.4cm}
+\caption{A language (top) and the same language with two swapped constructors and an added constructor (bottom).}
+\label{fig:replica}
+\end{figure}
+\fi
+
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=9]{replica.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=10, lastline=18]{replica.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
+\label{fig:replica}
+\end{figure*}
+
 \mysubsubsec{Permute Constructors: Modifying a Language}
 The swapping example from Section~\ref{sec:overview} was inspired by benchmarks 
 from the \textsc{Replica} user study of proof engineers~\cite{replica}.
@@ -151,28 +173,6 @@ Since neither type was inductive, this change used the generic construction for 
 %instantiated to this particular equivalence.
 This worked well, but necessitated some manual annotation due to the lack of custom unification heuristics for 
 manual configuration.
-
-\begin{figure}
-\lstinputlisting[firstline=1, lastline=18]{replica.tex}
-\vspace{-0.4cm}
-\caption{A language (top) and the same language with two swapped constructors and an added constructor (bottom).}
-\label{fig:replica}
-\end{figure}
-
-\iffalse
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=1, lastline=9]{replica.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=10, lastline=18]{replica.tex}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
-\label{fig:replica}
-\end{figure*}
-\fi
 
 \mysubsubsec{Change Inductive Structure: Unary to Binary}
 In \circled{5}, we used \toolname to support a classic example of changing inductive structure:
