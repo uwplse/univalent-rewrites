@@ -41,23 +41,24 @@ This approach is not tractable for more complex changes~\cite{robert2018}.
 
 \mysubsubsec{Proof Reuse}
 %Proof repair is proof reuse with the additional constraint that one specification ceases to exist.
-A few proof reuse tools work by proof term transformation and so can be repurposed for proof repair.
+A few proof reuse tools work by proof term transformation and so can be used for repair.
 \citet{Johnsen2004} describes a transformation that generalizes theorems in Isabelle/HOL.
-\toolname's transformation generalizes the transformation from \textsc{Devoid}~\cite{Ringer2019},
+\toolname generalizes the transformation from \textsc{Devoid}~\cite{Ringer2019},
 which transforms proofs along algebraic ornaments~\cite{mcbride}.
-\citet{magaud2000changing} implements a transformation for translating proofs between
-unary and binary natural numbers. 
-The latter two of these tools fit into configurations for \toolname,
+\citet{magaud2000changing} implement a proof term transformation between
+unary and binary numbers. 
+The latter two tools fit into \toolname configurations,
 and none implements tactic support in Coq like \toolname does.
 %The expansion algorithm from \citet{magaud2000changing} may further improve \toolname
 %by providing unification heuristics for \lstinline{Iota}.
 
-The refinement framework CoqEAL~\cite{cohen:hal-01113453} transforms functions across relations,
+CoqEAL~\cite{cohen:hal-01113453} transforms functions across relations,
 and these relations can be more general than \toolname's equivalences.
-However, while \toolname supports both functions and proofs, CoqEAL supports only simple functions,
-in particular due to the problem that \lstinline{Iota} addresses.
-CoqEAL may be most useful to chain with \toolname to get faster functions,
-as discussed in Section~\ref{sec:search}.
+However, while \toolname supports both functions and proofs, CoqEAL supports only simple functions
+due to the problem that \lstinline{Iota} addresses.
+CoqEAL may be most useful to chain with \toolname to get faster functions.
+Both CoqEAL and recent ornaments work~\cite{williamsphd} may help with
+better workflow support for changes that do not correspond to equivalences.
 
 The \toolname transformation implements transport.
 Transport is realizable as a function given univalence~\cite{univalent2013homotopy}.
