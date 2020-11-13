@@ -88,10 +88,10 @@ inductive proofs about \A with inductive proofs about \B, %, then recursively tr
 %subterms 
 all without changing the order or number of arguments.
 
-The two configuration parts responsible for preserving this are \lstinline{DepConstr}
+The two configuration parts responsible for this are \lstinline{DepConstr}
 and \lstinline{DepElim} (\textit{dependent constructors} and \textit{eliminators}).
 These describe how to construct and eliminate \A and \B, wrapping the types with a common inductive structure.
-There must be the same number of dependent constructors and cases in dependent eliminators for \A and \B,
+The transformation requires the same number of dependent constructors and cases in dependent eliminators for \A and \B,
 even if \A and \B are types with different numbers of constructors.
 
 For the \lstinline{list} change from Section~\ref{sec:overview},
@@ -350,7 +350,7 @@ It then runs the proof term transformation, which transports proofs across the e
 section: $\forall$ (a : A), g (f a) = a.(@\vspace{-0.04cm}@)
 retraction: $\forall$ (b : B), f (g b) = b.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
-constr_ok: $\forall$ $j$ $\vec{x_A}$ $\vec{x_B}$,(@\vspace{-0.04cm}@)
+constr_ok: $\forall$ $j$ $\vec{x_A}$ $\vec{x_B}$, $\vec{x_A}$ $\equiv_{A \simeq B}$ $\vec{x_B}$ $\rightarrow$(@\vspace{-0.04cm}@)
   DepConstr($j$, A) $\vec{x_A}$ $\equiv_{A \simeq B}$ DepConstr(j, B) $\vec{x_B}$.(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
 elim_ok: $\forall$ a b P$_A$ P$_B$ $\vec{f_A}$ $\vec{f_B}$,(@\vspace{-0.04cm}@)
@@ -482,7 +482,7 @@ In this case, unification is straightforward. % since \lstinline{DepConstr} and 
 %\lstinline{Constr} and \lstinline{Elim} directly.
 This can be more challenging when configuration terms are dependent.
 This is especially pronounced with definitional \lstinline{Eta} and \lstinline{Iota},
-which typically show up contracted in real code.
+which typically are implicit (reduced) in real code.
 %This problem is exactly why \citet{tabareau2019marriage} speculated that converting definitional to propositional equalities
 %like we do with \lstinline{Iota} may, in general, be intractable.
 To handle this, \toolname implements custom \textit{unification heuristics} for each search procedure
@@ -491,7 +491,7 @@ The transformation in turn assumes that all parameters and indices are fixed.
 
 \toolname falls back to Coq's unification for manual configuration and when these custom heuristics fail.
 When even Coq's unification is not enough, \toolname relies on proof engineers to provide hints
-in the form of explicit annotations.
+in the form of explicit annotations~\circled{5}.
 
 \mysubsubsec{Specifying a Correct Transformation}
 The implementation of this transformation in \toolname produces a term that Coq type checks, and so does not
