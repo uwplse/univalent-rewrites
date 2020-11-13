@@ -12,7 +12,7 @@ This section describes how we solved some of these challenges.
 \subsection{Implementing the Transformation}
 \label{sec:implementation}
 
-\mysubsubsec{Termination \& Intent}
+\mysubsubsec{Termination}
 When the correctness criteria for a configuration hold and a subterm unifies with a configuration term, this suggests that \toolname \textit{can}
 transform the subterm, but it does not necessarily mean that it \textit{should}.
 In some cases, doing so would result in nontermination.
@@ -22,9 +22,10 @@ over and over again, forever.
 %useful to support this case.
 We thus include some simple termination checks in our code~\circled{12}. % liftrules.ml
 
+\mysubsubsec{Intent}
 Even when termination is guaranteed, whether to transform a subterm depends on intent.
 That is, \toolname automates the case of porting \textit{every} \A to \B,
-but the industrial proof engineer sometimes wished to port only \textit{some} $A$s to $B$s.
+but proof engineers sometimes wish to port only \textit{some} $A$s to $B$s.
 \toolname has some support for this using an interactive workflow~\circled{13},
 with plans for automatic support in the future. % minimal_records.v, but show this
 %We helped the proof engineer do this by interacting with \toolname using a particular workflow.
@@ -39,12 +40,11 @@ We handle refolding of constants in constructors using \lstinline{DepConstr}.
 \mysubsubsec{Reaching Real Proof Engineers}
 Many of our design decisions in implementing \toolname were informed by our partnership with
 an industrial proof engineer (Section~\ref{sec:search}).
-For example, we found that the proof engineer rarely had the patience to wait more than ten seconds
-for \toolname to port a function or proof,
+For example, the proof engineer rarely had the patience to wait more than ten seconds
+for \toolname to port a term,
 so we implemented optional aggressive caching, even caching intermediate subterms that
-we encounter in the course of running our proof term transformation~\circled{14}. % TODO caching.ml
-We added a cache to tell \toolname not to $\delta$-reduce certain terms~\circled{14}.
-We wrote informative error messages~\circled{22}. % TODO link to errors
+we encounter in the course of running the transformation~\circled{14}. % TODO caching.ml
+We also added a cache to tell \toolname not to $\delta$-reduce certain terms~\circled{14}.
 
  % caching.ml
 %These caches are implemented in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/cache/caching.ml}{caching.ml}.
@@ -52,9 +52,10 @@ We wrote informative error messages~\circled{22}. % TODO link to errors
 % set certain terms or modules as opaque to \toolname, to prevent unnecessary $\delta$-reduction.
 
 The experiences of proof engineers also inspired new features.
-For example, we implemented a special search procedure to generate custom eliminators %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/smartelim.ml}{smartelim.ml})
-to make it easier to reason about types like $\Sigma$\lstinline{(l : list T).length l = n}
+For example, we implemented a search procedure to generate custom eliminators %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/smartelim.ml}{smartelim.ml})
+to help reason about types like $\Sigma$\lstinline{(l : list T).length l = n}
 by reasoning separately about the projections~\circled{15}. %smartelim.ml
+We added informative error messages~\circled{22} to help the proof engineer distinguish between user errors and bugs. % TODO link to errors
 These features helped with workflow integration. % tactic decompiler helped with integration into proof engineering workflows.
 
 \begin{table*}
@@ -125,7 +126,7 @@ Consequentially, Coq sometimes fails to infer the correct motive.
 To handle induction, the decompiler strategically uses \lstinline{revert} to manipulate the goal
 so that Coq can better infer the motive.
 To handle rewrites, it uses \lstinline{simpl} to refold the goal before rewriting.
-Neither of these approaches are guaranteed to work, so the proof engineer may sometimes need to tweak the output proof script appropriately.
+Neither of these approaches is guaranteed to work, so the proof engineer may sometimes need to tweak the suggested proof script appropriately.
 Even if we pass Coq's induction principle an explicit motive, Coq still sometimes fails due
 to unrepresented assumptions.
 Long term, using another tactic like \lstinline{change} or \lstinline{refine} before applying these tactics
@@ -137,13 +138,13 @@ tactics like \lstinline{rewrite in}, \lstinline{apply in}, and \lstinline{pose}.
 \textbf{Decompile} implements~\circled{11} % decompiler.ml
 support for \lstinline{rewrite in} and \lstinline{apply in} similarly to how it supports
 \lstinline{rewrite} and \lstinline{apply}, except that it ensures that the unmanipulated hypothesis does not occur in the body of the let expression,
-it swaps the direction of the rewrite, and it checks for and recurses into generated subgoals.
+it swaps the direction of the rewrite, and it recurses into any generated subgoals.
 In all other cases, it uses \lstinline{pose}, a catch-all for let bindings.
 
 \mysubsubsec{Pretty Printing}
 After decompiling proof terms, \textbf{Decompile} pretty prints the result~\circled{11}.
 Like the mini decompiler, \textbf{Decompile} represents its output using a predefined grammar of Ltac tactics,
-albeit one larger that is larger than Qtac and that also includes tacticals.
+albeit one larger that is larger than Qtac, and that also includes tacticals.
 It maintains the recursive proof structure for formatting. %, then uses that to print proofs of subgoals using bullet points.
 %It displays the resulting proof script to the proof engineer, who can modify it as needed.
 %It includes scripts that automate the process of printing all of these tactic proofs to a Coq file,

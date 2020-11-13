@@ -6,7 +6,7 @@
 \begin{grammar}
 <v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
 
-<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> | left | right | split \{ <p>, <p> \} |induction <t> <t> \{ <p>, \ldots, <p> \} | <p> . <p>
+<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> |  induction <t> <t> \{ <p>, \ldots, <p> \} |  split \{ <p>, <p> \} | left | right | <p> . <p>
 \end{grammar}
 \vspace{-0.3cm}
 \caption{Qtac syntax.}
@@ -177,10 +177,10 @@ highlighted the same color.}
 
 \mysubsubsec{Better Proof Scripts}
 %The mini decompiler produces simple tactic scripts.
-The implementation of \textbf{Decompile} first runs something similar to the mini decompiler, and then modifies those tactics to produce a more natural proof script~\circled{11}. % decompiler.ml
+The implementation of \textbf{Decompile} first runs something similar to the mini decompiler, then modifies the suggested tactics to produce a more natural proof script~\circled{11}. % decompiler.ml
 For example, it cancels out sequences of \lstinline{intros} and \lstinline{revert},
-inserts semicolons, and removes redundant arguments to \lstinline{apply}. %, ensuring the result still holds. % TODO rewrite
-It can also take suggested tactics (like part of the old version of the proof script) from the proof engineer as hints,
+inserts semicolons, and removes extra arguments to \lstinline{apply}. %, ensuring the result still holds. % TODO rewrite
+It can also take tactics from the proof engineer (like part of the old proof script) as hints,
 then iteratively replace tactics with those hints, checking the result. % as it recurses.
 This makes it possible for suggested scripts to include custom tactics and decision procedures.
 %Further improvements could come from preserving comments and indentation, or automatically using information from the old 
