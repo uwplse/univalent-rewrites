@@ -64,7 +64,7 @@ It deconstructs that equivalence into things that talk about \A, and things that
 Furthermore, it does so in a way that allows the transformation to abstract away details
 specific to the given equivalence, like the order or number of arguments to an induction principle or type.
 
-At a high level, the configuration helps the transformation achieve two goals: preserve equality up to transport along the equivalence 
+At a high level, the configuration helps the transformation achieve two goals: preserve equality up to transport across the equivalence 
 between \A and \B, and produce well-typed terms.
 This configuration is a pair of pairs:
 
@@ -109,7 +109,7 @@ Consider the type of vectors of some length:
 \begin{lstlisting}
 packed_vect T := $\Sigma$(n : nat).vector T n.(@\vspace{-0.05cm}@)
 \end{lstlisting}
-\toolname can port proofs along the equivalence between this type and \lstinline{list T}~\circled{3}. % Example.v
+\toolname can port proofs across the equivalence between this type and \lstinline{list T}~\circled{3}. % Example.v
 The dependent constructors \toolname discovers for this pack the index into an existential, like:
 
 \begin{lstlisting}
@@ -538,7 +538,7 @@ To preserve the equivalence (Figure~\ref{fig:spec}, left), \lstinline{DepConstr}
 % between \A and \B.
 (\lstinline{section} and \lstinline{retraction} must hold for \lstinline{f} and \lstinline{g}).
 %uses  \lstinline{DepElim} to eliminate \B and \lstinline{DepConstr} to construct \A.
-\lstinline{DepConstr} over \A and \B must be equal up to transport along that equivalence (\lstinline{constr_ok}), 
+\lstinline{DepConstr} over \A and \B must be equal up to transport across that equivalence (\lstinline{constr_ok}), 
 and similarly for \lstinline{DepElim} (\lstinline{elim_ok}).
 %An example proves this on the change from \lstinline{list T} to \lstinline{packed_vect T} in the 
 %univalent parametricity framework.\footnote{\url{https://github.com/CoqHott/univalent_parametricity/commit/7dc14e69942e6b3302fadaf5356f9a7e724b0f3c}}

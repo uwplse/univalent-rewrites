@@ -51,7 +51,7 @@ With \toolname, the proof engineer can repair functions and proofs about \lstinl
 as long as she first configures \toolname to describe which constructor 
 of \lstinline{I} maps to \lstinline{true} and which maps to \lstinline{false}.
 This information about constructor mappings induces an equivalence \lstinline{I }$\simeq$\lstinline{ J}
-along which \toolname repairs functions and proofs.
+across which \toolname repairs functions and proofs.
 File \circled{2} shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false,
 and repairing proofs of De Morgan's laws. % constr_refactor.v
 %
@@ -194,19 +194,19 @@ when those changes can be expressed as equivalences between $\Sigma$ types or su
 
 The goal of \toolname is to implement a kind of proof reuse known as \textit{transport}~\cite{univalent2013homotopy},
 but in a way that is suitable for repair.
-Informally, transport takes a term $t$ and produces an output term $t'$ that is the same as $t$ modulo an equivalence $A \simeq B$.
+Informally, transport takes a term $t$ and produces a term $t'$ that is the same as $t$ modulo an equivalence $A \simeq B$.
 If $t$ is a function, then $t'$ behaves the same way modulo the equivalence;
 if $t$ is a proof, then $t'$ proves the same theorem the same way modulo the equivalence.
 
-When transport along $A \simeq B$ takes $t$ to $t'$ ,
+When transport across $A \simeq B$ takes $t$ to $t'$ ,
 we say that $t$ and $t'$ are \textit{equal up to transport}
-along that equivalence (denoted $t \equiv_{A \simeq B} t'$).\footnote{This notation should be interpreted in a metatheory with \textit{univalence}---a property that Coq lacks---or it should be approximated in Coq.
-The details of equality up to transport with univalence are in \citet{univalent2013homotopy}, and an approximation in Coq is in \citet{tabareau2017equivalences}. For equivalent \A and \B, there can be many equivalences $A \simeq B$.
-Equality up to transport is along a \textit{particular} equivalence, but we erase this in the 
+across that equivalence (denoted $t \equiv_{A \simeq B} t'$).\footnote{This notation should be interpreted in a metatheory with \textit{univalence}---a property that Coq lacks---or it should be approximated in Coq.
+The details of transport with univalence are in \citet{univalent2013homotopy}, and an approximation in Coq is in \citet{tabareau2017equivalences}. For equivalent \A and \B, there can be many equivalences $A \simeq B$.
+Equality up to transport is across a \textit{particular} equivalence, but we erase this in the 
 notation.}
 In Section~\ref{sec:overview}, the original append function \lstinline{++} over \lstinline{Old.list}
 and the repaired append function \lstinline{++} over \lstinline{New.list} that \toolname produces are
-equal up to transport along the equivalence from Figure~\ref{fig:equivalence}, since (by \lstinline{app_ok}~\circled{1}):
+equal up to transport across the equivalence from Figure~\ref{fig:equivalence}, since (by \lstinline{app_ok}~\circled{1}):
 
 \begin{lstlisting}
 $\forall$ T (l1 l2 : Old.list T),(@\vspace{-0.04cm}@)
