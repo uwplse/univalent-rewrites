@@ -63,7 +63,7 @@ This is implemented (Section~\ref{sec:impl}) in \toolname\footnote{Name changed 
 %\end{enumerate}
 
 \mysubsubsec{Addressing Challenge 1: Flexible Type Support}
-The case studies in Section~\ref{sec:search}---summarized in Table~\ref{fig:changes}---show that \toolname is flexible enough to support
+The case studies in Section~\ref{sec:search}---summarized in Table~\ref{fig:changes} on page~\pageref{fig:changes}---show that \toolname is flexible enough to support
 a wide range of proof engineering use cases. % can support a flexible class of changes informed by the needs of proof engineers within a unified framework.
 In general, \toolname can support any change described by an equivalence, though it takes the equivalence in a
 deconstructed form that we call a \textit{configuration}.
@@ -102,7 +102,7 @@ Figure~\ref{fig:system} shows how this comes together when the proof engineer in
 \item The configured \textbf{Transform} transforms the old proof term into the new proof term.
 \item \textbf{Decompile} suggests a new proof script. % given the new proof term.
 \end{enumerate}
-There are currently four search procedures for automatic configuration implemented in \toolname (see Table~\ref{fig:changes}).
+There are currently four search procedures for automatic configuration implemented in \toolname (see Table~\ref{fig:changes} on page~\pageref{fig:changes}).
 %All four search procedures generate equivalence proofs as in Figure~\ref{fig:equivalence} automatically (\href{https://github.com/uwplse/pumpkin-pi/%blob/master/plugin/src/automation/search/search.ml}{search.ml} and \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/equivalence.ml}{equivalence.ml}),
 %then configure (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/lift/liftconfig.ml}{liftconfig.ml}) the transformation %to those equivalences.
 Manual configuration makes it possible
