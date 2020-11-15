@@ -301,18 +301,27 @@ $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,(@\vspace{-0.04cm}@)
   DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ } =(@\vspace{-0.04cm}@)
   (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
 \end{lstlisting}
-goes through by reflexivity.
-But $\iota$ for \lstinline{N} is propositional, since:
+holds by reflexivity.
+But $\iota$ for \lstinline{N} is propositional, since the corresponding 
+theorem over \lstinline{N} does not.
+%\begin{lstlisting}
+%$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,(@\vspace{-0.04cm}@)
+%  DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ } =(@\vspace{-0.04cm}@)
+%  (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
+%\end{lstlisting}
+%no longer holds by reflexivity.
+\lstinline{Iota} for \lstinline{nat} in the \lstinline{S} case is a rewrite by the proof of the above,
+with type:
 
 \begin{lstlisting}
-$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,(@\vspace{-0.04cm}@)
-  DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ } =(@\vspace{-0.04cm}@)
-  (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
+$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n (Q: P (DepConstr(1, nat) n) $\rightarrow$ s),(@\vspace{-0.04cm}@)
+  Iota(1, nat, Q) :(@\vspace{-0.04cm}@)
+    Q ((@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ })) $\rightarrow$(@\vspace{-0.04cm}@)
+    Q (DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
 \end{lstlisting}
-no longer holds by reflexivity.
-The \lstinline{Iota} rules are rewrites along proofs of the theorems above for the successor case~\circled{5}.
-The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N}.
-That way, \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinline{N}.
+and similarly for \lstinline{N}~\circled{5}.
+The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N},
+so that \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinline{N}.
 
 Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ.
 The transformation requires that \lstinline{DepElim} over \A and over \B have the same structure
@@ -341,7 +350,7 @@ it moves the bulk of the work into the configuration,
 and represents the configuration explicitly.
 Of course, typical proof terms in Coq do not apply these configuration
 terms explicitly.
-\toolname does some additional work (using \textit{unification heuristics}) to get real proof terms into this format before running the transformation.
+\toolname does some additional work using \textit{unification heuristics} to get real proof terms into this format before running the transformation.
 It then runs the proof term transformation, which transports proofs across the equivalence that corresponds to the configuration.
 
 \begin{figure*}
