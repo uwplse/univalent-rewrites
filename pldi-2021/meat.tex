@@ -24,7 +24,7 @@ DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.0
 \end{lstlisting}
 \end{minipage}
 \vspace{-0.3cm}
-\caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}.}
+\caption{The dependent constructors and eliminators for old (left) and new (right) \lstinline{list}, with the difference in \codediff{orange}.}
 \vspace{-0.1cm}
 \label{fig:listconfig}
 \end{figure*}
@@ -111,7 +111,7 @@ Consider the type of vectors of some length:
 packed_vect T := $\Sigma$(n : nat).vector T n.(@\vspace{-0.05cm}@)
 \end{lstlisting}
 \toolname can port proofs across the equivalence between this type and \lstinline{list T}~\circled{3}. % Example.v
-The dependent constructors \toolname discovers for this pack the index into an existential, like:
+The dependent constructors \toolname discovers pack the index into an existential, like:
 
 \begin{lstlisting}
 DepConstr(0, packed_vect) : packed_vect T :=(@\vspace{-0.04cm}@)
@@ -517,7 +517,7 @@ The key steps in this transformation that make this possible are porting terms a
 %to a particular equivalence 
 (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
 %The rest is straightforward.
-For metatheoretical reasons, without assuming additional axioms, a proof of this theorem can only be approximated inside of Coq.
+For metatheoretical reasons, without assuming additional axioms, a proof of this theorem in Coq can only be approximated~\cite{tabareau2017equivalences}.
 It would be possible to generate per-transformation proofs of correctness, but this does not serve an engineering need.
 
 \subsection{Specifying Correct Configurations}

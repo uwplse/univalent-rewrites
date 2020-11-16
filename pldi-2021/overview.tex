@@ -17,7 +17,7 @@ Proof.(@\vspace{-0.04cm}@)
   rewrite (IHl y). rewrite app_assoc; trivial.(@\vspace{-0.04cm}@)
 Qed.(@\vspace{-0.05cm}@)
 \end{lstlisting}
-This theorem says that appending two lists and reversing the result behaves the same as appending
+This theorem says that appending (\lstinline{++}) two lists and reversing (\lstinline{rev}) the result behaves the same as appending
 the reverse of the second list onto the reverse of the first list.
 When we change the \lstinline{list} type, the proof no longer works.
 %This theorem statement \lstinline{rev_app_distr} defined over the old version of \lstinline{list} is our \textit{old specification}.
