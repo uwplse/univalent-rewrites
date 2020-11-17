@@ -69,7 +69,7 @@ that way proof engineers could finish stuck proofs interactively using Coq.
 However, due to language differences, they had found the generated Gallina programs and specifications difficult to work with.
 
 The proof engineer used \toolname to port the automatically generated functions and specifications to more
-human-readable functions and specifications, wrote Coq proofs about those functons and specifications, then
+human-readable functions and specifications, wrote Coq proofs about those functions and specifications, then
 used \toolname again to port those proofs back to
 proofs about the original functions and specifications.
 %This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
@@ -175,7 +175,7 @@ manual configuration.
 
 \mysubsubsec{Change Inductive Structure: Unary to Binary}
 In \circled{5}, we used \toolname to support a classic example of changing inductive structure:
-updatings unary to binary numbers~\cite{magaud2000changing}.
+updating unary to binary numbers~\cite{magaud2000changing}.
 % TODO fin and vect? mention somewhere?
 In Coq, a binary number \lstinline{N} (Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
 is either 1 (\lstinline{xH}), or the result of shifting left and adding 1 (\lstinline{xI}) or
@@ -364,7 +364,7 @@ and someone on the \lstinline{coq-club} message board contacted us expressing in
 \subsubsection{Configuration}
 
 We used two automatic configurations to ease development with dependent types using algebraic ornaments.
-The first instantiates the proof term transformation to the tranformation from \textsc{Devoid}:
+The first instantiates the proof term transformation to the transformation from \textsc{Devoid}:
 it ports functions and proofs from the input type to the ornamented type at \textit{some} index,
 like \lstinline{packed_vect T} from Section~\ref{sec:key1}.
 The second provides the missing link to get proofs at a \textit{particular} index, like \lstinline{vector T n};
