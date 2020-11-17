@@ -510,14 +510,15 @@ As \toolname is an engineering tool, there is no need to formally prove the tran
 The goal of such a proof would be to show that % the transformation preserves equality up to transport along the equivalence $A \simeq B$,
 %while no longer referring to the old specification.
 %That is, we need that 
-$\Gamma \vdash t \Uparrow t' \rightarrow t \equiv_{A \simeq B} t'$, and that $t'$ refers to \B in place of \A.
+if $\Gamma \vdash t \Uparrow t'$,
+then $t$ and $t'$ are equal up to transport, and $t'$ refers to \B in place of \A.
 %This is the same as the correctness criterion for the program transformation from \textsc{Devoid} that this is based on,
 %with the transformation generalized to handle other equivalences beyond the class that \textsc{Devoid} supports.
 The key steps in this transformation that make this possible are porting terms along the configuration % corresponding
 %to a particular equivalence 
 (\textsc{Dep-Constr}, \textsc{Dep-Elim}, \textsc{Eta}, and \textsc{Iota}).
 %The rest is straightforward.
-For metatheoretical reasons, without assuming additional axioms, a proof of this theorem in Coq can only be approximated~\cite{tabareau2017equivalences}.
+For metatheoretical reasons, without additional axioms, a proof of this theorem in Coq can only be approximated~\cite{tabareau2017equivalences}.
 It would be possible to generate per-transformation proofs of correctness, but this does not serve an engineering need.
 
 \subsection{Specifying Correct Configurations}

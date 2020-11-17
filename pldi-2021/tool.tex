@@ -13,7 +13,7 @@ This section describes how we solved some of these challenges.
 \label{sec:implementation}
 
 \mysubsubsec{Termination}
-When the correctness criteria for a configuration hold and a subterm unifies with a configuration term, this suggests that \toolname \textit{can}
+When a subterm unifies with a configuration term, this suggests that \toolname \textit{can}
 transform the subterm, but it does not necessarily mean that it \textit{should}.
 In some cases, doing so would result in nontermination.
 For example, if \B is a refinement of \A, then we can always run \textsc{Equivalence}

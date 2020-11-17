@@ -81,7 +81,7 @@ manually massage it into something that works and is maintainable.
 
 \textbf{Decompile} achieves this in two passes: The first pass decompiles proof terms to proof scripts that use a predefined set of tactics.
 The second pass improves on suggested tactics by simplifying arguments, substituting tacticals, and using
-hints like custom tactics.
+hints like custom tactics and decision procedures.
 
 \mysubsubsec{First Pass: Basic Proof Scripts}
 The first pass takes Coq terms and produces tactics in Ltac, the proof script language for Coq.
@@ -186,7 +186,8 @@ For example, it cancels out sequences of \lstinline{intros} and \lstinline{rever
 inserts semicolons, and removes extra arguments to \lstinline{apply} and \lstinline{rewrite}. %, ensuring the result still holds. % TODO rewrite
 It can also take tactics from the proof engineer (like part of the old proof script) as hints,
 then iteratively replace tactics with those hints, checking the result. % as it recurses.
-This makes it possible for suggested scripts to include custom tactics and decision procedures.
+This makes it possible for suggested scripts to include goal-solving custom tactics and decision procedures.
+We omit the details due to space constraints.
 %Further improvements could come from preserving comments and indentation, or automatically using information from the old 
 %version of the proof script rather than asking for it explicitly.
 
