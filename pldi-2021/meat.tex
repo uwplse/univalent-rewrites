@@ -104,7 +104,7 @@ back to the original order.
 Similarly, the dependent eliminator for \lstinline{Old.list} is the normal eliminator for \lstinline{Old.list},
 while the dependent eliminator for \lstinline{New.list} swaps cases.
 
-These constructors and eliminators can be \textit{dependent}.
+As the name hints, these constructors and eliminators can be dependent.
 Consider the type of vectors of some length:
 
 \begin{lstlisting}
@@ -246,15 +246,15 @@ Thanks to this, we can forego the assumption that our language has primitive pro
 (* 1: original term *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
  Elim (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
-   ($\lambda$ m.m),(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m.Constr(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m),(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . Constr(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
  } m.(@\vspace{-0.04cm}@)
 (@\vspace{-0.18cm}@)
 (* 2: after unifying (@\texttt{with}@) configuration *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : (@\codediff{A}@)) .(@\vspace{-0.04cm}@)
  (@\codediff{DepElim}@) (l, $\lambda$(l: (@\codediff{A}@)).(@\codediff{A}@) $\rightarrow$ (@\codediff{A}@))) {(@\vspace{-0.04cm}@)
-   ($\lambda$ m.m)(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m.(@\codediff{DepConstr}@)(1, (@\codediff{A}@)) t (IHl m))(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . (@\codediff{DepConstr}@)(1, (@\codediff{A}@)) t (IHl m))(@\vspace{-0.04cm}@)
  } m.(@\vspace{-0.04cm}@)
 \end{lstlisting}
 \end{minipage}
@@ -264,15 +264,15 @@ $\lambda$ (T : Type) (l m : (@\codediff{A}@)) .(@\vspace{-0.04cm}@)
 (* 4: reduced to final term *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
  Elim (l, $\lambda$(l: New.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m.Constr(0, New.list T) t (IHl m)),(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . Constr(0, New.list T) t (IHl m)),(@\vspace{-0.04cm}@)
    ($\lambda$ m . m)(@\vspace{-0.04cm}@)
  } m.(@\vspace{-0.04cm}@)
 (@\vspace{-0.18cm}@)
 (* 3: after transforming *)(@\vspace{-0.04cm}@)
 $\lambda$ (T : Type) (l m : (@\codediff{B}@)) .(@\vspace{-0.04cm}@)
  (@\codediff{DepElim}@) (l, $\lambda$(l: (@\codediff{B}@)).(@\codediff{B}@) $\rightarrow$ (@\codediff{B}@))) {(@\vspace{-0.04cm}@)
-   ($\lambda$ m.m)(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m.(@\codediff{DepConstr}@)(1, (@\codediff{B}@)) t (IHl m))(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . (@\codediff{DepConstr}@)(1, (@\codediff{B}@)) t (IHl m))(@\vspace{-0.04cm}@)
  } m.(@\vspace{-0.04cm}@)
 \end{lstlisting}
 \end{minipage}
@@ -474,7 +474,7 @@ of \lstinline{DepElim(A, P)} at \lstinline{DepConstr(j, A)} (similarly for \B).}
 
 \mysubsubsec{Unification Heuristics}
 The transformation does not fully describe the search procedure for transforming terms that \toolname implements.
-Before running the transformation, \toolname \textit{unifies} the proof term with particular \A (fixing parameters and indices),
+Before running the transformation, \toolname \textit{unifies} subterms with particular \A (fixing parameters and indices),
 and with applications of configuration terms over \A. 
 The transformation then transforms configuration terms over \A
 to configuration terms over \B.
@@ -577,7 +577,7 @@ avoid applying \lstinline{section} and \lstinline{retraction}.
 With this correctness criteria for a configuration, we get the completeness result (proven in Coq~\circled{8}) that every equivalence induces a configuration. % arbitrary.v
 We also obtain an algorithm for the soundness result that every configuration induces an equivalence.
 The algorithm to prove \lstinline{section} is as follows (\lstinline{retraction} is similar):
-replace \lstinline{a} with \lstinline{Eta(A)} by \lstinline{eta_ok(A)}.
+replace \lstinline{a} with \lstinline{Eta(A) a} by \lstinline{eta_ok(A)}.
 Then, induct using \lstinline{DepElim} over \A.
 For each case $i$, the proof obligation is to show that \lstinline{g (f a)} is equal to \lstinline{a},
 where \lstinline{a} is \lstinline{DepConstr(A, i)} applied to the non-inductive arguments (by \lstinline{elim_eta(A)}).
