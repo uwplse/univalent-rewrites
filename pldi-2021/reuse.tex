@@ -1,7 +1,7 @@
 \section{Problem Definition}
 \label{sec:key1}
 
-\toolname can do much more than just permute constructors. % approach is more general than just permuting constructors:
+\toolname can do much more than permute constructors. % approach is more general than just permuting constructors:
 Given an equivalence between types \A and \B,
 \toolname repairs functions and proofs defined over \A to instead refer to \B (Section~\ref{sec:scope}).
 It does this in a way that allows for removing references to \A, which is essential for proof repair,
@@ -29,10 +29,10 @@ since \A may be an old version of an updated type (Section~\ref{sec:repair}).
 \label{sec:scope}
 
 \toolname repairs proofs in response to changes in types that correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
-or pairs of functions that map between two types and are mutual inverses.\footnote{The adjoint follows, and \toolname includes machinery to prove it~\circled{10}~\circled{23}.}
+or pairs of functions that map between two types and are mutual inverses.\footnote{The adjoint follows, and \toolname includes machinery to prove it~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/search/equivalence.ml}{\circled{10}}~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/theories/Adjoint.v}{\circled{23}}.}
 When a type equivalence between types \A and \B exists, those types are \textit{equivalent} (denoted \A $\simeq$ \B). % for example:
 Figure~\ref{fig:equivalence} shows a type equivalence between the two versions of \lstinline{list}
-from Figure~\ref{fig:listswap} that \toolname discovered and proved automatically~\circled{1}.
+from Figure~\ref{fig:listswap} that \toolname discovered and proved automatically~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/Swap.v}{\circled{1}}.
 
 %
 %\begin{lstlisting}
@@ -48,11 +48,11 @@ in Figure~\ref{fig:equivalence2}.
 \lstinline{J} can be viewed as \lstinline{I} with its two constructors \lstinline{A} and \lstinline{B} pulled out to a
 new argument of type \lstinline{bool} for a single constructor.
 With \toolname, the proof engineer can repair functions and proofs about \lstinline{I} to instead use \lstinline{J},
-as long as she first configures \toolname to describe which constructor 
+as long as she configures \toolname to describe which constructor 
 of \lstinline{I} maps to \lstinline{true} and which maps to \lstinline{false}.
 This information about constructor mappings induces an equivalence \lstinline{I }$\simeq$\lstinline{ J}
 across which \toolname repairs functions and proofs.
-File \circled{2} shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false,
+File \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/constr_refactor.v}{\circled{2}} shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false,
 and repairing proofs of De Morgan's laws. % constr_refactor.v
 %
 %It uses \toolname to automatically repair functions and proofs over \lstinline{I}, like:
@@ -121,6 +121,18 @@ and repairing proofs of De Morgan's laws. % constr_refactor.v
 \end{figure*}
 \fi
 
+\begin{figure*}
+\small
+\begin{grammar}
+<i> $\in \mathbbm{N}$, <v> $\in$ Vars, <s> $\in$ \{ Prop, Set, Type<i> \}
+
+<t> ::= <v> | <s> | $\Pi$ (<v> : <t>) . <t> | $\lambda$ (<v> : <t>) . <t> | <t> <t> | Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\}
+\end{grammar}
+\vspace{-0.3cm}
+\caption{Syntax for CIC$_\omega$ from \citet{Timany2015FirstST} with (from left to right) variables, sorts, dependent types, functions, application, inductive types, inductive constructors, and primitive eliminators.}
+\label{fig:syntax}
+\end{figure*}
+
 \mysubsubsec{Adding a Dependent Index}
 At first glance, the word \textit{equivalence} may seem to imply that \toolname can support only changes in
 which the proof engineer does not add or remove information.
@@ -130,7 +142,7 @@ But equivalences are more powerful than they may seem.
 %roofs about this new information become the proof obligation for the proof engineer,
 %and \toolname automates the rest.
 Consider, for example, changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
-\toolname can repair functions and proofs about lists to functions and proofs about vectors of particular lengths~\circled{3}, % Example.v
+\toolname can repair functions and proofs about lists to functions and proofs about vectors of particular lengths~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}}, % Example.v
 since $\Sigma$\lstinline{(l:list T).length l = n }$\simeq$\lstinline{ vector T n}.
 From the proof engineer's perspective, after updating specifications from \lstinline{list} to \lstinline{vector},
 to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists.
@@ -177,18 +189,6 @@ when those changes can be expressed as equivalences between $\Sigma$ types or su
 %Section~\ref{sec:search} shows this and other case studies using \toolname to repair real proofs
 %informed by the needs of proof engineers.
 
-\begin{figure*}
-\small
-\begin{grammar}
-<i> $\in \mathbbm{N}$, <v> $\in$ Vars, <s> $\in$ \{ Prop, Set, Type<i> \}
-
-<t> ::= <v> | <s> | $\Pi$ (<v> : <t>) . <t> | $\lambda$ (<v> : <t>) . <t> | <t> <t> | Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\}
-\end{grammar}
-\vspace{-0.3cm}
-\caption{Syntax for CIC$_\omega$ from \citet{Timany2015FirstST} with (from left to right) variables, sorts, dependent types, functions, application, inductive types, inductive constructors, and primitive eliminators.}
-\label{fig:syntax}
-\end{figure*}
-
 \subsection{Goal: Transport with a Twist}
 \label{sec:repair}
 
@@ -206,7 +206,7 @@ Equality up to transport is across a \textit{particular} equivalence, but we era
 notation.}
 In Section~\ref{sec:overview}, the original append function \lstinline{++} over \lstinline{Old.list}
 and the repaired append function \lstinline{++} over \lstinline{New.list} that \toolname produces are
-equal up to transport across the equivalence from Figure~\ref{fig:equivalence}, since (by \lstinline{app_ok}~\circled{1}):
+equal up to transport across the equivalence from Figure~\ref{fig:equivalence}, since (by \lstinline{app_ok}~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/Swap.v}{\circled{1}}):
 
 \begin{lstlisting}
 $\forall$ T (l1 l2 : Old.list T),(@\vspace{-0.04cm}@)
@@ -217,7 +217,7 @@ since both prove the same thing the same way up to the equivalence, and up to th
 and \lstinline{rev}.
 
 Transport typically works by applying the functions that make up the equivalence to convert
-inputs and outputs between equivalent types.
+inputs and outputs between types.
 This approach would not be suitable for repair, since it does not make it possible to remove the old type \A.
 \toolname implements transport in a way that allows for removing references to \A---by proof term transformation.
 

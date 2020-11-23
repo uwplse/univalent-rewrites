@@ -2,7 +2,7 @@
 \label{sec:overview}
 
 Consider a simple example of using \toolname: repairing proofs after swapping the list constructors (Figure~\ref{fig:listswap}).
-This change is inspired by a similar change from a user study of proof engineers (Section~\ref{sec:search}).
+This is inspired by a similar change from a user study of proof engineers (Section~\ref{sec:search}).
 Even such a simple change can cause trouble, as in this proof from the Coq standard library:\footnote{We use induction instead of pattern matching.}
 
 \begin{lstlisting}
@@ -84,7 +84,7 @@ Proof.(@\vspace{-0.04cm}@)
 Qed.(@\vspace{-0.05cm}@)
 \end{lstlisting}
 where the dependencies (\lstinline{rev}, \lstinline{++}, \lstinline{app_assoc}, and \lstinline{app_nil_r}) have
-also been updated automatically~\circled{1}. % Swap.v
+also been updated automatically~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/Swap.v}{\circled{1}}. % Swap.v
 If we would like, we can manually modify this to something that more closely matches the style of the original proof:
 
 \begin{lstlisting}
@@ -98,7 +98,7 @@ Proof.(@\vspace{-0.04cm}@)
 Qed.(@\vspace{-0.04cm}@)
 \end{lstlisting}
 We can even repair the entire list module from the Coq standard library all at once by running the \lstinline{Repair module}
-command~\circled{1}. % Swap.v
+command~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/Swap.v}{\circled{1}}. % Swap.v
 When we are done, we can get rid of \lstinline{Old.list}. % entirely.
 
 The key to success is taking advantage of Coq's structured proof term language:

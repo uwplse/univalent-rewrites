@@ -54,7 +54,7 @@ and may impose additional proof obligations like proving relations corresponding
 
 Our approach combines a configurable proof term transformation (Section~\ref{sec:key2}) with a prototype decompiler from proof terms
 back to suggested tactics (Section~\ref{sec:decompiler}). % TODO mention search or not?
-This is implemented (Section~\ref{sec:impl}) in \toolname, an extension to the \textsc{Pumpkin Patch}~\cite{pumpkinpatch} proof repair plugin suite for Coq 8.8 that is available on Github.\footnote{We annotate each claim to which code is relevant with a circled number like \circled{1}. These circled numbers are links to code, and are detailed in \lstinline{GUIDE.md}.} % TODO links here
+This is implemented (Section~\ref{sec:impl}) in \toolname, an extension to the \textsc{Pumpkin Patch}~\cite{pumpkinpatch} proof repair plugin suite for Coq 8.8 that is available on Github.\footnote{We annotate each claim to which code is relevant with a circled number like \circled{1}. These circled numbers are links to code, and are detailed in \href{https://github.com/uwplse/pumpkin-pi/blob/silent/GUIDE.md}{\lstinline{GUIDE.md}}.} % TODO links here
 %The result is a flexible proof repair tool that: 
 
 %\begin{enumerate}
@@ -77,7 +77,7 @@ Research on workflow integration for proof repair tools is in its infancy.
 \toolname is built with workflow integration in mind.
 For example, \toolname is the only proof repair tool we are aware of that produces suggested tactic scripts for repaired proofs,
 a challenge highlighted in existing proof repair work~\cite{pumpkinpatch, robert2018} and in 
-a recent survey of proof engineering~\cite{PGL-045}.
+a survey of proof engineering~\cite{PGL-045}.
 In addition, \toolname implements search procedures that 
 automatically discover configurations and prove the equivalences they induce for four different classes of 
 changes (\textit{automatic configuration} in Table~\ref{fig:changes}),
