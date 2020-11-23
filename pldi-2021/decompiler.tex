@@ -1,66 +1,6 @@
 \section{Decompiling Proof Terms to Tactics}
 \label{sec:decompiler}
 
-\begin{figure*}
-\small
-\begin{grammar}
-<v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
-
-<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> |  induction <t> <t> \{ <p>, \ldots, <p> \} |  split \{ <p>, <p> \} | left | right | <p> . <p>
-\end{grammar}
-\vspace{-0.3cm}
-\caption{Qtac syntax.}
-\vspace{-0.3cm}
-\label{fig:ltacsyntax1}
-\end{figure*}
-
-\begin{figure*}
-\begin{mathpar}
-\mprset{flushleft}
-\small
-\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Rightarrow$ $p$}\vspace{-0.45cm}\\
-
-\inferrule[Intro]
-  { \Gamma,\ n : T \vdash b \Rightarrow p }
-  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{intro}\ n.\ p }
-
-\inferrule[Symmetry]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{symmetry}.\ p }
-
-\inferrule[Split]
-  { \Gamma \vdash l \Rightarrow p \\ \Gamma \vdash r \Rightarrow q }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l\ r \Rightarrow \mathrm{split} \{ p, q \}.\ }\\
-
-\inferrule[Left]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }
-
-\inferrule[Right]
-  { \Gamma \vdash H \Rightarrow p }
-  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }
-
-\inferrule[Rewrite]
-  { \Gamma \vdash H_1 : x = y \\ \Gamma \vdash H_2 \Rightarrow p }
-  { \Gamma \vdash \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{symmetry}.\ \mathrm{rewrite}\ P\ H_1.\ p }\\
-
-\inferrule[Induction]
-  { \Gamma \vdash \vec{f} \Rightarrow \vec{p} }
-  { \Gamma \vdash \mathrm{Elim}(t,\ P)\ \vec{f} \Rightarrow \mathrm{induction}\ P\ t\ \vec{p} }
-
-\inferrule[Apply]
-  { \Gamma \vdash t \Rightarrow p }
-  { \Gamma \vdash f t \Rightarrow \mathrm{apply}\ f.\ p }
-
-\inferrule[Base]
-  { \\ }
-  { \Gamma \vdash t \Rightarrow \mathrm{apply}\ t }
-\end{mathpar}
-\vspace{-0.4cm}
-\caption{Qtac decompiler semantics.}
-\label{fig:someantics}
-\end{figure*}
-
 \textbf{Transform} produces a proof term,
 while the proof engineer typically writes and maintains proof scripts made up of tactics.
 We improve usability thanks to the realization that, since Coq's proof term language Gallina is very structured,
@@ -70,7 +10,7 @@ we can decompile these Gallina terms to suggested Ltac proof scripts for the pro
 %\textbf{Insight 3}: The transformed proof terms can then be translated back to tactic scripts.
 %\end{quote}
 
-\textbf{Decompile} implements a prototype of this translation~\circled{11}: % decompiler.ml
+\textbf{Decompile} implements a prototype of this translation~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/coq-plugin-lib/src/coq/decompiler/decompiler.ml}{\circled{11}}: % decompiler.ml
 it translates a proof term to a suggested proof script that attempts to prove the same theorem the same way.
 Note that this problem is not well defined: while there is always a proof script that 
 works (applying the proof term with the \lstinline{apply} tactic), the result is often qualitatively unreadable.
@@ -181,13 +121,13 @@ highlighted the same color.}
 \fi
 
 \mysubsubsec{Second Pass: Better Proof Scripts}
-The implementation of \textbf{Decompile} first runs something similar to the mini decompiler, then modifies the suggested tactics to produce a more natural proof script~\circled{11}. % decompiler.ml
+The implementation of \textbf{Decompile} first runs something similar to the mini decompiler, then modifies the suggested tactics to produce a more natural proof script~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/coq-plugin-lib/src/coq/decompiler/decompiler.ml}{\circled{11}}. % decompiler.ml
 For example, it cancels out sequences of \lstinline{intros} and \lstinline{revert},
 inserts semicolons, and removes extra arguments to \lstinline{apply} and \lstinline{rewrite}. %, ensuring the result still holds. % TODO rewrite
 It can also take tactics from the proof engineer (like part of the old proof script) as hints,
 then iteratively replace tactics with those hints, checking the result. % as it recurses.
 This makes it possible for suggested scripts to include goal-solving custom tactics and decision procedures.
-We omit the details due to space constraints.
+%We omit the details due to space constraints. TODO add back for PLDI?
 %Further improvements could come from preserving comments and indentation, or automatically using information from the old 
 %version of the proof script rather than asking for it explicitly.
 

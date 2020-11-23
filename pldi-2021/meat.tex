@@ -565,6 +565,66 @@ to avoid applying \lstinline{f} and \lstinline{g}, instead porting terms from \A
 %So, as long as we are able to unify subterms with applications of \lstinline{DepConstr} and \lstinline{DepElim},
 %\textsc{Dep-Constr} and \textsc{Dep-Elim} should preserve correctness of the transformation and cover all values and eliminations of \A and \B.
 
+\begin{figure*}
+\small
+\begin{grammar}
+<v> $\in$ Vars, <t> $\in$ CIC$_{\omega}$
+
+<p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> |  induction <t> <t> \{ <p>, \ldots, <p> \} |  split \{ <p>, <p> \} | left | right | <p> . <p>
+\end{grammar}
+\vspace{-0.3cm}
+\caption{Qtac syntax.}
+\vspace{-0.3cm}
+\label{fig:ltacsyntax1}
+\end{figure*}
+
+\begin{figure*}
+\begin{mathpar}
+\mprset{flushleft}
+\small
+\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Rightarrow$ $p$}\vspace{-0.45cm}\\
+
+\inferrule[Intro]
+  { \Gamma,\ n : T \vdash b \Rightarrow p }
+  { \Gamma \vdash \lambda (n : T) . b \Rightarrow \mathrm{intro}\ n.\ p }
+
+\inferrule[Symmetry]
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathtt{eq\_sym}\ H \Rightarrow \mathrm{symmetry}.\ p }
+
+\inferrule[Split]
+  { \Gamma \vdash l \Rightarrow p \\ \Gamma \vdash r \Rightarrow q }
+  { \Gamma \vdash \mathrm{Constr}(0,\ \wedge)\ l\ r \Rightarrow \mathrm{split} \{ p, q \}.\ }\\
+
+\inferrule[Left]
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathrm{Constr}(0,\ \vee)\ H \Rightarrow \mathrm{left}.\ p }
+
+\inferrule[Right]
+  { \Gamma \vdash H \Rightarrow p }
+  { \Gamma \vdash \mathrm{Constr}(1,\ \vee)\ H \Rightarrow \mathrm{right}.\ p }
+
+\inferrule[Rewrite]
+  { \Gamma \vdash H_1 : x = y \\ \Gamma \vdash H_2 \Rightarrow p }
+  { \Gamma \vdash \mathrm{Elim}(H_1,\ P) \{ x,\ H_2,\ y \} \Rightarrow \mathrm{symmetry}.\ \mathrm{rewrite}\ P\ H_1.\ p }\\
+
+\inferrule[Induction]
+  { \Gamma \vdash \vec{f} \Rightarrow \vec{p} }
+  { \Gamma \vdash \mathrm{Elim}(t,\ P)\ \vec{f} \Rightarrow \mathrm{induction}\ P\ t\ \vec{p} }
+
+\inferrule[Apply]
+  { \Gamma \vdash t \Rightarrow p }
+  { \Gamma \vdash f t \Rightarrow \mathrm{apply}\ f.\ p }
+
+\inferrule[Base]
+  { \\ }
+  { \Gamma \vdash t \Rightarrow \mathrm{apply}\ t }
+\end{mathpar}
+\vspace{-0.4cm}
+\caption{Qtac decompiler semantics.}
+\label{fig:someantics}
+\end{figure*}
+
 \mysubsubsec{Equality}
 To ensure coherence with equality (Figure~\ref{fig:spec}, right),
 \lstinline{Eta} and \lstinline{Iota} must prove $\eta$ and $\iota$.
