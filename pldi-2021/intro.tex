@@ -54,7 +54,7 @@ and may impose additional proof obligations like proving relations corresponding
 
 Our approach combines a configurable proof term transformation (Section~\ref{sec:key2}) with a prototype decompiler from proof terms
 back to suggested tactics (Section~\ref{sec:decompiler}). % TODO mention search or not?
-This is implemented (Section~\ref{sec:impl}) in \toolname\footnote{Name changed for double-blind.} (Configurable Approach to Repairing \& Refactoring Outdated Tactics), a proof repair plugin for Coq 8.8 that is available on Github.\footnote{For double-blind, we annotate each claim to which code is relevant with a circled number like \circled{1}. \lstinline{GUIDE.md} in auxiliary material maps these to code.}
+This is implemented (Section~\ref{sec:impl}) in \toolname, an extension to the \textsc{Pumpkin Patch}~\cite{pumpkinpatch} proof repair plugin suite for Coq 8.8 that is available on Github.\footnote{We annotate each claim to which code is relevant with a circled number like \circled{1}. These circled numbers are links to code, and are detailed in \lstinline{GUIDE.md}.} % TODO links here
 %The result is a flexible proof repair tool that: 
 
 %\begin{enumerate}
@@ -70,7 +70,7 @@ deconstructed form that we call a \textit{configuration}.
 The configuration expresses to the proof term transformation how to translate functions and proofs defined over the old version of a type
 to refer only to the new version, and how to do so in a way that does not break definitional equality.
 The proof engineer can write this configuration in Coq and feed it to \toolname (\textit{manual configuration} in Table~\ref{fig:changes}),
-configuring \toolname to support the corresponding change. %from directly within Coq.
+configuring \toolname to support the change. %from directly within Coq.
 
 \mysubsubsec{Addressing Challenge 2: Workflow Integration}
 Research on workflow integration for proof repair tools is in its infancy.
@@ -82,7 +82,7 @@ In addition, \toolname implements search procedures that
 automatically discover configurations and prove the equivalences they induce for four different classes of 
 changes (\textit{automatic configuration} in Table~\ref{fig:changes}),
 decreasing the burden of proof obligations imposed on the proof engineer.
-Our partnership with an industrial proof engineer\footnote{Note for double-blind: the anonymized proof engineer is not an author.} has informed other changes to further improve workflow integration
+Our partnership with an industrial proof engineer has informed other changes to further improve workflow integration
 (Sections~\ref{sec:implementation} and~\ref{sec:search}).
 
 \begin{figure}
