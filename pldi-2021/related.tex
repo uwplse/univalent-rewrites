@@ -6,9 +6,9 @@
 
 \mysubsubsec{Proof Repair}
 %\toolname is not the first proof repair tool.
-The search procedures in \textbf{Configure} are based partly on ideas from \textsc{Pumpkin Patch}~\cite{pumpkinpatch}, a proof repair tool for Coq.
+The search procedures in \textbf{Configure} are based partly on ideas from the original \textsc{Pumpkin Patch} prototype~\cite{pumpkinpatch}.
 %which includes similar search procedures for discovering patches to fix broken proofs.
-Unlike \toolname, \textsc{Pumpkin Patch} does not apply the patches that it finds,
+The \textsc{Pumpkin Patch} prototype did not apply the patches that it finds,
 handle changes in structure, or include support for tactics beyond the use of hints.
 %\toolname addresses these limitations.
 
@@ -44,13 +44,13 @@ This approach is not tractable for more complex changes~\cite{robert2018}.
 A few proof reuse tools work by proof term transformation and so can be used for repair.
 \citet{Johnsen2004} describes a transformation that generalizes theorems in Isabelle/HOL.
 \toolname generalizes the transformation from \textsc{Devoid}~\cite{Ringer2019},
-which transforms proofs along algebraic ornaments~\cite{mcbride}.
+which transformed proofs along algebraic ornaments~\cite{mcbride}.
 \citet{magaud2000changing} implement a proof term transformation between
 unary and binary numbers. 
-The latter two tools fit into \toolname configurations,
+Both of these fit into \toolname configurations,
 and none implements tactic support in Coq like \toolname does.
-%The expansion algorithm from \citet{magaud2000changing} may further improve \toolname
-%by providing unification heuristics for \lstinline{Iota}.
+The expansion algorithm from \citet{magaud2000changing} may help guide the design
+of unification heuristics for \lstinline{Iota} in \toolname.
 
 CoqEAL~\cite{cohen:hal-01113453} transforms functions across relations,
 and these relations can be more general than \toolname's equivalences.

@@ -20,18 +20,18 @@ For example, if \B is a refinement of \A, then we can always run \textsc{Equival
 over and over again, forever.
 %\textsc{Devoid} ruled out this case by simply prohibiting the case where \B refers to \A, but we found it sometimes
 %useful to support this case.
-We thus include some simple termination checks in our code~\circled{12}. % liftrules.ml
+We thus include some simple termination checks in our code~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/liftrules.ml}{\circled{12}}. % liftrules.ml
 
 \mysubsubsec{Intent}
 Even when termination is guaranteed, whether to transform a subterm depends on intent.
 That is, \toolname automates the case of porting \textit{every} \A to \B,
 but proof engineers sometimes wish to port only \textit{some} $A$s to $B$s.
-\toolname has some support for this using an interactive workflow~\circled{13},
+\toolname has some support for this using an interactive workflow~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/minimal_records.v}{\circled{13}},
 with plans for automatic support in the future. % minimal_records.v, but show this
 %We helped the proof engineer do this by interacting with \toolname using a particular workflow.
 
 \mysubsubsec{From CIC$_{\omega}$ to Coq}
-The implementation~\circled{4} % lift.ml
+The implementation~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/lift.ml}{\circled{4}} % lift.ml
 of the transformation handles language differences to scale from CIC$_{\omega}$ to Coq.
 We use the existing \lstinline{Preprocess}~\cite{Ringer2019} command to turn pattern matching and fixpoints into 
 eliminators.
@@ -43,8 +43,8 @@ an industrial proof engineer (Section~\ref{sec:search}).
 For example, the proof engineer rarely had the patience to wait more than ten seconds
 for \toolname to port a term,
 so we implemented optional aggressive caching, even caching intermediate subterms that
-we encounter in the course of running the transformation~\circled{14}. % TODO caching.ml
-We also added a cache to tell \toolname not to $\delta$-reduce certain terms~\circled{14}.
+we encounter in the course of running the transformation~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/cache/caching.ml}{\circled{14}}. % TODO caching.ml
+We also added a cache to tell \toolname not to $\delta$-reduce certain terms~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/cache/caching.ml}{\circled{14}}.
 
  % caching.ml
 %These caches are implemented in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/cache/caching.ml}{caching.ml}.
@@ -54,8 +54,8 @@ We also added a cache to tell \toolname not to $\delta$-reduce certain terms~\ci
 The experiences of proof engineers also inspired new features.
 For example, we implemented a search procedure to generate custom eliminators %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/automation/search/smartelim.ml}{smartelim.ml})
 to help reason about types like $\Sigma$\lstinline{(l : list T).length l = n}
-by reasoning separately about the projections~\circled{15}. %smartelim.ml
-We added informative error messages~\circled{22} to help the proof engineer distinguish between user errors and bugs. % TODO link to errors
+by reasoning separately about the projections~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/search/smartelim.ml}{\circled{15}}. %smartelim.ml
+We added informative error messages~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/lib/ornerrors.ml}{\circled{22}} to help the proof engineer distinguish between user errors and bugs. % TODO link to errors
 These features helped with workflow integration. % tactic decompiler helped with integration into proof engineering workflows.
 
 \begin{table*}
@@ -64,46 +64,46 @@ These features helped with workflow integration. % tactic decompiler helped with
     \hline
     \textbf{Class} & \textbf{Config.} & \textbf{Examples} & \textbf{Repair Tools} & \textbf{Search Tools} \\
     \hline
-    \multirow[t]{2}{*}{Algebraic Ornaments} & \multirow[t]{2}{*}{Auto} & List to Packed Vector, hs-to-coq \circled{3} % Example.v
+    \multirow[t]{2}{*}{Algebraic Ornaments} & \multirow[t]{2}{*}{Auto} & List to Packed Vector, hs-to-coq \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}} % Example.v
     & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
-    & & List to Packed Vector, Standard Library \circled{16} % ListToVect.v
+    & & List to Packed Vector, Standard Library \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/ListToVect.v}{\circled{16}} % ListToVect.v
     & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
     \hline
-    Unpack Sigma Types & Auto & Vector of Particular Length, hs-to-coq \circled{3} % Example.v
+    Unpack Sigma Types & Auto & Vector of Particular Length, hs-to-coq \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}} % Example.v
     & \toolname, UP & \toolname \\
     \hline
-    \multirow[t]{3}{*}{Tuples \& Records} & \multirow[t]{3}{*}{Auto} & Simple Records \circled{13} % minimal_records.v 
+    \multirow[t]{3}{*}{Tuples \& Records} & \multirow[t]{3}{*}{Auto} & Simple Records \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/minimal_records.v}{\circled{13}} % minimal_records.v 
      & \toolname, UP & \toolname \\
-    & & Parameterized Records \circled{17} % more_records.v
+    & & Parameterized Records \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/more_records.v}{\circled{17}} % more_records.v
     & \toolname, UP & \toolname \\
-    & & Industrial Use \circled{18} %(\href{https://github.com/Ptival/saw-core-coq/tree/dump-wip}{saw-core-coq})
+    & & Industrial Use \href{https://github.com/Ptival/saw-core-coq/tree/dump-wip}{\circled{18}} %(\href{https://github.com/Ptival/saw-core-coq/tree/dump-wip}{saw-core-coq})
     & \toolname, UP & \toolname \\
     \hline
-    \multirow[t]{3}{*}{Permute Constructors} & \multirow[t]{3}{*}{Auto} & List, Standard Library \circled{1} % Swap.v 
+    \multirow[t]{3}{*}{Permute Constructors} & \multirow[t]{3}{*}{Auto} & List, Standard Library \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/Swap.v}{\circled{1}}
     & \toolname, UP & \toolname \\
-     & & Modifying a PL, \textsc{REPLica} Benchmark \circled{1} % Swap.v 
+     & & Modifying a PL, \textsc{REPLica} Benchmark \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/Swap.v}{\circled{1}} % Swap.v 
      & \toolname, UP  & \toolname \\
-    & & Large Ambiguous Enum \circled{1} % Swap.v
+    & & Large Ambiguous Enum \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/Swap.v}{\circled{1}} % Swap.v
     & \toolname, UP & \toolname \\
     \hline
-    Add new Constructors & Mixed & PL Extension, \textsc{REPLica} Benchmark \circled{19} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add_constr.v})
+    Add new Constructors & Mixed & PL Extension, \textsc{REPLica} Benchmark \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/add_constr.v}{\circled{19}} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add_constr.v})
     & \toolname & \toolname (partial) \\
     \hline
-    Factor out Constructors & Manual & External Example \circled{2} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr_refactor.v}) 
+    Factor out Constructors & Manual & External Example \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/constr_refactor.v}{\circled{2}} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{constr_refactor.v}) 
     & \toolname, UP & None \\
     \hline
-    Permute Hypotheses & Manual & External Example \circled{20} %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/flip.v}{flip.v}) 
+    Permute Hypotheses & Manual & External Example \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/flip.v}{\circled{20}} %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/flip.v}{flip.v}) 
     & \toolname, UP & None \\
     \hline
-    \multirow[t]{2}{*}{Change Inductive Structure} & \multirow[t]{2}{*}{Manual} & Unary to Binary, Classic Benchmark \circled{5} %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{nonorn.v})
+    \multirow[t]{2}{*}{Change Inductive Structure} & \multirow[t]{2}{*}{Manual} & Unary to Binary, Classic Benchmark \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/nonorn.v}{\circled{5}} %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{nonorn.v})
      & \toolname, Magaud and Bertot & None \\
-     & & Vector to Finite Set, External Example \circled{21} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/fin.v}{fin.v}) 
+     & & Vector to Finite Set, External Example \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/fin.v}{\circled{21}} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/fin.v}{fin.v}) 
      & \toolname & None \\
     \hline
   \end{tabular}
 \vspace{0.05cm}
   \caption{Some changes using \toolname (left to right): class of changes, kind of configuration, examples, and Coq tools we know of that support repair along (Repair) or automatic proof of (Search) the equivalence corresponding to each example. Tools considered are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and \citet{magaud2000changing}. \toolname is the only one that supports tactic suggestions.
-We provide more nuanced comparisons to these and more in Section~\ref{sec:related}.}
+More nuanced comparisons to these and more are in Section~\ref{sec:related}.}
 \vspace{-0.5cm}
 \label{fig:changes}
 \end{table*}
@@ -113,7 +113,7 @@ We provide more nuanced comparisons to these and more in Section~\ref{sec:relate
 
 \mysubsubsec{From Qtac to Ltac}
 The mini decompiler assumes more predictable versions of \lstinline{rewrite} and \lstinline{induction}
-than those in Coq. \textbf{Decompile} includes additional logic to reason about these tactics~\circled{11}. % decompiler.ml
+than those in Coq. \textbf{Decompile} includes additional logic to reason about these tactics~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/coq-plugin-lib/src/coq/decompiler/decompiler.ml}{\circled{11}}. % decompiler.ml
 For example, Qtac assumes that there is only one \lstinline{rewrite} direction. Ltac has two rewrite directions,
 and so the decompiler infers the direction from the motive.
 
@@ -135,14 +135,14 @@ may help with cases for which Coq cannot infer the correct motive.
 \mysubsubsec{From CIC$_{\omega}$ to Coq}
 Scaling the decompiler to Coq introduces let bindings, which are generated by 
 tactics like \lstinline{rewrite in}, \lstinline{apply in}, and \lstinline{pose}.
-\textbf{Decompile} implements~\circled{11} % decompiler.ml
+\textbf{Decompile} implements~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/coq-plugin-lib/src/coq/decompiler/decompiler.ml}{\circled{11}} % decompiler.ml
 support for \lstinline{rewrite in} and \lstinline{apply in} similarly to how it supports
 \lstinline{rewrite} and \lstinline{apply}, except that it ensures that the unmanipulated hypothesis does not occur in the body of the let expression,
 it swaps the direction of the rewrite, and it recurses into any generated subgoals.
 In all other cases, it uses \lstinline{pose}, a catch-all for let bindings.
 
 \mysubsubsec{Pretty Printing}
-After decompiling proof terms, \textbf{Decompile} pretty prints the result~\circled{11}.
+After decompiling proof terms, \textbf{Decompile} pretty prints the result~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/coq-plugin-lib/src/coq/decompiler/decompiler.ml}{\circled{11}}.
 Like the mini decompiler, \textbf{Decompile} represents its output using a predefined grammar of Ltac tactics,
 albeit one larger that is larger than Qtac, and that also includes tacticals.
 It maintains the recursive proof structure for formatting. %, then uses that to print proofs of subgoals using bullet points.

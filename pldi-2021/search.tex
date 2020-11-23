@@ -1,4 +1,4 @@
-\section{Case Studies: \textsc{Carrot} Eight Ways}
+\section{Case Studies: \textsc{Pumpkin P}i Eight Ways}
 \label{sec:search}
 
 This section summarizes eight case studies using \toolname,
@@ -9,11 +9,11 @@ These case studies highlight \toolname's flexibility in handling diverse scenari
 the success of automatic configuration for better workflow integration, % for supported changes,
 the preliminary success of the prototype decompiler,
 and clear paths to better serving proof engineers.
-Detailed walkthroughs of these case studies are in the code.
+Detailed walkthroughs are in the code.
 
 \mysubsubsec{Algebraic Ornaments: Lists to Packed Vectors}
-The transformation in \toolname is a generalization of the transformation from the proof reuse tool \textsc{Devoid}.
-\textsc{Devoid} supports proof reuse across \textit{algebraic ornaments}, which describe relations
+The transformation in \toolname is a generalization of the transformation from \textsc{Devoid}.
+\textsc{Devoid} supported proof reuse across \textit{algebraic ornaments}, which describe relations
 between two inductive types, where one type is the other indexed by a fold~\cite{mcbride}.
 A standard example is the relation between a list and a
 length-indexed vector (Figure~\ref{fig:listtovect}).
@@ -22,72 +22,13 @@ length-indexed vector (Figure~\ref{fig:listtovect}).
 %The search procedure moves the work specific to algebraic ornaments into the \toolname configuration.
 The result is all functionality from \textsc{Devoid}, plus tactic suggestions.
 %which allows it to implement the  functionality from \textsc{Devoid}.
-In file~\circled{3}, we used this to port
+In file~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}}, we used this to port
 functions and a proof from lists to vectors of \textit{some} length, since \lstinline{list T} $\simeq$ \lstinline{packed_vect T}.
 The decompiler helped us write proofs that we had found
 too hard to write by hand,
 though the suggested tactics did need massaging. % as the decompiler struggled with motive inference
 %for induction with dependent types.
 %Additional effort is needed to improve tactic suggestions for dependent types.
-
-\mysubsubsec{Unpack Sigma Types: Vectors of Particular Lengths}
-%The previous case study showed how to get between lists and vectors of \textit{some} length.
-In the same file~\circled{3}, we went on to port functions and proofs to vectors of a \textit{particular} length, 
-like \lstinline{vector T n}.
-\textsc{Devoid} had left this step to the proof engineer.
-We supported this in \toolname by chaining the previous change
-with an automatic configuration for unpacking sigma types.
-%To support this, we used one additional automatic configuration for unpacking sigma types.
-%This configuration corresponds to the equivalence between sigma types at a particular projection
-%and the same type escaping the sigma type. %, in our example $\Sigma$\lstinline{(s : packed_vect T).}$\pi_l$\lstinline{ s = n }$\simeq$\lstinline
-%{ vector T n}.
-By composition, this transported proofs across the equivalence from Section~\ref{sec:key1}.
-
-Two tricks helped with workflow integration for this change:
-1) have the search procedure view \lstinline{vector T n} as 
-$\Sigma$\lstinline{(v : vector T m).n = m} for some \lstinline{m},
-then let \toolname instantiate those equalities via unification heuristics before transforming,
-and 2) generate a custom eliminator for combining
-list terms with length invariants.
-%This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths):
-The resulting workflow works not just for lists and vectors, but for any algebraic ornament,
-automating manual effort from \textsc{Devoid}.
-The suggested tactics were again helpful for writing proofs
-that we had struggled with manually, but only after massaging.
-More effort is needed to improve tactic suggestions for dependent types.
-
-\mysubsubsec{Tuples \& Records: Industrial Use}
-An industrial proof engineer at \company\footnote{Name withheld for double-blind.} has been using \toolname in proving
-correct an implementation of the TLS handshake protocol.
-%While this is ongoing work, thus far,
-%\toolname has helped \company integrate Coq with their existing verification workflow.
-\company had been using a custom solver-aided verification language to prove correct C programs,
-but had found that at times, the constraint solvers got stuck.
-%and they could not progress on proofs about those programs.
-They had built a compiler that translates their language into Coq's specification language Gallina,
-that way proof engineers could finish stuck proofs interactively using Coq.
-However, due to language differences, they had found the generated Gallina programs and specifications difficult to work with.
-
-The proof engineer used \toolname to port the automatically generated functions and specifications to more
-human-readable functions and specifications, wrote Coq proofs about those functions and specifications, then
-used \toolname to port those proofs back to
-proofs about the original functions and specifications.
-%This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
-%that would have otherwise been difficult.
-So far, they have used at least three automatic configurations,
-but they most often used an automatic configuration for porting compiler-produced anonymous tuples
-to named records, as in file~\circled{18}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
-%The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
-%workflow using solver-aided tools at \company.
-The workflow was a bit nonstandard,
-so there was little need for tactic suggestions.
-%In the initial days, we worked closely with the proof engineer;
-%later, the proof engineer worked independently and reached out occasionally.
-%The proof engineer was able to work independently, but found two challenges with workflow integration:
-%1) they sometimes could not distinguish between user errors and bugs,
-%and 2) they waited only about ten seconds at most for \toolname to return.
-%Both informed improvements to \toolname, like better error messages, caching,
-%and a way to tell \toolname not to $\delta$-reduce certain terms.
 
 \iffalse
 \begin{figure}
@@ -111,6 +52,65 @@ so there was little need for tactic suggestions.
 \label{fig:replica}
 \end{figure*}
 
+\mysubsubsec{Unpack Sigma Types: Vectors of Particular Lengths}
+%The previous case study showed how to get between lists and vectors of \textit{some} length.
+In the same file~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}}, we then ported functions and proofs to vectors of a \textit{particular} length, 
+like \lstinline{vector T n}.
+\textsc{Devoid} had left this step to the proof engineer.
+We supported this in \toolname by chaining the previous change
+with an automatic configuration for unpacking sigma types.
+%To support this, we used one additional automatic configuration for unpacking sigma types.
+%This configuration corresponds to the equivalence between sigma types at a particular projection
+%and the same type escaping the sigma type. %, in our example $\Sigma$\lstinline{(s : packed_vect T).}$\pi_l$\lstinline{ s = n }$\simeq$\lstinline
+%{ vector T n}.
+By composition, this transported proofs across the equivalence from Section~\ref{sec:key1}.
+
+Two tricks helped with workflow integration for this change:
+1) have the search procedure view \lstinline{vector T n} as 
+$\Sigma$\lstinline{(v : vector T m).n = m} for some \lstinline{m},
+then let \toolname instantiate those equalities via unification heuristics, %before transforming,
+and 2) generate a custom eliminator for combining
+list terms with length invariants.
+%This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths):
+The resulting workflow works not just for lists and vectors, but for any algebraic ornament,
+automating manual effort from \textsc{Devoid}.
+The suggested tactics were again helpful for writing proofs
+that we had struggled with manually, but only after massaging.
+More effort is needed to improve tactic suggestions for dependent types.
+
+\mysubsubsec{Tuples \& Records: Industrial Use}
+An industrial proof engineer at the company \company has been using \toolname in proving
+correct an implementation of the TLS handshake protocol.
+%While this is ongoing work, thus far,
+%\toolname has helped \company integrate Coq with their existing verification workflow.
+\company had been using a custom solver-aided verification language to prove correct C programs,
+but had found that at times, the constraint solvers got stuck.
+%and they could not progress on proofs about those programs.
+They had built a compiler that translates their language into Coq's specification language Gallina,
+that way proof engineers could finish stuck proofs interactively using Coq.
+However, due to language differences, they had found the generated Gallina programs and specifications difficult to work with.
+
+The proof engineer used \toolname to port the automatically generated functions and specifications to more
+human-readable functions and specifications, wrote Coq proofs about those functions and specifications, then
+used \toolname to port those proofs back to
+proofs about the original functions and specifications.
+%This workflow has allowed for industrial integration with Coq and has helped the proof engineer write functions and proofs
+%that would have otherwise been difficult.
+So far, they have used at least three automatic configurations,
+but they most often used an automatic configuration for porting compiler-produced anonymous tuples
+to named records, as in file~\href{https://github.com/Ptival/saw-core-coq/tree/dump-wip}{\circled{18}}. % TODO aux material %\footnote{\url{https://github.com/Ptival/saw-core-coq/tree/dump-wip}} TODO note in guide it got a bit abandoned because proof engineer got stuck in france...
+%The proof engineer was able to use \toolname to integrate Coq into an existing proof engineering
+%workflow using solver-aided tools at \company.
+The workflow was a bit nonstandard,
+so there was little need for tactic suggestions.
+%In the initial days, we worked closely with the proof engineer;
+%later, the proof engineer worked independently and reached out occasionally.
+%The proof engineer was able to work independently, but found two challenges with workflow integration:
+%1) they sometimes could not distinguish between user errors and bugs,
+%and 2) they waited only about ten seconds at most for \toolname to return.
+%Both informed improvements to \toolname, like better error messages, caching,
+%and a way to tell \toolname not to $\delta$-reduce certain terms.
+
 \mysubsubsec{Permute Constructors: Modifying a Language}
 The swapping example from Section~\ref{sec:overview} was inspired by benchmarks 
 from the \textsc{Replica} user study of proof engineers~\cite{replica}.
@@ -122,7 +122,7 @@ and added a new constructor \lstinline{Bool}.
 
 This case study and the next case study break this change into two parts.
 In the first part, we used \toolname with automatic configuration to repair functions and proofs about the language
-after swapping the constructors~\circled{1}.
+after swapping the constructors~\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{\circled{1}}.
 %We also succeeded at more difficult variants of this,
 %like swapping constructors with the same type, renaming all of the constructors,
 %permuting more than two constructors,
@@ -143,7 +143,7 @@ though the original tactics would have also worked.
 
 \mysubsubsec{Add new Constructors: Extending a Language}
 We then used \toolname to repair functions 
-after adding the new constructor in Figure~\ref{fig:replica}, separating out the proof obligations for the new constructor from the old terms~\circled{19}.
+after adding the new constructor in Figure~\ref{fig:replica}, separating out the proof obligations for the new constructor from the old terms~\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{\circled{19}}.
 %The resulting functions were guaranteed to preserve the behavior of the old terms. % TODO do the proofs too
 This change combined manual and automatic configuration.
 We defined an inductive type \lstinline{Diff} and (using partial automation) a configuration to port the terms across the equivalence \lstinline{Old.Term + Diff} $\simeq$ \lstinline{New.Term}.
@@ -160,11 +160,11 @@ to get between proofs of the inefficient and efficient terms.
 \mysubsubsec{Factor out Constructors: External Example}
 The change from Figure~\ref{fig:equivalence2} came at the request of a non-author.
 We supported this using a manual configuration that described which constructor to map to \lstinline{true}
-and which constructor to map to \lstinline{false}~\circled{2}.
+and which constructor to map to \lstinline{false}~\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{\circled{2}}.
 The configuration was very simple for us to write, and the repaired tactics were immediately useful.
 
 \mysubsubsec{Permute Hypotheses: External Example}
-The change in \circled{20} came at the request of a different non-author (a cubical type theory expert),
+The change in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/flip.v}{\circled{20}} came at the request of a different non-author (a cubical type theory expert),
 and shows how to  use \toolname to swap two hypotheses of a type, since \lstinline{T1} $\rightarrow$ \lstinline{T2} $\rightarrow$ \lstinline{T3} $\simeq$
 \lstinline{T2} $\rightarrow$ \lstinline{T1} $\rightarrow$ \lstinline{T3}.
 This configuration was manual.
@@ -174,13 +174,13 @@ This worked well, but necessitated some manual annotation due to the lack of cus
 manual configuration.
 
 \mysubsubsec{Change Inductive Structure: Unary to Binary}
-In \circled{5}, we used \toolname to support a classic example of changing inductive structure:
+In \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{\circled{5}}, we used \toolname to support a classic example of changing inductive structure:
 updating unary to binary numbers~\cite{magaud2000changing}.
 % TODO fin and vect? mention somewhere?
 In Coq, a binary number \lstinline{N} (Figure~\ref{fig:nattobin}) is either zero or a positive binary number. A positive binary number
 is either 1 (\lstinline{xH}), or the result of shifting left and adding 1 (\lstinline{xI}) or
 0 (\lstinline{xO}).
-This allows for a fast addition function. %, found in the Coq standard library.
+This allows for a fast addition function, found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we used \toolname to derive a slow binary
 addition function that does not refer to \lstinline{nat},
 and to port proofs from unary to slow binary addition.
