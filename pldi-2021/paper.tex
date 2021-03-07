@@ -1,5 +1,5 @@
 %% For double-blind review submission, w/o CCS and ACM Reference (max submission space)
-\documentclass[sigplan,10pt]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
+\documentclass[sigplan,screen]{acmart}
 %% For double-blind review submission, w/ CCS and ACM Reference
 %\documentclass[acmsmall,review,anonymous]{acmart}\settopmatter{printfolios=true}
 %% For single-blind review submission, w/o CCS and ACM Reference (max submission space)
@@ -9,28 +9,26 @@
 %% For final camera-ready submission, w/ required CCS and ACM Reference
 %\documentclass[acmsmall]{acmart}\settopmatter{}
 
-
-%% Journal information
-%% Supplied to authors by publisher for camera-ready submission;
-%% use defaults for review submission.
-%\acmJournal{PACMPL}
-%\acmVolume{1}
-%\acmNumber{CONF} % CONF = POPL or ICFP or OOPSLA
-%\acmArticle{1}
-\acmYear{2020}
-\acmMonth{10}
-%\acmDOI{} % \acmDOI{10.1145/nnnnnnn.nnnnnnn}
-\startPage{1}
-
 %% Copyright information
 %% Supplied to authors (based on authors' rights management selection;
 %% see authors.acm.org) by publisher for camera-ready submission;
 %% use 'none' for review submission.
-\setcopyright{none}
-%\setcopyright{acmcopyright}
-%\setcopyright{acmlicensed}
-%\setcopyright{rightsretained}
-%\copyrightyear{2018}           %% If different from \acmYear
+%%% If you see 'ACMUNKNOWN' in the 'setcopyright' statement below,
+%%% please first submit your publishing-rights agreement with ACM (follow link on submission page).
+%%% Then please update our instructions page and copy-and-paste the NEW commands into your article.
+%%% Please contact us in case of questions; allow up to 10 min for the system to propagate the information.
+%%%
+%%% The following is specific to PLDI '21 and the paper
+%%% 'Proof Repair across Type Equivalences'
+%%% by Talia Ringer, RanDair Porter, Nathaniel Yazdani, John Leo, and Dan Grossman.
+%%%
+\copyrightyear{2021}
+\acmYear{2021}
+\setcopyright{acmlicensed}\acmConference[PLDI '21]{Proceedings of the 42nd ACM SIGPLAN International Conference on Programming Language Design and Implementation}{June 20--25, 2021}{Virtual, Canada}
+\acmBooktitle{Proceedings of the 42nd ACM SIGPLAN International Conference on Programming Language Design and Implementation (PLDI '21), June 20--25, 2021, Virtual, Canada}
+\acmPrice{15.00}
+\acmDOI{10.1145/3453483.3454033}
+\acmISBN{978-1-4503-8391-2/21/06}
 
 %% Bibliography style
 \bibliographystyle{ACM-Reference-Format}
