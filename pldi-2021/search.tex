@@ -30,15 +30,6 @@ though the suggested tactics did need massaging. % as the decompiler struggled w
 %for induction with dependent types.
 %Additional effort is needed to improve tactic suggestions for dependent types.
 
-\iffalse
-\begin{figure}
-\lstinputlisting[firstline=1, lastline=18]{replica.tex}
-\vspace{-0.4cm}
-\caption{A language (top) and the same language with two swapped constructors and an added constructor (bottom).}
-\label{fig:replica}
-\end{figure}
-\fi
-
 \begin{figure*}
 \begin{minipage}{0.48\textwidth}
    \lstinputlisting[firstline=1, lastline=9]{replica.tex}
@@ -74,8 +65,8 @@ list terms with length invariants.
 %This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths):
 The resulting workflow works not just for lists and vectors, but for any algebraic ornament,
 automating manual effort from \textsc{Devoid}.
-The suggested tactics were again helpful for writing proofs
-that we had struggled with manually, but only after massaging.
+The suggested tactics were helpful for writing proofs
+that we had struggled with manually over the course of days, but only after massaging.
 More effort is needed to improve tactic suggestions for dependent types.
 
 \mysubsubsec{Tuples \& Records: Industrial Use}
@@ -103,6 +94,8 @@ to named records, as in file~\href{https://github.com/Ptival/saw-core-coq/tree/d
 %workflow using solver-aided tools at \company.
 The workflow was a bit nonstandard,
 so there was little need for tactic suggestions.
+The proof engineer reported an initial time investment learning how to use \toolname,
+followed by later returns.
 %In the initial days, we worked closely with the proof engineer;
 %later, the proof engineer worked independently and reached out occasionally.
 %The proof engineer was able to work independently, but found two challenges with workflow integration:
@@ -129,7 +122,8 @@ after swapping the constructors~\href{https://github.com/uwplse/pumpkin-pi/blob/
 %or permuting and renaming constructors at the same time.
 With a bit of human guidance to choose the permutation from a list of suggestions,
 \toolname repaired everything,
-though the original tactics would have also worked.
+though the original tactics would have also worked,
+so there was not a difference in development time.
 %This is a property of the particular proofs that we had access to;
 %As Section~\ref{sec:overview}
 %and more advanced variants of this benchmark show~\circled{1}, even for simple changes, this is not always true.
@@ -151,7 +145,9 @@ This resulted in case explosion, but was formulaic, and pointed to a clear path 
 The repaired functions guaranteed preservation of the behavior of the original functions. %over \lstinline{Old.Term} before the change.
 
 Adding constructors was less simple than swapping.
-Most notably, the repaired terms were (unlike in the swap case) inefficient compared to human-written terms.
+For example, \toolname did not yet save us time over the proof engineer from the user study;
+fully automating the configuration would have helped significantly.
+In addition, the repaired terms were (unlike in the swap case) inefficient compared to human-written terms.
 For now, they make good regression tests for the human-written terms---in the future,
 we hope to automate the discovery of the more efficient terms,
 or use the refinement framework CoqEAL~\cite{cohen:hal-01113453}
@@ -162,6 +158,7 @@ The change from Figure~\ref{fig:equivalence2} came at the request of a non-autho
 We supported this using a manual configuration that described which constructor to map to \lstinline{true}
 and which constructor to map to \lstinline{false}~\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{\circled{2}}.
 The configuration was very simple for us to write, and the repaired tactics were immediately useful.
+The development time savings were on the order of minutes.
 
 \mysubsubsec{Permute Hypotheses: External Example}
 The change in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/flip.v}{\circled{20}} came at the request of a different non-author (a cubical type theory expert),
@@ -171,7 +168,8 @@ This configuration was manual.
 Since neither type was inductive, this change used the generic construction for any equivalence.
 %instantiated to this particular equivalence.
 This worked well, but necessitated some manual annotation due to the lack of custom unification heuristics for 
-manual configuration.
+manual configuration, and so did not yet save development time.
+Supporting custom unification heuristics would improve this workflow.
 
 \mysubsubsec{Change Inductive Structure: Unary to Binary}
 In \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{\circled{5}}, we used \toolname to support a classic example of changing inductive structure:
@@ -225,6 +223,8 @@ which we found simple to port to fast binary addition.
 We hope to automate this last step in the future using CoqEAL. %~\cite{cohen:hal-01113453}.
 Repaired tactics were partially useful, but failed to understand custom eliminators like \lstinline{N.peano_rect}, and to generate useful
 tactics for applications of \lstinline{Iota}; both of these are clear paths to more useful tactics.
+In all, \toolname helped us write proofs we had found too difficult to write by hand, but only after significant overhead
+due to lack of automation.
 
 %\end{enumerate}
 %\item \toolname was flexible. Each search procedure for automatic configuration
