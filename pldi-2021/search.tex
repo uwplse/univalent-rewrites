@@ -216,14 +216,16 @@ Due to the lack of unification heuristics for manual configuration,
 we had to annotate the proof term to tell \toolname that implicit casts in the inductive cases of proofs were applications of \lstinline{Iota}
 over \lstinline{nat}.
 These annotations were formulaic, but tricky to write.
-Unification heuristics would go a long way toward improving the workflow. % for this use case.s
+Unification heuristics would go a long way toward improving the workflow. % for this use case.
 
 After annotating, we obtained automatically repaired proofs about slow binary addition,
 which we found simple to port to fast binary addition.
 We hope to automate this last step in the future using CoqEAL. %~\cite{cohen:hal-01113453}.
 Repaired tactics were partially useful, but failed to understand custom eliminators like \lstinline{N.peano_rect}, and to generate useful
 tactics for applications of \lstinline{Iota}; both of these are clear paths to more useful tactics.
-TODO user effort
+In contrast, we were not able to make the corresponding change manually, but two expert proof engineers we consulted were able to make this
+change in 10 and 35 minutes, respectively.
+More automation is needed to bring returns on investment for experts in this use case.
 
 %\end{enumerate}
 %\item \toolname was flexible. Each search procedure for automatic configuration
