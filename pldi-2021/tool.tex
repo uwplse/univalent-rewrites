@@ -67,7 +67,7 @@ These features helped with workflow integration. % tactic decompiler helped with
     \multirow[t]{2}{*}{Algebraic Ornaments} & \multirow[t]{2}{*}{Auto} & List to Packed Vector, hs-to-coq \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}} % Example.v
     & \good & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
     & & List to Packed Vector, Std. Library \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/ListToVect.v}{\circled{16}} % ListToVect.v
-    & & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
+    & \good & \toolname, \textsc{Devoid}, UP & \toolname, \textsc{Devoid} \\
     \hline
     Unpack Sigma Types & Auto & Vector of Particular Length, hs-to-coq \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}} % Example.v
     & \good & \toolname, UP & \toolname \\
@@ -96,13 +96,13 @@ These features helped with workflow integration. % tactic decompiler helped with
     & \bad & \toolname, UP & None \\
     \hline
     \multirow[t]{2}{*}{Change Ind. Structure} & \multirow[t]{2}{*}{Manual} & Unary to Binary, Classic Benchmark \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/nonorn.v}{\circled{5}} %(\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{nonorn.v})
-     & \ok & \toolname, 2000 & None \\
+     & \ok & \toolname, Magaud & None \\
      & & Vector to Finite Set, External Example \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/fin.v}{\circled{21}} % (\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/fin.v}{fin.v}) 
      & & \toolname & None \\
     \hline
   \end{tabular}
 \vspace{0.05cm}
-  \caption{Some changes using \toolname (left to right): class of changes, kind of configuration, examples, whether using \toolname saved development time relative to reference manual repair attempts (\good\xspace if yes, \ok\xspace if comparable, \bad\xspace if no), and Coq tools we know of that support repair along (Repair) or automatic proof of (Search) the equivalence corresponding to each example. Tools considered are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and the 2000 tool from \citet{magaud2000changing}. \toolname is the only one that supports tactic suggestions.
+  \caption{Some changes using \toolname (left to right): class of changes, kind of configuration, examples, whether using \toolname saved development time relative to reference manual repair attempts (\good\xspace if yes, \ok\xspace if comparable, \bad\xspace if no), and Coq tools we know of that support repair along (Repair) or automatic proof of (Search) the equivalence corresponding to each example. Tools considered are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and the tool from \citet{magaud2000changing}. \toolname is the only one that supports tactic suggestions.
 More nuanced comparisons to these and more are in Section~\ref{sec:related}.}
 \vspace{-0.5cm}
 \label{fig:changes}
