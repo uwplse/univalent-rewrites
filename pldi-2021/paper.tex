@@ -53,6 +53,7 @@
 \usepackage{xcolor} % for code highlighting
 \usepackage{colortbl} % to black out table cells
 \usepackage{multirow} % for tables
+\usepackage{tikz} % for fancy circles and smileys
 
 % Nice rendering of Coq code
 \lstdefinelanguage{coq}{
@@ -122,9 +123,30 @@
 \newcommand{\mysubsubsec}[1]{\vspace{0.40em} \noindent {{\textbf{#1.}}}}
 
 % https://tex.stackexchange.com/questions/7032/good-way-to-make-textcircled-numbers
-\usepackage{tikz}
 \newcommand*\circled[1]{\tikz[baseline=(char.base)]{
             \node[shape=circle,draw,inner sep=0.5pt] (char) {#1};}}
+
+% https://tex.stackexchange.com/questions/58901/something-between-frownie-and-smiley/
+\DeclareRobustCommand\good{\tikz[baseline=(char.base)]{
+    \draw circle (1.6mm);
+\node[fill,circle,inner sep=0.5pt] (left eye) at (135:0.8mm) {};
+\node[fill,circle,inner sep=0.5pt] (right eye) at (45:0.8mm) {};
+\draw (-145:0.9mm) arc (-120:-60:1.5mm);
+}}
+
+\DeclareRobustCommand\ok{\tikz[baseline=(char.base)]{
+    \draw circle (1.6mm);
+\node[fill,circle,inner sep=0.5pt] (left eye) at (135:0.8mm) {};
+\node[fill,circle,inner sep=0.5pt] (right eye) at (45:0.8mm) {};
+\draw (-135:0.9mm) -- (-45:0.9mm);
+}}
+
+\DeclareRobustCommand\bad{\tikz[baseline=(char.base)]{
+    \draw circle (1.6mm);
+\node[fill,circle,inner sep=0.5pt] (left eye) at (135:0.8mm) {};
+\node[fill,circle,inner sep=0.5pt] (right eye) at (45:0.8mm) {};
+\draw (-145:0.9mm) arc (120:60:1.5mm);
+}}
 
 \begin{document}
 
