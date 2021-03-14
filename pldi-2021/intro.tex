@@ -37,23 +37,21 @@ We make progress on two open challenges in proof repair in response to changes i
 \begin{enumerate}
 \item Existing work supports very limited classes of these changes like non-structural changes~\cite{pumpkinpatch} or a predefined set
 of changes~\cite{robert2018, wibergh2019}, and these are not informed by the needs of proof engineers~\cite{replica}.
-\item Proof repair tools are not yet integrated with typical proof engineering workflows like tactics~\cite{PGL-045, pumpkinpatch, robert2018},
+\item Proof repair tools are not yet integrated with typical proof engineering workflows~\cite{PGL-045, pumpkinpatch, robert2018},
 and may impose additional proof obligations like proving relations corresponding to changes~\cite{Ringer2019}.
 \end{enumerate}
-%Our progress towards these challenges leverages three key insights:%
-%
-%\begin{enumerate}
-%\item Proof repair is a form of proof reuse---reusing proofs about one specification to derive proofs about another specification---with 
-%the additional challenge that one of the specifications may cease to exist.
-%The key to supporting proof repair is to build a proof reuse
-%tool that can handle that additional challenge (Section~\ref{sec:key1}). 
-%\item A configurable proof term transformation can be used to build such a proof repair tool,
-%and the result can handle many different kinds of changes (Section~\ref{sec:key2}).
-%\item The transformed proof terms can then be translated back to suggested tactic scripts (Section~\ref{sec:decompiler}).
-%\end{enumerate}
 
-Our approach combines a configurable proof term transformation (Section~\ref{sec:key2}) with a prototype decompiler from proof terms
-back to suggested tactics (Section~\ref{sec:decompiler}). % TODO mention search or not?
+The typical proof engineering workflow in Coq is interactive:
+In a loop, the proof engineer passes Coq high-level search procedures called \textit{tactics} (like \lstinline{induction}),
+and Coq responds to each tactic by refining the current goal to some subgoal (like the proof obligation for the base case).
+This loop of tactics and subgoals continues until no subgoals remain, at which point the proof engineer 
+has constructed a sequence of tactics called a \textit{proof script}.
+To check this proof script for correctness, Coq compiles it down to a low-level function called a \textit{proof term},
+then checks that the proof term has the expected type.
+
+Our approach to proof repair works at the level of low-level proof terms, then builds back up to high-level proof scripts.
+In particular, our approach combines a configurable proof term transformation (Section~\ref{sec:key2}) with a prototype decompiler from proof terms
+back to suggested proof scripts (Section~\ref{sec:decompiler}). % TODO mention search or not?
 This is implemented (Section~\ref{sec:impl}) in \toolname, an extension to the \textsc{Pumpkin Patch}~\cite{pumpkinpatch} proof repair plugin suite for Coq 8.8 that is available on Github.\footnote{We annotate each claim to which code is relevant with a circled number like \circled{1}. These circled numbers are links to code, and are detailed in \href{https://github.com/uwplse/pumpkin-pi/blob/silent/GUIDE.md}{\lstinline{GUIDE.md}}.} % TODO links here
 %The result is a flexible proof repair tool that: 
 
@@ -75,7 +73,7 @@ configuring \toolname to support the change. %from directly within Coq.
 \mysubsubsec{Addressing Challenge 2: Workflow Integration}
 Research on workflow integration for proof repair tools is in its infancy.
 \toolname is built with workflow integration in mind.
-For example, \toolname is the only proof repair tool we are aware of that produces suggested tactic scripts for repaired proofs,
+For example, \toolname is the only proof repair tool we are aware of that produces suggested proof scripts (rather than proof terms) for repaired proofs,
 a challenge highlighted in existing proof repair work~\cite{pumpkinpatch, robert2018} and in 
 a survey of proof engineering~\cite{PGL-045}.
 In addition, \toolname implements search procedures that 
