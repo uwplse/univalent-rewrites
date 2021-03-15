@@ -68,14 +68,14 @@ fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
     (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
     (@\codesima{y0}@)(@\vspace{-0.04cm}@)
 (@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l H|]}.@)(@\vspace{-0.04cm}@)
+- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l H|].}@)(@\vspace{-0.04cm}@)
   + (@\codesimc{simpl. rewrite app_nil_r.}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
   + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
 \end{lstlisting}
 \vspace{-0.4cm}
 \caption{Proof term (top) and decompiled proof script (bottom) for the base case of 
 \lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
-highlighted the same color.}
+grouped by color \& number.}
 \vspace{-0.25cm}
 \label{fig:rainbow}
 \end{figure}
