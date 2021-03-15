@@ -42,9 +42,10 @@ Many of our design decisions in implementing \toolname were informed by our part
 an industrial proof engineer (Section~\ref{sec:search}).
 For example, the proof engineer rarely had the patience to wait more than ten seconds
 for \toolname to port a term,
-so we implemented optional aggressive caching, even caching intermediate subterms that
-we encounter in the course of running the transformation~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/cache/caching.ml}{\circled{14}}. % TODO caching.ml
+so we implemented optional aggressive caching, even caching intermediate subterms
+encountered while running the transformation~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/cache/caching.ml}{\circled{14}}. % TODO caching.ml
 We also added a cache to tell \toolname not to $\delta$-reduce certain terms~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/cache/caching.ml}{\circled{14}}.
+With these caches, the proof engineer found \toolname efficient enough to use on a code base with tens of thousands of lines of code and proof.
 
  % caching.ml
 %These caches are implemented in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/src/cache/caching.ml}{caching.ml}.
