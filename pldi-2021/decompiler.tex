@@ -40,8 +40,8 @@ application of a term to prove the goal (\lstinline{apply}), induction (\lstinli
 case splitting of conjunctions (\lstinline{split}),
 constructors of disjunctions (\lstinline{left} and \lstinline{right}), and
 composition (\lstinline{.}).
-Unlike in Ltac, \lstinline{induction} and \lstinline{rewrite} take a motive explicitly, rather than relying on unification.
-Similarly, \lstinline{apply} leaves the arguments to proof obligations.
+Unlike in Ltac, \lstinline{induction} and \lstinline{rewrite} take a motive explicitly (rather than relying on unification),
+and \lstinline{apply} creates a new subgoal for each function argument.
 %The implementation reasons about Ltac and so does not make these assumptions.
 
 The semantics for the mini decompiler $\Gamma \vdash t \Rightarrow p$ are in Figure~\ref{fig:someantics} (assuming $=$, \lstinline{eq_sym}, $\wedge$, and $\vee$ are defined as in Coq).

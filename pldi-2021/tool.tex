@@ -144,7 +144,7 @@ In all other cases, it uses \lstinline{pose}, a catch-all for let bindings.
 \mysubsubsec{Pretty Printing}
 After decompiling proof terms, \textbf{Decompile} pretty prints the result~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/coq-plugin-lib/src/coq/decompiler/decompiler.ml}{\circled{11}}.
 Like the mini decompiler, \textbf{Decompile} represents its output using a predefined grammar of Ltac tactics,
-albeit one larger that is larger than Qtac, and that also includes tacticals.
+albeit one that is larger than Qtac, and that also includes tacticals.
 It maintains the recursive proof structure for formatting. %, then uses that to print proofs of subgoals using bullet points.
 %It displays the resulting proof script to the proof engineer, who can modify it as needed.
 %It includes scripts that automate the process of printing all of these tactic proofs to a Coq file,

@@ -649,7 +649,7 @@ This makes it possible for the transformation to
 avoid applying \lstinline{section} and \lstinline{retraction}.
 
 \mysubsubsec{Correctness}
-With this correctness criteria for a configuration, we get the completeness result (proven in Coq~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/arbitrary.v}{\circled{8}}) that every equivalence induces a configuration. % arbitrary.v
+With these correctness criteria for a configuration, we get the completeness result (proven in Coq~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/arbitrary.v}{\circled{8}}) that every equivalence induces a configuration. % arbitrary.v
 We also obtain an algorithm for the soundness result that every configuration induces an equivalence.
 The algorithm to prove \lstinline{section} is as follows (\lstinline{retraction} is similar):
 replace \lstinline{a} with \lstinline{Eta(A) a} by \lstinline{eta_ok(A)}.
