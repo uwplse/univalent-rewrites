@@ -72,6 +72,7 @@ for example handling of rewrites in both directions (\lstinline{eq_ind_r} as opp
 simplifying rewrites,
 and turning applications of \lstinline{eq_refl} into \lstinline{reflexivity} or \lstinline{auto}.
 
+
 \begin{figure}
 \begin{lstlisting}
 fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
@@ -97,7 +98,7 @@ highlighted the same color.}
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
 fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l IHl}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l H}@) =>(@\vspace{-0.04cm}@)
     (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
     (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
     (@\codesima{y0}@)(@\vspace{-0.04cm}@)
@@ -106,13 +107,12 @@ fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
 \begin{minipage}{0.48\textwidth}
 \begin{lstlisting}
 (@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@)(@\vspace{-0.04cm}@)
-  (@\codesima{induction y0 as [a l IHl|]}.@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite (app_nil_r (rev l) (a::[])).}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
+- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l H|]}.@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite app_nil_r.}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
   + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
 \end{lstlisting}
 \end{minipage}
-\vspace{-0.4cm}
 \caption{Proof term (left) and decompiled proof script (right) for the base case of 
 \lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
 highlighted the same color.}

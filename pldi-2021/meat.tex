@@ -48,11 +48,16 @@ then specifies correctness criteria for the configuration (Section~\ref{sec:art}
 Section~\ref{sec:implementation} describes the additional work needed to implement this transformation.
 
 \mysubsubsec{Conventions}
-All terms that we introduce in this section are in CIC$_{\omega}$~\cite{coquand:inria-00076024, inductive} (the core calculus of Coq) with primitive eliminators,
-the syntax for which is in Figure~\ref{fig:syntax}.
+All terms that we introduce in this section are in the Calculus of Inductive Constructions (CIC$_{\omega}$), the type theory
+that Coq's proof term language Gallina implements.
+CIC$_{\omega}$ is based on the Calculus of Constructions (CoC), a variant of the lambda calculus with polymorphism (types that dependent on types) and dependent types (types that depend on terms)~\cite{coquand:inria-00076024}. CIC$_{\omega}$ extends CoC with
+inductive types~\cite{inductive}.
+Inductive types are defined solely by their constructors (like \lstinline{nil} and \lstinline{cons} for \lstinline{list}) and eliminators (like the induction principle for \lstinline{list}); this section assumes that these eliminators are primitive.
+
+The syntax for CIC$_{\omega}$ with primitive eliminators is in Figure~\ref{fig:syntax}.
 The typing rules are standard.
 We assume inductive types $\Sigma$ with constructor $\exists$ and projections $\pi_l$ and $\pi_r$,
-and \lstinline{=} with constructor \lstinline{eq_refl}.
+and an equality type \lstinline{=} with constructor \lstinline{eq_refl}.
 We use $\vec{t}$ and $\{t_1, \ldots, t_n\}$ to denote lists of terms.
 
 \subsection{The Configuration}
@@ -138,14 +143,21 @@ discovers \lstinline{DepConstr} and \lstinline{DepElim} from just the types \A a
 \mysubsubsec{Producing Well-Typed Terms}
 The other configuration parts \lstinline{Eta} and \lstinline{Iota} deal with producing well-typed terms,
 in particular by transporting equalities.
-A naive proof term transformation
-may fail to generate well-typed terms if it does not consider the problem of transporting equalities.
+CIC$_{\omega}$ distinguishes between two important kinds of equality: those that hold by reduction (\textit{definitional} equality), and those that hold by proof (\textit{propositional} equality).
+That is, two terms \lstinline{t} and \lstinline{t'} of type \lstinline{T} are definitionally equal if they reduce to the same normal form,
+and propositionally equal if there is a proof that \lstinline{t = t'} using the inductive
+equality type \lstinline{=} at type \lstinline{T}. Definitionally equal terms are necessarily propositionally equal, but 
+the converse is not in general true.
+
+When a datatype changes, sometimes, definitional equalities defined over the old version of that type must become propositional.
+A naive proof term transformation may fail to generate well-typed terms if it does not account for this.
 Otherwise, if the transformation transforms a term \lstinline{t : T} to some \lstinline{t' : T'}, it does not necessarily
 transform \lstinline{T} to \lstinline{T'}~\cite{tabareau2019marriage}.
 
 \lstinline{Eta} and \lstinline{Iota} describe how to transport equalities.
 More formally, they define $\eta$-expansion and $\iota$-reduction of \A and \B,
-which may be propositional rather than definitional, and so must be explicit in the transformation.
+which may be propositional rather than definitional,
+and so must be explicit in the transformation.
 $\eta$-expansion describes how to expand a term to apply a constructor to an eliminator in a way that preserves propositional equality,
 and is important for defining dependent eliminators~\cite{nlab:eta-conversion}.
 $\iota$-reduction ($\beta$-reduction for inductive types) describes how to reduce an elimination of a constructor~\cite{nlab:beta-reduction}.
@@ -168,118 +180,13 @@ Thanks to this, we can forego the assumption that our language has primitive pro
    \lstinputlisting[firstline=10, lastline=17]{nattobin.tex}
 \end{minipage}
 \vspace{-0.4cm}
-\caption{Unary (left) and binary (right) natural numbers.}
+\caption{A unary natural number \lstinline{nat} (left) is either zero (\lstinline{0}) or the successor of some other natural number (\lstinline{S}).
+A binary natural number \lstinline{N} (right) is either zero (\lstinline{N0}) or a positive binary number (\lstinline{Npos}), where a positive binary number is either 1 (\lstinline{xH}), or the result of shifting left and adding 1 (\lstinline{xI}) or
+0 (\lstinline{xO}). Unary and binary natural numbers are equivalent, but have different inductive structures.
+Consequentially, definitional equalities over \lstinline{nat} may become propositional over \lstinline{N}.}
 \vspace{-0.2cm}
 \label{fig:nattobin}
 \end{figure}
-
-\begin{figure*}
-\begin{mathpar}
-\mprset{flushleft}
-\small
-\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Uparrow$ $t'$}\vspace{-0.4cm}\\
-
-\inferrule[Dep-Elim]
-  { \Gamma \vdash a \Uparrow b \\ \Gamma \vdash p_{a} \Uparrow p_b \\ \Gamma \vdash \vec{f_{a}}\phantom{l} \Uparrow \vec{f_{b}} }
-  { \Gamma \vdash \mathrm{DepElim}(a,\ p_{a}) \vec{f_{a}} \Uparrow \mathrm{DepElim}(b,\ p_b) \vec{f_{b}} }
-
-\inferrule[Dep-Constr]
-{ \Gamma \vdash \vec{t}_{a} \Uparrow \vec{t}_{b} } %\\ TODO must we explicitly lift A to B if we want to handle parameters/indices?
-{ \Gamma \vdash \mathrm{DepConstr}(j,\ A)\ \vec{t}_{a} \Uparrow \mathrm{DepConstr}(j,\ B)\ \vec{t}_{b}  }
-
-\inferrule[Eta]
-  { \\ }
-  { \Gamma \vdash \mathrm{Eta}(A) \Uparrow \mathrm{Eta}(B) }
-
-\inferrule[Iota]
-  { \Gamma \vdash q_A \Uparrow q_B \\ \Gamma \vdash \vec{t_A} \Uparrow \vec{t_B} }
-  { \Gamma \vdash \mathrm{Iota}(j,\ A,\ q_A)\ \vec{t_A} \Uparrow \mathrm{Iota}(j,\ B,\ q_B)\ \vec{t_B} }
-
-\inferrule[Equivalence]
-  { \\ }
-  { \Gamma \vdash A\ \Uparrow B }
-
-\inferrule[Constr]
-{ \Gamma \vdash T \Uparrow T' \\ \Gamma \vdash \vec{t} \Uparrow \vec{t'} }
-{ \Gamma \vdash \mathrm{Constr}(j,\ T)\ \vec{t} \Uparrow \mathrm{Constr}(j,\ T')\ \vec{t'} }
-
-\inferrule[Ind]
-  { \Gamma \vdash T \Uparrow T' \\ \Gamma \vdash \vec{C} \Uparrow \vec{C'}  }
-  { \Gamma \vdash \mathrm{Ind} (\mathit{Ty} : T) \vec{C} \Uparrow \mathrm{Ind} (\mathit{Ty} : T') \vec{C'} }
-
-%% Application
-\inferrule[App]
- { \Gamma \vdash f \Uparrow f' \\ \Gamma \vdash t \Uparrow t'}
- { \Gamma \vdash f t \Uparrow f' t' }
-
-\inferrule[Elim] % TODO wait why do we have c here when it clearly refers to the term we eliminate over? um
-  { \Gamma \vdash c \Uparrow c' \\ \Gamma \vdash Q \Uparrow Q' \\ \Gamma \vdash \vec{f} \Uparrow \vec{f'}}
-  { \Gamma \vdash \mathrm{Elim}(c, Q) \vec{f} \Uparrow \mathrm{Elim}(c', Q') \vec{f'}  }
-
-% Lamda
-\inferrule[Lam]
-  { \Gamma \vdash t \Uparrow t' \\ \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
-  {\Gamma \vdash \lambda (t : T).b \Uparrow \lambda (t' : T').b'}
-
-% Product
-\inferrule[Prod]
-  { \Gamma \vdash t \Uparrow t' \\ \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
-  {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t' : T').b'}
-
-\inferrule[Var]
-  { v \in \mathrm{Vars} }
-  {\Gamma \vdash v \Uparrow v}
-
-%\inferrule[Sort]
-%  { \\ }
-%  {\Gamma \vdash s \Uparrow s}
-\end{mathpar}
-\vspace{-0.5cm}
-\caption{Transformation for transporting terms across $A \simeq B$ with configuration \lstinline{((DepConstr, DepElim), (Eta, Iota))}.}
-\vspace{-0.2cm}
-\label{fig:final}
-\end{figure*}
-
-\begin{figure*}
-\begin{minipage}{0.49\textwidth}
-\begin{lstlisting}
-(* 1: original term *)(@\vspace{-0.04cm}@)
-$\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- Elim (l, $\lambda$(l: Old.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
-   ($\lambda$ m . m),(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m . Constr(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
- } m.(@\vspace{-0.04cm}@)
-(@\vspace{-0.18cm}@)
-(* 2: after unifying (@\texttt{with}@) configuration *)(@\vspace{-0.04cm}@)
-$\lambda$ (T : Type) (l m : (@\codediff{A}@)) .(@\vspace{-0.04cm}@)
- (@\codediff{DepElim}@) (l, $\lambda$(l: (@\codediff{A}@)).(@\codediff{A}@) $\rightarrow$ (@\codediff{A}@))) {(@\vspace{-0.04cm}@)
-   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m . (@\codediff{DepConstr}@)(1, (@\codediff{A}@)) t (IHl m))(@\vspace{-0.04cm}@)
- } m.(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\hfill
-\begin{minipage}{0.49\textwidth}
-\begin{lstlisting}
-(* 4: reduced to final term *)(@\vspace{-0.04cm}@)
-$\lambda$ (T : Type) (l m : list T) .(@\vspace{-0.04cm}@)
- Elim (l, $\lambda$(l: New.list T).list T $\rightarrow$ list T)) {(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m . Constr(0, New.list T) t (IHl m)),(@\vspace{-0.04cm}@)
-   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
- } m.(@\vspace{-0.04cm}@)
-(@\vspace{-0.18cm}@)
-(* 3: after transforming *)(@\vspace{-0.04cm}@)
-$\lambda$ (T : Type) (l m : (@\codediff{B}@)) .(@\vspace{-0.04cm}@)
- (@\codediff{DepElim}@) (l, $\lambda$(l: (@\codediff{B}@)).(@\codediff{B}@) $\rightarrow$ (@\codediff{B}@))) {(@\vspace{-0.04cm}@)
-   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
-   ($\lambda$ t _ IHl m . (@\codediff{DepConstr}@)(1, (@\codediff{B}@)) t (IHl m))(@\vspace{-0.04cm}@)
- } m.(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{Swapping cases of the append function, with names fully qualified only when needed for clarity, counterclockwise, the input term: 1) unmodified, 2) unified with the configuration, 3) ported to the updated type, and 4) reduced to the output.}
-\label{fig:appswap1}
-\end{figure*}
 
 Each \lstinline{Iota}---one per constructor---describes and proves the $\iota$-reduction behavior
 of \lstinline{DepElim} on the corresponding case.
@@ -336,8 +243,116 @@ then definitional $\iota$ over one would become propositional $\iota$ over the o
 %the need for propositional $\iota$ was noted as far back as \citet{magaud2000changing}.
 %\lstinline{Iota} in the configuration encodes this more generally.
 
+
 \subsection{The Proof Term Transformation}
 \label{sec:generic}
+
+\begin{figure*}
+\begin{mathpar}
+\mprset{flushleft}
+\small
+\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Uparrow$ $t'$}\vspace{-0.3cm}\\
+
+\inferrule[Dep-Elim]
+  { \Gamma \vdash a \Uparrow b \\ \Gamma \vdash p_{a} \Uparrow p_b \\ \Gamma \vdash \vec{f_{a}}\phantom{l} \Uparrow \vec{f_{b}} }
+  { \Gamma \vdash \mathrm{DepElim}(a,\ p_{a}) \vec{f_{a}} \Uparrow \mathrm{DepElim}(b,\ p_b) \vec{f_{b}} }
+
+\inferrule[Dep-Constr]
+{ \Gamma \vdash \vec{t}_{a} \Uparrow \vec{t}_{b} } %\\ TODO must we explicitly lift A to B if we want to handle parameters/indices?
+{ \Gamma \vdash \mathrm{DepConstr}(j,\ A)\ \vec{t}_{a} \Uparrow \mathrm{DepConstr}(j,\ B)\ \vec{t}_{b}  }
+
+\inferrule[Eta]
+  { \\ }
+  { \Gamma \vdash \mathrm{Eta}(A) \Uparrow \mathrm{Eta}(B) }
+
+\inferrule[Iota]
+  { \Gamma \vdash q_A \Uparrow q_B \\ \Gamma \vdash \vec{t_A} \Uparrow \vec{t_B} }
+  { \Gamma \vdash \mathrm{Iota}(j,\ A,\ q_A)\ \vec{t_A} \Uparrow \mathrm{Iota}(j,\ B,\ q_B)\ \vec{t_B} }
+
+\inferrule[Equivalence]
+  { \\ }
+  { \Gamma \vdash A\ \Uparrow B }
+
+\inferrule[Constr]
+{ \Gamma \vdash T \Uparrow T' \\ \Gamma \vdash \vec{t} \Uparrow \vec{t'} }
+{ \Gamma \vdash \mathrm{Constr}(j,\ T)\ \vec{t} \Uparrow \mathrm{Constr}(j,\ T')\ \vec{t'} }
+
+\inferrule[Ind]
+  { \Gamma \vdash T \Uparrow T' \\ \Gamma \vdash \vec{C} \Uparrow \vec{C'}  }
+  { \Gamma \vdash \mathrm{Ind} (\mathit{Ty} : T) \vec{C} \Uparrow \mathrm{Ind} (\mathit{Ty} : T') \vec{C'} }
+
+%% Application
+\inferrule[App]
+ { \Gamma \vdash f \Uparrow f' \\ \Gamma \vdash t \Uparrow t'}
+ { \Gamma \vdash f t \Uparrow f' t' }
+
+\inferrule[Elim] % TODO wait why do we have c here when it clearly refers to the term we eliminate over? um
+  { \Gamma \vdash c \Uparrow c' \\ \Gamma \vdash Q \Uparrow Q' \\ \Gamma \vdash \vec{f} \Uparrow \vec{f'}}
+  { \Gamma \vdash \mathrm{Elim}(c, Q) \vec{f} \Uparrow \mathrm{Elim}(c', Q') \vec{f'}  }
+
+% Lamda
+\inferrule[Lam]
+  { \Gamma \vdash t \Uparrow t' \\ \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
+  {\Gamma \vdash \lambda (t : T).b \Uparrow \lambda (t' : T').b'}
+
+% Product
+\inferrule[Prod]
+  { \Gamma \vdash t \Uparrow t' \\ \Gamma \vdash T \Uparrow T' \\ \Gamma,\ t : T \vdash b \Uparrow b' }
+  {\Gamma \vdash \Pi (t : T).b \Uparrow \Pi (t' : T').b'}
+
+\inferrule[Var]
+  { v \in \mathrm{Vars} }
+  {\Gamma \vdash v \Uparrow v}
+
+%\inferrule[Sort]
+%  { \\ }
+%  {\Gamma \vdash s \Uparrow s}
+\end{mathpar}
+\vspace{-0.3cm}
+\caption{Transformation for transporting terms across $A \simeq B$ with configuration \lstinline{((DepConstr, DepElim), (Eta, Iota))}.}
+\label{fig:final}
+\end{figure*}
+
+\begin{figure*}
+\begin{minipage}{0.49\textwidth}
+\begin{lstlisting}
+(* 1: original term *)(@\vspace{-0.04cm}@)
+$\lambda$ (T : Type) (l m : Old.list T) .(@\vspace{-0.04cm}@)
+ Elim(l, $\lambda$(l: Old.list T).Old.list T $\rightarrow$ Old.list T)) {(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m),(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . Constr(1, Old.list T) t (IHl m))(@\vspace{-0.04cm}@)
+ } m.(@\vspace{-0.04cm}@)
+(@\vspace{-0.18cm}@)
+(* 2: after unifying (@\texttt{with}@) configuration *)(@\vspace{-0.04cm}@)
+$\lambda$ (T : Type) (l m : (@\codediff{A}@)) .(@\vspace{-0.04cm}@)
+ (@\codediff{DepElim}@)(l, $\lambda$(l: (@\codediff{A}@)).(@\codediff{A}@) $\rightarrow$ (@\codediff{A}@))) {(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . (@\codediff{DepConstr}@)(1, (@\codediff{A}@)) t (IHl m))(@\vspace{-0.04cm}@)
+ } m.(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.49\textwidth}
+\begin{lstlisting}
+(* 4: reduced to final term *)(@\vspace{-0.04cm}@)
+$\lambda$ (T : Type) (l m : New.list T) .(@\vspace{-0.04cm}@)
+ Elim(l, $\lambda$(l: New.list T).New.list T $\rightarrow$ New.list T)) {(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . Constr(0, New.list T) t (IHl m)),(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
+ } m.(@\vspace{-0.04cm}@)
+(@\vspace{-0.18cm}@)
+(* 3: after transforming *)(@\vspace{-0.04cm}@)
+$\lambda$ (T : Type) (l m : (@\codediff{B}@)) .(@\vspace{-0.04cm}@)
+ (@\codediff{DepElim}@)(l, $\lambda$(l: (@\codediff{B}@)).(@\codediff{B}@) $\rightarrow$ (@\codediff{B}@))) {(@\vspace{-0.04cm}@)
+   ($\lambda$ m . m)(@\vspace{-0.04cm}@)
+   ($\lambda$ t _ IHl m . (@\codediff{DepConstr}@)(1, (@\codediff{B}@)) t (IHl m))(@\vspace{-0.04cm}@)
+ } m.(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{Swapping cases of the append function, counterclockwise, the input term: 1) unmodified, 2) unified with the configuration, 3) ported to the updated type, and 4) reduced to the output.}
+\label{fig:appswap1}
+\end{figure*}
 
 Figure~\ref{fig:final} shows the proof term transformation $\Gamma \vdash t \Uparrow t'$ that forms the core of \toolname.
 %Like the transformation from \textsc{Devoid},
@@ -353,6 +368,37 @@ Of course, typical proof terms in Coq do not apply these configuration
 terms explicitly.
 \toolname does some additional work using \textit{unification heuristics} to get real proof terms into this format before running the transformation.
 It then runs the proof term transformation, which transports proofs across the equivalence that corresponds to the configuration.
+
+\mysubsubsec{Unification Heuristics}
+The transformation does not fully describe the search procedure for transforming terms that \toolname implements.
+Before running the transformation, \toolname \textit{unifies} subterms with particular \A (fixing parameters and indices),
+and with applications of configuration terms over \A. 
+The transformation then transforms configuration terms over \A
+to configuration terms over \B.
+Reducing the result produces the output term defined over \B.
+
+Figure~\ref{fig:appswap1} shows this with the list append function \lstinline{++} from Section~\ref{sec:overview}.
+To update \lstinline{++} (top left), \toolname unifies \lstinline{Old.list T} with \A, and \lstinline{Constr} and \lstinline{Elim}
+with \lstinline{DepConstr} and \lstinline{DepElim} (bottom left).
+After unification, the transformation recursively substitutes \B
+for \A, which moves \lstinline{DepConstr} and \lstinline{DepElim}
+to construct and eliminate over the updated type (bottom right).
+This reduces to a term with swapped constructors and cases over \lstinline{New.list T} (top right).
+
+In this case, unification is straightforward. % since \lstinline{DepConstr} and \lstinline{DepElim} correspond to
+%\lstinline{Constr} and \lstinline{Elim} directly.
+This can be more challenging when configuration terms are dependent.
+This is especially pronounced with definitional \lstinline{Eta} and \lstinline{Iota},
+which typically are implicit (reduced) in real code.
+%This problem is exactly why \citet{tabareau2019marriage} speculated that converting definitional to propositional equalities
+%like we do with \lstinline{Iota} may, in general, be intractable.
+To handle this, \toolname implements custom \textit{unification heuristics} for each search procedure
+that unify subterms with applications of configuration terms, and that instantiate parameters and dependent indices in those subterms~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/liftconfig.ml}{\circled{6}}. % liftconfig.ml
+The transformation in turn assumes that all parameters and indices are fixed.
+
+\toolname falls back to Coq's unification for manual configuration and when these custom heuristics fail.
+When even Coq's unification is not enough, \toolname relies on proof engineers to provide hints
+in the form of annotations~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/nonorn.v}{\circled{5}}.
 
 \begin{figure*}
 \begin{minipage}{0.43\textwidth}
@@ -472,37 +518,6 @@ of \lstinline{DepElim(A, P)} at \lstinline{DepConstr(j, A)} (similarly for \B).}
 
 % $\mathrm{E}_{A_i}\ (p_A : \mathrm{P}_A)$ := $\xi(A,\ p_A,\ \mathrm{Constr}(i,\ A),\ C_{A_i})$
 
-\mysubsubsec{Unification Heuristics}
-The transformation does not fully describe the search procedure for transforming terms that \toolname implements.
-Before running the transformation, \toolname \textit{unifies} subterms with particular \A (fixing parameters and indices),
-and with applications of configuration terms over \A. 
-The transformation then transforms configuration terms over \A
-to configuration terms over \B.
-Reducing the result produces the output term defined over \B.
-
-Figure~\ref{fig:appswap1} shows this with the list append function \lstinline{++} from Section~\ref{sec:overview}.
-To update \lstinline{++} (top left), \toolname unifies \lstinline{Old.list T} with \A, and \lstinline{Constr} and \lstinline{Elim}
-with \lstinline{DepConstr} and \lstinline{DepElim} (bottom left).
-After unification, the transformation recursively substitutes \B
-for \A, which moves \lstinline{DepConstr} and \lstinline{DepElim}
-to construct and eliminate over the updated type (bottom right).
-This reduces to a term with swapped constructors and cases over \lstinline{New.list T} (top right).
-
-In this case, unification is straightforward. % since \lstinline{DepConstr} and \lstinline{DepElim} correspond to
-%\lstinline{Constr} and \lstinline{Elim} directly.
-This can be more challenging when configuration terms are dependent.
-This is especially pronounced with definitional \lstinline{Eta} and \lstinline{Iota},
-which typically are implicit (reduced) in real code.
-%This problem is exactly why \citet{tabareau2019marriage} speculated that converting definitional to propositional equalities
-%like we do with \lstinline{Iota} may, in general, be intractable.
-To handle this, \toolname implements custom \textit{unification heuristics} for each search procedure
-that unify subterms with applications of configuration terms, and that instantiate parameters and dependent indices in those subterms~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/liftconfig.ml}{\circled{6}}. % liftconfig.ml
-The transformation in turn assumes that all parameters and indices are fixed.
-
-\toolname falls back to Coq's unification for manual configuration and when these custom heuristics fail.
-When even Coq's unification is not enough, \toolname relies on proof engineers to provide hints
-in the form of annotations~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/nonorn.v}{\circled{5}}.
-
 \mysubsubsec{Specifying a Correct Transformation}
 The implementation of this transformation in \toolname produces a term that Coq type checks, and so does not
 add to the trusted computing base.
@@ -572,9 +587,8 @@ to avoid applying \lstinline{f} and \lstinline{g}, instead porting terms from \A
 
 <p> ::= intro <v> |  rewrite <t> <t> | symmetry | apply <t> |  induction <t> <t> \{ <p>, \ldots, <p> \} |  split \{ <p>, <p> \} | left | right | <p> . <p>
 \end{grammar}
-\vspace{-0.3cm}
+\vspace{-0.4cm}
 \caption{Qtac syntax.}
-\vspace{-0.3cm}
 \label{fig:ltacsyntax1}
 \end{figure*}
 

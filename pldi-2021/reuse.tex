@@ -79,60 +79,6 @@ and repairing proofs of De Morgan's laws. % constr_refactor.v
 %Otherwise, they behave the same way as the functions and proofs over \lstinline{I} up to the equivalence between
 %\lstinline{I} and \lstinline{J}---Section~\ref{sec:repair} explains this intuition more formally.
 
-\begin{figure}
-\begin{minipage}{0.48\columnwidth}
-\lstinputlisting[firstline=1, lastline=3]{equiv2.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\columnwidth}
-\lstinputlisting[firstline=5, lastline=7]{equiv2.tex}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{\lstinline{J} is \lstinline{I} with \lstinline{A} and \lstinline{B} factored out to \lstinline{bool} (\codediff{orange}).}
-\vspace{-0.1cm}
-\label{fig:equivalence2}
-\end{figure}
-
-\begin{figure}
-\begin{minipage}{0.48\textwidth}
-   \lstinputlisting[firstline=1, lastline=3]{listtovect.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.58\textwidth}
-   \lstinputlisting[firstline=5, lastline=7]{listtovect.tex}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{A vector is a list indexed by its length (\codediff{orange}).}
-\label{fig:listtovect}
-\end{figure}
-
-\iffalse
-\begin{figure*}
-\begin{minipage}{0.40\textwidth}
-   \lstinputlisting[firstline=1, lastline=3]{listtovect.tex}
-\end{minipage}
-\hfill
-\begin{minipage}{0.58\textwidth}
-   \lstinputlisting[firstline=5, lastline=7]{listtovect.tex}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{A vector (right) is a list (left) indexed by its length.}
-\label{fig:listtovect}
-\end{figure*}
-\fi
-
-\begin{figure*}
-\small
-\begin{grammar}
-<i> $\in \mathbbm{N}$, <v> $\in$ Vars, <s> $\in$ \{ Prop, Set, Type<i> \}
-
-<t> ::= <v> | <s> | $\Pi$ (<v> : <t>) . <t> | $\lambda$ (<v> : <t>) . <t> | <t> <t> | Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\}
-\end{grammar}
-\vspace{-0.3cm}
-\caption{Syntax for CIC$_\omega$ from \citet{Timany2015FirstST} with (from left to right) variables, sorts, dependent types, functions, application, inductive types, inductive constructors, and primitive eliminators.}
-\label{fig:syntax}
-\end{figure*}
-
 \mysubsubsec{Adding a Dependent Index}
 At first glance, the word \textit{equivalence} may seem to imply that \toolname can support only changes in
 which the proof engineer does not add or remove information.
@@ -236,6 +182,56 @@ This approach would not be suitable for repair, since it does not make it possib
 %\subsection{A Tool for Proof Repair Across Equivalences}
 %\label{sec:time}
 
+\begin{figure}
+\begin{minipage}{0.48\columnwidth}
+\lstinputlisting[firstline=1, lastline=3]{equiv2.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\columnwidth}
+\lstinputlisting[firstline=5, lastline=7]{equiv2.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{The old type \lstinline{I} (left) is either \lstinline{A} or \lstinline{B}. The new type \lstinline{J} (right) is \lstinline{I} with \lstinline{A} and \lstinline{B} factored out to \lstinline{bool} (\codediff{orange}).}
+\label{fig:equivalence2}
+\end{figure}
 
+\begin{figure}
+\begin{minipage}{0.48\textwidth}
+   \lstinputlisting[firstline=1, lastline=3]{listtovect.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.58\textwidth}
+   \lstinputlisting[firstline=5, lastline=7]{listtovect.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{A vector (bottom) is a list (top) indexed by its length (\codediff{orange}). Vectors effectively make it possible to enforce length invariants about lists at compile time.}
+\label{fig:listtovect}
+\end{figure}
 
+\iffalse
+\begin{figure*}
+\begin{minipage}{0.40\textwidth}
+   \lstinputlisting[firstline=1, lastline=3]{listtovect.tex}
+\end{minipage}
+\hfill
+\begin{minipage}{0.58\textwidth}
+   \lstinputlisting[firstline=5, lastline=7]{listtovect.tex}
+\end{minipage}
+\vspace{-0.4cm}
+\caption{A vector (right) is a list (left) indexed by its length.}
+\label{fig:listtovect}
+\end{figure*}
+\fi
+
+\begin{figure*}
+\small
+\begin{grammar}
+<i> $\in \mathbbm{N}$, <v> $\in$ Vars, <s> $\in$ \{ Prop, Set, Type<i> \}
+
+<t> ::= <v> | <s> | $\Pi$ (<v> : <t>) . <t> | $\lambda$ (<v> : <t>) . <t> | <t> <t> | Ind (<v> : <t>)\{<t>,\ldots,<t>\} | Constr (<i>, <t>) | Elim(<t>, <t>)\{<t>,\ldots,<t>\}
+\end{grammar}
+\vspace{-0.3cm}
+\caption{Syntax for CIC$_\omega$ from \citet{Timany2015FirstST} with (from left to right) variables, sorts, dependent types, functions, application, inductive types, inductive constructors, and primitive eliminators.}
+\label{fig:syntax}
+\end{figure*}
 
