@@ -173,9 +173,10 @@ Supporting custom unification heuristics would improve this workflow.
 
 \mysubsubsec{Change Inductive Structure: Unary to Binary}
 In \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{\circled{5}}, we used \toolname to support a classic example of changing inductive structure:
-updating unary to binary numbers~\cite{magaud2000changing}.
+updating unary to binary numbers,
+as in Figure~\ref{fig:nattobin}.
 % TODO fin and vect? mention somewhere?
-Binary numbers in Coq (Figure~\ref{fig:nattobin}) allow for a fast addition function, found in the Coq standard library.
+Binary numbers allow for a fast addition function, found in the Coq standard library.
 In the style of \citet{magaud2000changing}, we used \toolname to derive a slow binary
 addition function that does not refer to \lstinline{nat},
 and to port proofs from unary to slow binary addition.
