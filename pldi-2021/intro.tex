@@ -42,11 +42,11 @@ and may impose additional proof obligations like proving relations corresponding
 \end{enumerate}
 
 The typical proof engineering workflow in Coq is interactive:
-In a loop, the proof engineer passes Coq high-level search procedures called \textit{tactics} (like \lstinline{induction}),
+The proof engineer passes Coq high-level search procedures called \textit{tactics} (like \lstinline{induction}),
 and Coq responds to each tactic by refining the current goal to some subgoal (like the proof obligation for the base case).
-This loop of tactics and subgoals continues until no subgoals remain, at which point the proof engineer 
+This loop of tactics and goals continues until no goals remain, at which point the proof engineer 
 has constructed a sequence of tactics called a \textit{proof script}.
-To check this proof script for correctness, Coq compiles it down to a low-level function called a \textit{proof term},
+To check this proof script for correctness, Coq compiles it to a low-level function called a \textit{proof term},
 then checks that the proof term has the expected type.
 
 Our approach to proof repair works at the level of low-level proof terms, then builds back up to high-level proof scripts.
