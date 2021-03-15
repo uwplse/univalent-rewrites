@@ -394,7 +394,8 @@ which typically are implicit (reduced) in real code.
 %like we do with \lstinline{Iota} may, in general, be intractable.
 To handle this, \toolname implements custom \textit{unification heuristics} for each search procedure
 that unify subterms with applications of configuration terms, and that instantiate parameters and dependent indices in those subterms~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/liftconfig.ml}{\circled{6}}. % liftconfig.ml
-The transformation in turn assumes that all parameters and indices are fixed.
+The transformation in turn assumes that all existing parameters and indices are determined and instantiated
+by the time it runs.
 
 \toolname falls back to Coq's unification for manual configuration and when these custom heuristics fail.
 When even Coq's unification is not enough, \toolname relies on proof engineers to provide hints
