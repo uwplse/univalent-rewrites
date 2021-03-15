@@ -141,6 +141,13 @@ support for \lstinline{rewrite in} and \lstinline{apply in} similarly to how it 
 it swaps the direction of the rewrite, and it recurses into any generated subgoals.
 In all other cases, it uses \lstinline{pose}, a catch-all for let bindings.
 
+\mysubsubsec{Forfeiting Soundness}
+While there is a way to always produce a correct proof script,
+\textbf{Decompile} deliberately forfeits soundness to suggest more useful tactics.
+For example, it may suggest the \lstinline{induction} tactic, but leave the step of motive inference to the proof engineer.
+Note that in the case the suggested proof script is not quite correct,
+it is still possible to use the generated proof term directly.
+
 \mysubsubsec{Pretty Printing}
 After decompiling proof terms, \textbf{Decompile} pretty prints the result~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/coq-plugin-lib/src/coq/decompiler/decompiler.ml}{\circled{11}}.
 Like the mini decompiler, \textbf{Decompile} represents its output using a predefined grammar of Ltac tactics,
