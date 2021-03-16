@@ -56,8 +56,8 @@ The widely used Transfer~\cite{Huffman2013} package supports proof reuse in Isab
 Transfer works by combining a set of extensible transfer rules with a type inference algorithm.
 Transfer is not yet suitable for repair, as it necessitates maintaining references to both datatypes.
 %In addition, the proof assistant Isabelle/HOL that Transfer works for lacks both dependent types and proof terms.
-One promising path toward implementing proof repair in Isabelle/HOL is to combine Transfer with reified proof terms using Isabelle/HOL-Proofs,
-then (as in \toolname) decompile those terms to automation that does not apply Transfer.
+One possible path toward implementing proof repair in Isabelle/HOL may be to reify proof terms using something like
+Isabelle/HOL-Proofs, apply a transformation based on Transfer, and then (as in \toolname) decompile those terms to automation that does not apply Transfer or refer to the old datatype in any way.
 
 CoqEAL~\cite{cohen:hal-01113453} transforms functions across relations in Coq,
 and these relations can be more general than \toolname's equivalences.

@@ -590,6 +590,7 @@ to avoid applying \lstinline{f} and \lstinline{g}, instead porting terms from \A
 \end{grammar}
 \vspace{-0.4cm}
 \caption{Qtac syntax.}
+\vspace{-0.4cm}
 \label{fig:ltacsyntax1}
 \end{figure*}
 
@@ -597,7 +598,7 @@ to avoid applying \lstinline{f} and \lstinline{g}, instead porting terms from \A
 \begin{mathpar}
 \mprset{flushleft}
 \small
-\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Rightarrow$ $p$}\vspace{-0.45cm}\\
+\hfill\fbox{$\Gamma$ $\vdash$ $t$ $\Rightarrow$ $p$}\vspace{-0.5cm}\\
 
 \inferrule[Intro]
   { \Gamma,\ n : T \vdash b \Rightarrow p }
@@ -663,9 +664,9 @@ The result follows by definition of \lstinline{g} and \lstinline{f}, and by refl
 
 \mysubsubsec{Automatic Configuration}
 \toolname implements four search procedures for automatic configuration~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/liftconfig.ml}{\circled{6}}.
-Three of the four search procedures are based on the search procedure for algebraic ornaments from 
+Three of the four procedures are based on the search procedure from 
 \textsc{Devoid}~\cite{Ringer2019},
-while the remaining search procedure instantiates the types \A and \B of a generic configuration that can be defined inside of Coq directly.
+while the remaining procedure instantiates the types \A and \B of a generic configuration that can be defined inside of Coq directly.
 %Two use similar algorithms,
 %due to space constraints, 
 %we do not discuss these in detail.
