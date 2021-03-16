@@ -662,9 +662,13 @@ Expand the right-hand side using \lstinline{Iota(A, i)}, then expand it again us
 The result follows by definition of \lstinline{g} and \lstinline{f}, and by reflexivity.
 
 \mysubsubsec{Automatic Configuration}
-\toolname implements four search procedures for automatic configuration~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/liftconfig.ml}{\circled{6}};
+\toolname implements four search procedures for automatic configuration~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/liftconfig.ml}{\circled{6}}.
+Three of the four search procedures are based on the search procedure for algebraic ornaments from 
+\textsc{Devoid}~\cite{Ringer2019},
+while the remaining search procedure instantiates the types \A and \B of a generic configuration that can be defined inside of Coq directly.
+%Two use similar algorithms,
 %due to space constraints, 
-we do not discuss these in detail.
+%we do not discuss these in detail.
 The algorithm above is essentially what \textbf{Configure} uses to generate functions \lstinline{f} and \lstinline{g} for these configurations~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/search/search.ml}{\circled{9}}, % search.ml
 and also generate proofs \lstinline{section} and \lstinline{retraction} that these functions form an equivalence~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/search/equivalence.ml}{\circled{10}}. % equivalence.ml
 To minimize dependencies, \toolname does not produce proofs of \lstinline{constr_ok} and \lstinline{elim_ok} directly,
