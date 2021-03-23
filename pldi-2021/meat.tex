@@ -30,7 +30,7 @@ DepElim(l, P) { p$_{\mathtt{nil}}$, p$_{\mathtt{cons}}$ } : P l :=(@\vspace{-0.0
 \end{figure*}
 
 At the heart of \toolname is a configurable proof term transformation for transporting
-proofs across equivalences~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/lift.ml}{\circled{4}}. % lift.ml
+proofs across equivalences~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/src/automation/lift/lift.ml}{\circled{4}}. % lift.ml
 It is a generalization of the transformation from an earlier version of \toolname called
 \textsc{Devoid}~\cite{Ringer2019}, which solved this problem a particular class of equivalences.
 %\toolname moves the reasoning specific to that class of equivalences into the configuration. 
@@ -115,7 +115,7 @@ Consider the type of vectors of some length:
 \begin{lstlisting}
 packed_vect T := $\Sigma$(n : nat).vector T n.(@\vspace{-0.05cm}@)
 \end{lstlisting}
-\toolname can port proofs across the equivalence between this type and \lstinline{list T}~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}}. % Example.v
+\toolname can port proofs across the equivalence between this type and \lstinline{list T}~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/examples/Example.v}{\circled{3}}. % Example.v
 The dependent constructors \toolname discovers pack the index into an existential, like:
 
 \begin{lstlisting}
@@ -193,7 +193,7 @@ of \lstinline{DepElim} on the corresponding case.
 This is needed, for example, to port proofs about unary numbers \lstinline{nat} to
 proofs about binary numbers \lstinline{N} (Figure~\ref{fig:nattobin}).
 While we can define \lstinline{DepConstr} and \lstinline{DepElim} to induce an equivalence
-between them~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/nonorn.v}{\circled{5}}, % nonorn.v
+between them~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/nonorn.v}{\circled{5}}, % nonorn.v
 we run into trouble reasoning about applications of \lstinline{DepElim},
 since proofs about \lstinline{nat} that hold by reflexivity do not necessarily hold by reflexivity over \lstinline{N}. 
 For example, in Coq, while \lstinline{S (n + m)  = S n + m} holds by reflexivity over \lstinline{nat},
@@ -227,7 +227,7 @@ $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n (Q: P (DepConstr(1, nat) n) $\righta
     Q ((@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ })) $\rightarrow$(@\vspace{-0.04cm}@)
     Q (DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
 \end{lstlisting}
-and similarly for \lstinline{N}~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/nonorn.v}{\circled{5}}.
+and similarly for \lstinline{N}~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/nonorn.v}{\circled{5}}.
 The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N},
 so that \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinline{N}.
 
@@ -393,13 +393,13 @@ which typically are implicit (reduced) in real code.
 %This problem is exactly why \citet{tabareau2019marriage} speculated that converting definitional to propositional equalities
 %like we do with \lstinline{Iota} may, in general, be intractable.
 To handle this, \toolname implements custom \textit{unification heuristics} for each search procedure
-that unify subterms with applications of configuration terms, and that instantiate parameters and dependent indices in those subterms~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/liftconfig.ml}{\circled{6}}. % liftconfig.ml
+that unify subterms with applications of configuration terms, and that instantiate parameters and dependent indices in those subterms~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/src/automation/lift/liftconfig.ml}{\circled{6}}. % liftconfig.ml
 The transformation in turn assumes that all existing parameters and indices are determined and instantiated
 by the time it runs.
 
 \toolname falls back to Coq's unification for manual configuration and when these custom heuristics fail.
 When even Coq's unification is not enough, \toolname relies on proof engineers to provide hints
-in the form of annotations~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/nonorn.v}{\circled{5}}.
+in the form of annotations~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/nonorn.v}{\circled{5}}.
 
 \begin{figure*}
 \begin{minipage}{0.43\textwidth}
@@ -549,7 +549,7 @@ It would be possible to generate per-transformation proofs of correctness, but t
 
 Choosing a configuration necessarily depends in some way on the proof engineer's intentions:
 there can be infinitely many equivalences that correspond to a 
-change, only some of which are useful (for example~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/refine_unit.v}{\circled{7}}, any \A is equivalent to \lstinline{unit} refined by \A). % refine_unit.v
+change, only some of which are useful (for example~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/refine_unit.v}{\circled{7}}, any \A is equivalent to \lstinline{unit} refined by \A). % refine_unit.v
 And there can be many configurations that correspond
 to an equivalence, some of which will produce terms that are more useful or efficient than others
 (consider \lstinline{DepElim} converting through several intermediate types).
@@ -651,7 +651,7 @@ This makes it possible for the transformation to
 avoid applying \lstinline{section} and \lstinline{retraction}.
 
 \mysubsubsec{Correctness}
-With these correctness criteria for a configuration, we get the completeness result (proven in Coq~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/arbitrary.v}{\circled{8}}) that every equivalence induces a configuration. % arbitrary.v
+With these correctness criteria for a configuration, we get the completeness result (proven in Coq~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/arbitrary.v}{\circled{8}}) that every equivalence induces a configuration. % arbitrary.v
 We also obtain an algorithm for the soundness result that every configuration induces an equivalence.
 The algorithm to prove \lstinline{section} is as follows (\lstinline{retraction} is similar):
 replace \lstinline{a} with \lstinline{Eta(A) a} by \lstinline{eta_ok(A)}.
@@ -663,19 +663,19 @@ Expand the right-hand side using \lstinline{Iota(A, i)}, then expand it again us
 The result follows by definition of \lstinline{g} and \lstinline{f}, and by reflexivity.
 
 \mysubsubsec{Automatic Configuration}
-\toolname implements four search procedures for automatic configuration~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/lift/liftconfig.ml}{\circled{6}}.
+\toolname implements four search procedures for automatic configuration~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/src/automation/lift/liftconfig.ml}{\circled{6}}.
 Three of the four procedures are based on the search procedure from 
 \textsc{Devoid}~\cite{Ringer2019},
 while the remaining procedure instantiates the types \A and \B of a generic configuration that can be defined inside of Coq directly.
 %Two use similar algorithms,
 %due to space constraints, 
 %we do not discuss these in detail.
-The algorithm above is essentially what \textbf{Configure} uses to generate functions \lstinline{f} and \lstinline{g} for these configurations~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/search/search.ml}{\circled{9}}, % search.ml
-and also generate proofs \lstinline{section} and \lstinline{retraction} that these functions form an equivalence~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/search/equivalence.ml}{\circled{10}}. % equivalence.ml
+The algorithm above is essentially what \textbf{Configure} uses to generate functions \lstinline{f} and \lstinline{g} for these configurations~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/src/automation/search/search.ml}{\circled{9}}, % search.ml
+and also generate proofs \lstinline{section} and \lstinline{retraction} that these functions form an equivalence~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/src/automation/search/equivalence.ml}{\circled{10}}. % equivalence.ml
 To minimize dependencies, \toolname does not produce proofs of \lstinline{constr_ok} and \lstinline{elim_ok} directly,
 as stating these theorems cleanly would require either a special framework~\cite{tabareau2017equivalences}
 or a univalent type theory~\cite{univalent2013homotopy}.
-If the proof engineer wishes, it is possible to prove these in individual cases~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/arbitrary.v}{\circled{8}}, % arbitray.v
+If the proof engineer wishes, it is possible to prove these in individual cases~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/arbitrary.v}{\circled{8}}, % arbitray.v
 but this is not necessary in order to use \toolname. %---they simply need to hold.
 
 %First we need that \lstinline{DepElim} over $A$ into \lstinline{DepConstr} over $B$ and \lstinline{DepElim} over $B$ into

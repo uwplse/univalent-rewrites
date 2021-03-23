@@ -29,10 +29,10 @@ since \A may be an old version of an updated type (Section~\ref{sec:repair}).
 \label{sec:scope}
 
 \toolname repairs proofs in response to changes in types that correspond to \textit{type equivalences}~\cite{univalent2013homotopy},
-or pairs of functions that map between two types and are mutual inverses.\footnote{The adjoint follows, and \toolname includes machinery to prove it~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/src/automation/search/equivalence.ml}{\circled{10}}~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/theories/Adjoint.v}{\circled{23}}.}
+or pairs of functions that map between two types and are mutual inverses.\footnote{The adjoint follows, and \toolname includes machinery to prove it~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/src/automation/search/equivalence.ml}{\circled{10}}~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/theories/Adjoint.v}{\circled{23}}.}
 When a type equivalence between types \A and \B exists, those types are \textit{equivalent} (denoted \A $\simeq$ \B). % for example:
 Figure~\ref{fig:equivalence} shows a type equivalence between the two versions of \lstinline{list}
-from Figure~\ref{fig:listswap} that \toolname discovered and proved automatically~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/Swap.v}{\circled{1}}.
+from Figure~\ref{fig:listswap} that \toolname discovered and proved automatically~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/Swap.v}{\circled{1}}.
 
 %
 %\begin{lstlisting}
@@ -52,7 +52,7 @@ as long as she configures \toolname to describe which constructor
 of \lstinline{I} maps to \lstinline{true} and which maps to \lstinline{false}.
 This information about constructor mappings induces an equivalence \lstinline{I }$\simeq$\lstinline{ J}
 across which \toolname repairs functions and proofs.
-File \href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/playground/constr_refactor.v}{\circled{2}} shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false,
+File \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/constr_refactor.v}{\circled{2}} shows an example of this, mapping \lstinline{A} to \lstinline{true} and \lstinline{B} to false,
 and repairing proofs of De Morgan's laws. % constr_refactor.v
 %
 %It uses \toolname to automatically repair functions and proofs over \lstinline{I}, like:
@@ -88,7 +88,7 @@ But equivalences are more powerful than they may seem.
 %roofs about this new information become the proof obligation for the proof engineer,
 %and \toolname automates the rest.
 Consider, for example, changing a list to a length-indexed vector (Figure~\ref{fig:listtovect}).
-\toolname can repair functions and proofs about lists to functions and proofs about vectors of particular lengths~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}}, % Example.v
+\toolname can repair functions and proofs about lists to functions and proofs about vectors of particular lengths~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/examples/Example.v}{\circled{3}}, % Example.v
 since $\Sigma$\lstinline{(l:list T).length l = n }$\simeq$\lstinline{ vector T n}.
 From the proof engineer's perspective, after updating specifications from \lstinline{list} to \lstinline{vector},
 to fix her functions and proofs, she must additionally prove invariants about the lengths of her lists.
@@ -152,7 +152,7 @@ Equality up to transport is across a \textit{particular} equivalence, but we era
 notation.}
 In Section~\ref{sec:overview}, the original append function \lstinline{++} over \lstinline{Old.list}
 and the repaired append function \lstinline{++} over \lstinline{New.list} that \toolname produces are
-equal up to transport across the equivalence from Figure~\ref{fig:equivalence}, since (by \lstinline{app_ok}~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/Swap.v}{\circled{1}}):
+equal up to transport across the equivalence from Figure~\ref{fig:equivalence}, since (by \lstinline{app_ok}~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/Swap.v}{\circled{1}}):
 
 \begin{lstlisting}
 $\forall$ T (l1 l2 : Old.list T),(@\vspace{-0.04cm}@)

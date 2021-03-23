@@ -22,7 +22,7 @@ length-indexed vector (Figure~\ref{fig:listtovect}).
 %The search procedure moves the work specific to algebraic ornaments into the \toolname configuration.
 The result is all functionality from \textsc{Devoid}, plus tactic suggestions.
 %which allows it to implement the  functionality from \textsc{Devoid}.
-In file~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}}, we used this to port
+In file~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/examples/Example.v}{\circled{3}}, we used this to port
 functions and a proof from lists to vectors of \textit{some} length, since \lstinline{list T} $\simeq$ \lstinline{packed_vect T}.
 The decompiler helped us write proofs that we had found
 too hard to write by hand,
@@ -45,7 +45,7 @@ though the suggested tactics did need massaging. % as the decompiler struggled w
 
 \mysubsubsec{Unpack Sigma Types: Vectors of Particular Lengths}
 %The previous case study showed how to get between lists and vectors of \textit{some} length.
-In the same file~\href{https://github.com/uwplse/pumpkin-pi/blob/silent/plugin/coq/examples/Example.v}{\circled{3}}, we then ported functions and proofs to vectors of a \textit{particular} length, 
+In the same file~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/examples/Example.v}{\circled{3}}, we then ported functions and proofs to vectors of a \textit{particular} length, 
 like \lstinline{vector T n}.
 \textsc{Devoid} had left this step to the proof engineer.
 We supported this in \toolname by chaining the previous change
@@ -115,7 +115,7 @@ and added a new constructor \lstinline{Bool}.
 
 This case study and the next case study break this change into two parts.
 In the first part, we used \toolname with automatic configuration to repair functions and proofs about the language
-after swapping the constructors~\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{\circled{1}}.
+after swapping the constructors~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/Swap.v}{\circled{1}}.
 %We also succeeded at more difficult variants of this,
 %like swapping constructors with the same type, renaming all of the constructors,
 %permuting more than two constructors,
@@ -137,7 +137,7 @@ so there was not a difference in development time.
 
 \mysubsubsec{Add new Constructors: Extending a Language}
 We then used \toolname to repair functions 
-after adding the new constructor in Figure~\ref{fig:replica}, separating out the proof obligations for the new constructor from the old terms~\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{\circled{19}}.
+after adding the new constructor in Figure~\ref{fig:replica}, separating out the proof obligations for the new constructor from the old terms~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/add_constr.v}{\circled{19}}.
 %The resulting functions were guaranteed to preserve the behavior of the old terms. % TODO do the proofs too
 This change combined manual and automatic configuration.
 We defined an inductive type \lstinline{Diff} and (using partial automation) a configuration to port the terms across the equivalence \lstinline{Old.Term + Diff} $\simeq$ \lstinline{New.Term}.
@@ -156,12 +156,12 @@ to get between proofs of the inefficient and efficient terms.
 \mysubsubsec{Factor out Constructors: External Example}
 The change from Figure~\ref{fig:equivalence2} came at the request of a non-author.
 We supported this using a manual configuration that described which constructor to map to \lstinline{true}
-and which constructor to map to \lstinline{false}~\href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/constr_refactor.v}{\circled{2}}.
+and which constructor to map to \lstinline{false}~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/constr_refactor.v}{\circled{2}}.
 The configuration was very simple for us to write, and the repaired tactics were immediately useful.
 The development time savings were on the order of minutes.
 
 \mysubsubsec{Permute Hypotheses: External Example}
-The change in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/flip.v}{\circled{20}} came at the request of a different non-author (a cubical type theory expert),
+The change in \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/flip.v}{\circled{20}} came at the request of a different non-author (a cubical type theory expert),
 and shows how to  use \toolname to swap two hypotheses of a type, since \lstinline{T1} $\rightarrow$ \lstinline{T2} $\rightarrow$ \lstinline{T3} $\simeq$
 \lstinline{T2} $\rightarrow$ \lstinline{T1} $\rightarrow$ \lstinline{T3}.
 This configuration was manual.
@@ -172,7 +172,7 @@ manual configuration, and so did not yet save development time.
 Supporting custom unification heuristics would improve this workflow.
 
 \mysubsubsec{Change Inductive Structure: Unary to Binary}
-In \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{\circled{5}}, we used \toolname to support a classic example of changing inductive structure:
+In \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/nonorn.v}{\circled{5}}, we used \toolname to support a classic example of changing inductive structure:
 updating unary to binary numbers,
 as in Figure~\ref{fig:nattobin}.
 % TODO fin and vect? mention somewhere?
@@ -290,7 +290,7 @@ dep_elim P f0 f1 f2 f3 f4 f5 f6 t : P t :=(@\vspace{-0.04cm}@)
 \end{lstlisting}
 
 Adding the constructor combined a manual configuration with an automatic configuration.
-The details of this are in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add_constr.v}.
+The details of this are in \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/add_constr.v}{add_constr.v}.
 At a high level, we defined an inductive type \lstinline{Diff} and (using partial automation) a configuration to port the terms across this equivalence:
 
 \begin{lstlisting}
@@ -300,7 +300,7 @@ This made it simple to guarantee preservation of the behavior over \lstinline{Ol
 
 \subsubsection{Example}
 
-We used \toolname to automatically update the functions and proofs in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/Swap.v}{\lstinline{Swap.v}} from the \textsc{Replica} benchmark.
+We used \toolname to automatically update the functions and proofs in \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/Swap.v}{\lstinline{Swap.v}} from the \textsc{Replica} benchmark.
 This included functions about \lstinline{Term}, as well as a large record \lstinline{EpsilonLogic} that encoded the semantics of the language,
 plus a proof about that record.
 %\begin{lstlisting}
@@ -315,7 +315,7 @@ It presented the desired transformation as the first option in the list, so that
 was pass the argument \lstinline{mapping 0} to \lstinline{Repair module} for it to handle this change.
 It was also able to handle the more advanced variants of this change.
 
-In \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/playground/add_constr.v}{add_constr.v},
+In \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/add_constr.v}{add_constr.v},
 we then updated the functions to add the new constructor.
 This resulted in some case explosion, but was very formulaic.
 Since the functions \toolname produced were guaranteed to preserve the behavior of the old functions,
@@ -438,7 +438,7 @@ and \lstinline{Iota} does not change.
 
 \subsubsection{Example}
 
-The expanded example from the \textsc{Devoid} paper is in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/examples/Example.v}{\lstinline{Example.v}}.
+The expanded example from the \textsc{Devoid} paper is in \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/examples/Example.v}{\lstinline{Example.v}}.
 The \textsc{Devoid} example ported a list \lstinline{zip} function,
 a \lstinline{zip_with} function, and a proof \lstinline{zip_with_is_zip} relating the two
 functions from lists to vectors of some length.
@@ -520,7 +520,7 @@ removing all references to \lstinline{nat}, and show that they hold over fast bi
 \subsubsection{Configuration}
 We configured this manually using the \lstinline{Configure} command,
 which takes the configuration as an argument.
-The result is in \href{https://github.com/uwplse/pumpkin-pi/blob/master/plugin/coq/nonorn.v}{\lstinline{nonorn.v}}.
+The result is in \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/nonorn.v}{\lstinline{nonorn.v}}.
 The configuration for \lstinline{nat} was straightforward.
 For \lstinline{N}, we used functions from the Coq standard library that
 behaved like the \lstinline{nat} constructors:
