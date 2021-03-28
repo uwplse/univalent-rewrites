@@ -24,9 +24,10 @@ The result is all functionality from \textsc{Devoid}, plus tactic suggestions.
 %which allows it to implement the  functionality from \textsc{Devoid}.
 In file~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/examples/Example.v}{\circled{3}}, we used this to port
 functions and a proof from lists to vectors of \textit{some} length, since \lstinline{list T} $\simeq$ \lstinline{packed_vect T}.
-The decompiler helped us write proofs that we had found
+The decompiler helped us write proofs in the order of hours that we had found
 too hard to write by hand,
-though the suggested tactics did need massaging. % as the decompiler struggled with motive inference
+though the suggested tactics did need massaging.
+% as the decompiler struggled with motive inference
 %for induction with dependent types.
 %Additional effort is needed to improve tactic suggestions for dependent types.
 
@@ -65,7 +66,7 @@ list terms with length invariants.
 %This gave us a proof of this lemma (with \lstinline{zip_with} and \lstinline{zip} operating over lists at given lengths):
 The resulting workflow works not just for lists and vectors, but for any algebraic ornament,
 automating manual effort from \textsc{Devoid}.
-The suggested tactics were helpful for writing proofs
+The suggested tactics were helpful for writing proofs in the order of hours
 that we had struggled with manually over the course of days, but only after massaging.
 More effort is needed to improve tactic suggestions for dependent types.
 
@@ -158,7 +159,9 @@ The change from Figure~\ref{fig:equivalence2} came at the request of a non-autho
 We supported this using a manual configuration that described which constructor to map to \lstinline{true}
 and which constructor to map to \lstinline{false}~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/constr_refactor.v}{\circled{2}}.
 The configuration was very simple for us to write, and the repaired tactics were immediately useful.
-The development time savings were on the order of minutes.
+The development time savings were on the order of minutes for a small proof development.
+Since most of the modest development time went into writing the configuration,
+we expect time savings would increase for a larger proof development.
 
 \mysubsubsec{Permute Hypotheses: External Example}
 The change in \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/flip.v}{\circled{20}} came at the request of a different non-author (a cubical type theory expert),
@@ -168,7 +171,7 @@ This configuration was manual.
 Since neither type was inductive, this change used the generic construction for any equivalence.
 %instantiated to this particular equivalence.
 This worked well, but necessitated some manual annotation due to the lack of custom unification heuristics for 
-manual configuration, and so did not yet save development time.
+manual configuration, and so did not yet save development time, and likely still would not have had the proof development been larger.
 Supporting custom unification heuristics would improve this workflow.
 
 \mysubsubsec{Change Inductive Structure: Unary to Binary}
