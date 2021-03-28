@@ -202,7 +202,7 @@ the corresponding theorem over \lstinline{N} does not hold by reflexivity.
 
 To transform proofs about \lstinline{nat} to proofs about \lstinline{N}, we must transform \textit{definitional} $\iota$-reduction over \lstinline{nat} to \textit{propositional} $\iota$-reduction over \lstinline{N}.
 For our choice of \lstinline{DepConstr} and \lstinline{DepElim},
-$\iota$-reduction is definitional over \lstinline{nat}, since a proof of:\vspace{-0.01cm}
+$\iota$-reduction is definitional over \lstinline{nat}, since a proof of:
 
 \begin{lstlisting}
 $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,(@\vspace{-0.04cm}@)
@@ -210,15 +210,7 @@ $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,(@\vspace{-0.04cm}@)
   (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
 \end{lstlisting}
 holds by reflexivity.
-But $\iota$ for \lstinline{N} is propositional, since the corresponding 
-theorem over \lstinline{N} does not.
-%\begin{lstlisting}
-%$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,(@\vspace{-0.04cm}@)
-%  DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ } =(@\vspace{-0.04cm}@)
-%  (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
-%\end{lstlisting}
-%no longer holds by reflexivity.
-\lstinline{Iota} for \lstinline{nat} in the \lstinline{S} case is a rewrite by the proof of the above,
+\lstinline{Iota} for \lstinline{nat} in the \lstinline{S} case is a rewrite by that proof by reflexivity~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/nonorn.v}{\circled{5}},
 with type:
 
 \begin{lstlisting}
@@ -227,9 +219,29 @@ $\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n (Q: P (DepConstr(1, nat) n) $\righta
     Q ((@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ })) $\rightarrow$(@\vspace{-0.04cm}@)
     Q (DepElim((@\codediff{DepConstr(1, nat) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
 \end{lstlisting}
-and similarly for \lstinline{N}~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/nonorn.v}{\circled{5}}.
-The transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N},
-so that \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinline{N}.
+
+In contrast, $\iota$ for \lstinline{N} is propositional, since the corresponding 
+theorem over \lstinline{N}:
+
+\begin{lstlisting}
+$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n,(@\vspace{-0.04cm}@)
+  DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ } =(@\vspace{-0.04cm}@)
+  (@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
+\end{lstlisting}
+no longer holds by reflexivity.
+\lstinline{Iota} for \lstinline{N} is a rewrite by the propositional equality that proves this theorem~\href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/nonorn.v}{\circled{5}},
+with type:
+
+\begin{lstlisting}
+$\forall$ P p$_\texttt{0}$ p$_\texttt{S}$ n (Q: P (DepConstr(1, N) n) $\rightarrow$ s),(@\vspace{-0.04cm}@)
+  Iota(1, N, Q) :(@\vspace{-0.04cm}@)
+    Q ((@\codediff{p$_\texttt{S}$}@) n (DepElim(n, P) { p$_\texttt{0}$, p$_\texttt{S}$ })) $\rightarrow$(@\vspace{-0.04cm}@)
+    Q (DepElim((@\codediff{DepConstr(1, N) n}@), P) { p$_\texttt{0}$, p$_\texttt{S}$ }).(@\vspace{-0.05cm}@)
+\end{lstlisting}
+
+By replacing \lstinline{Iota} over \lstinline{nat} with \lstinline{Iota} over \lstinline{N},
+the transformation replaces rewrites by reflexivity over \lstinline{nat} to rewrites by propositional equalities over \lstinline{N}.
+That way, \lstinline{DepElim} behaves the same over \lstinline{nat} and \lstinline{N}.
 
 Taken together over both \A and \B, \lstinline{Iota} describes how the inductive structures of \A and \B differ.
 The transformation requires that \lstinline{DepElim} over \A and over \B have the same structure
