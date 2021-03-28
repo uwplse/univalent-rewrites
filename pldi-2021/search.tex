@@ -39,8 +39,9 @@ though the suggested tactics did need massaging.
 \begin{minipage}{0.48\textwidth}
    \lstinputlisting[firstline=10, lastline=18]{replica.tex}
 \end{minipage}
-\vspace{-0.4cm}
+\vspace{-0.3cm}
 \caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
+\vspace{0.1cm}
 \label{fig:replica}
 \end{figure*}
 
@@ -154,6 +155,7 @@ we hope to automate the discovery of the more efficient terms,
 or use the refinement framework CoqEAL~\cite{cohen:hal-01113453}
 to get between proofs of the inefficient and efficient terms.
 
+\vspace{0.105cm}
 \mysubsubsec{Factor out Constructors: External Example}
 The change from Figure~\ref{fig:equivalence2} came at the request of a non-author.
 We supported this using a manual configuration that described which constructor to map to \lstinline{true}
@@ -161,8 +163,9 @@ and which constructor to map to \lstinline{false}~\href{https://github.com/uwpls
 The configuration was very simple for us to write, and the repaired tactics were immediately useful.
 The development time savings were on the order of minutes for a small proof development.
 Since most of the modest development time went into writing the configuration,
-we expect time savings would increase for a larger proof development.
+we expect time savings would increase for a larger development.
 
+\vspace{0.105cm}
 \mysubsubsec{Permute Hypotheses: External Example}
 The change in \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/playground/flip.v}{\circled{20}} came at the request of a different non-author (a cubical type theory expert),
 and shows how to  use \toolname to swap two hypotheses of a type, since \lstinline{T1} $\rightarrow$ \lstinline{T2} $\rightarrow$ \lstinline{T3} $\simeq$
@@ -174,6 +177,7 @@ This worked well, but necessitated some manual annotation due to the lack of cus
 manual configuration, and so did not yet save development time, and likely still would not have had the proof development been larger.
 Supporting custom unification heuristics would improve this workflow.
 
+\vspace{0.105cm}
 \mysubsubsec{Change Inductive Structure: Unary to Binary}
 In \href{https://github.com/uwplse/pumpkin-pi/blob/v2.0.0/plugin/coq/nonorn.v}{\circled{5}}, we used \toolname to support a classic example of changing inductive structure:
 updating unary to binary numbers,
@@ -248,7 +252,7 @@ Custom unification heuristics would help bring returns on investment for experts
 \begin{minipage}{0.49\columnwidth}
    \lstinputlisting[firstline=11, lastline=19]{replica.tex}
 \end{minipage}
-\vspace{-0.4cm}
+\vspace{-0.3cm}
 \caption{A simple language (left) and the same language with two swapped constructors and an added constructor (right).}
 \vspace{-0.1cm}
 \label{fig:replica}

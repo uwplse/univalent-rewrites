@@ -6,12 +6,12 @@
 % TODO Gaetan for sure
 % TODO call out Anders and Conor specially, given depth of feedback
 % TODO Jasper
-Let us use this space to say that this paper has been a community effort.
+This paper has really been a community effort.
 Anders M\"ortberg and Conor McBride gave us \textit{hours} worth of detailed feedback that was instrumental to writing this paper.
 Nicolas Tabareau helped us understand the need to port definitional to propositional equalities.
 Valentin Robert gave us feedback on usability that informed tool design.
 Ga\"{e}tan Gilbert, James Wilcox, and Jasper Hugunin all at some point helped us write Coq proofs;
-let this be a record that we owe Ga\"{e}tan beer, and we owe James boba.
+let this be a record that we owe Ga\"{e}tan a beer, and we owe James boba.
 
 And of course, we thank our shepherd Gerwin Klein, and we thank all of our reviewers.
 We got other wonderful feedback on the paper from

@@ -49,6 +49,34 @@ As with the real decompiler, the mini decompiler defaults to the proof script
 that applies the entire proof term with \lstinline{apply} (\textsc{Base}).
 Otherwise, it improves on that behavior by recursing over the proof term and constructing a proof script using a predefined set of tactics.
 
+\iffalse
+\begin{figure*}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l H}@) =>(@\vspace{-0.04cm}@)
+    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
+    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+(@\vspace{-0.14cm}@)
+- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l H|].}@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite app_nil_r.}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
+  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
+(@\vspace{-0.14cm}@)
+\end{lstlisting}
+\end{minipage}
+\vspace{-0.3cm}
+\caption{Proof term (left) and decompiled proof script (right) for the base case of 
+\lstinline{rev_app_distr} (Section~\ref{sec:overview}),  with corresponding terms and tactics 
+grouped by color and number.}
+\label{fig:rainbow}
+\end{figure*}
+\fi
+
 For the mini decompiler, this is straightforward: Lambda terms become introduction (\textsc{Intro}).
 Applications of \lstinline{eq_sym} become symmetry of equality (\textsc{Symmetry}).
 Constructors of conjunction and disjunction map to the respective tactics (\textsc{Split}, \textsc{Left}, and \textsc{Right}).
@@ -89,52 +117,6 @@ This makes it possible for suggested scripts to include custom tactics and decis
 
 % TODO add any new things RanDair implements, like exists
 
-\begin{figure}
-\begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l H}@) =>(@\vspace{-0.04cm}@)
-    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
-    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
-    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
-(@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l H|].}@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite app_nil_r.}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\vspace{-0.4cm}
-\caption{Proof term (top) and decompiled proof script (bottom) for the base case of 
-\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
-grouped by color \& number.}
-\label{fig:rainbow}
-\end{figure}
-
-\iffalse
-\begin{figure*}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
-  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l H}@) =>(@\vspace{-0.04cm}@)
-    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
-    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
-    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
-\end{lstlisting}
-\end{minipage}
-\begin{minipage}{0.48\textwidth}
-\begin{lstlisting}
-(@\vspace{-0.14cm}@)
-- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l H|]}.@)(@\vspace{-0.04cm}@)
-  + (@\codesimc{simpl. rewrite app_nil_r.}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
-  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
-(@\vspace{-0.14cm}@)
-\end{lstlisting}
-\end{minipage}
-\vspace{-0.4cm}
-\caption{Proof term (left) and decompiled proof script (right) for the base case of 
-\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
-highlighted the same color.}
-\label{fig:rainbow}
-\end{figure*}
-\fi
 
 
 

@@ -37,6 +37,26 @@ We use the existing \lstinline{Preprocess}~\cite{Ringer2019} command to turn pat
 eliminators.
 We handle refolding of constants in constructors using \lstinline{DepConstr}.
 
+\begin{figure}
+\begin{lstlisting}
+fun (@\codesimb{(y0 : list A)}@) =>(@\vspace{-0.04cm}@)
+  (@\codesima{list_rect}@) _ _  (fun (@\codesima{a l H}@) =>(@\vspace{-0.04cm}@)
+    (@\codesimc{eq_ind_r}@) _ (@\codesimd{eq_refl}@) (@\codesimc{(app_nil_r (rev l) (a::[]))}@))(@\vspace{-0.04cm}@)
+    (@\codesime{eq_refl}@)(@\vspace{-0.04cm}@)
+    (@\codesima{y0}@)(@\vspace{-0.04cm}@)
+(@\vspace{-0.04cm}@)
+- (@\codesimb{intro y0.}@) (@\codesima{induction y0 as [a l H|].}@)(@\vspace{-0.04cm}@)
+  + (@\codesimc{simpl. rewrite app_nil_r.}@) (@\codesimd{auto.}@)(@\vspace{-0.04cm}@)
+  + (@\codesime{auto.}@)(@\vspace{-0.04cm}@)
+\end{lstlisting}
+\vspace{-0.3cm}
+\caption{Proof term (top) and decompiled proof script (bottom) for the base case of 
+\lstinline{rev_app_distr} (Section~\ref{sec:overview}), with corresponding terms and tactics 
+grouped by color \& number.}
+\label{fig:rainbow}
+\end{figure}
+
+
 \mysubsubsec{Reaching Real Proof Engineers}
 Many of our design decisions in implementing \toolname were informed by our partnership with
 an industrial proof engineer (Section~\ref{sec:search}).
@@ -103,9 +123,9 @@ These features helped with workflow integration. % tactic decompiler helped with
     \hline
   \end{tabular}
 \vspace{0.05cm}
-  \caption{Some changes using \toolname (left to right): class of changes, kind of configuration, examples, whether using \toolname saved development time relative to reference manual repair attempts (\good\xspace if yes, \ok\xspace if comparable, \bad\xspace if no), and Coq tools we know of that support repair along (Repair) or automatic proof of (Search) the equivalence corresponding to each example. Tools considered are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and the tool from \citet{magaud2000changing}. \toolname is the only one that supports tactic suggestions.
+  \caption{Some changes using \toolname (left to right): class of changes, kind of configuration, examples, whether using \toolname saved development time relative to reference manual repairs (\good\xspace if yes, \ok\xspace if comparable, \bad\xspace if no), and Coq tools we know of that support repair along (Repair) or automatic proof of (Search) the equivalence corresponding to each example. Tools considered are \textsc{Devoid}~\cite{Ringer2019}, the Univalent Parametricity (UP) white-box transformation~\cite{tabareau2019marriage}, and the tool from \citet{magaud2000changing}. \toolname is the only one that suggests tactics.
 More nuanced comparisons to these and more are in Section~\ref{sec:related}.}
-\vspace{-0.5cm}
+\vspace{-0.4cm}
 \label{fig:changes}
 \end{table*}
 
