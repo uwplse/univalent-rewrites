@@ -6,8 +6,7 @@
 % TODO Gaetan for sure
 % TODO call out Anders and Conor specially, given depth of feedback
 % TODO Jasper
-This is the last paper before Talia becomes a computer doctor, or a professor or whatever we call them these days.
-So let us use this space to say that this paper has been a community effort.
+Let us use this space to say that this paper has been a community effort.
 Anders M\"ortberg and Conor McBride gave us \textit{hours} worth of detailed feedback that was instrumental to writing this paper.
 Nicolas Tabareau helped us understand the need to port definitional to propositional equalities.
 Valentin Robert gave us feedback on usability that informed tool design.
@@ -18,7 +17,7 @@ And of course, we thank our shepherd Gerwin Klein, and we thank all of our revie
 We got other wonderful feedback on the paper from
 Cyril Cohen, Tej Chajed, Ben Delaware, Jacob Van Geffen, Janno, James Wilcox, Chandrakana Nandi,
 Martin Kellogg, Audrey Seo, James Decker,
-and Ben Kushigian.
+Ben Kushigian, John Regehr, and Justus Adam.
 The Coq developers have for \textit{years} given us frequent and efficient feedback on plugin APIs for tool implementation.
 The programming languages community on Twitter (yes, seriously) has also been essential to this effort.
 Especially during a pandemic.
@@ -27,7 +26,7 @@ And we'd like to extend a special thank you to Talia's mentor, Derek Dreyer.
 We have also gotten a lot of feedback on future ideas that we are excited to pursue.
 Carlo Angiuli has helped us understand some beautiful theory beneath our implementation
 (spoiler: we believe the analogy connecting \lstinline{DepConstr} and \lstinline{DepElim} to constructors and eliminators
-has formal meaning in terms of initial algebras), and we are excited to integrate these insights into future papers (like Talia's thesis)
+has formal meaning in terms of initial algebras), and we are excited to integrate these insights into future papers
 and use them to generalize our insights.
 Alex Polozov helped us sketch out ideas for future work with the decompiler.
 And we got wonderful feedback on e-graph integration for future work from
