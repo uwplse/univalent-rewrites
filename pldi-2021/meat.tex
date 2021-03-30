@@ -50,7 +50,7 @@ Section~\ref{sec:implementation} describes the additional work needed to impleme
 \mysubsubsec{Conventions}
 All terms that we introduce in this section are in the Calculus of Inductive Constructions (CIC$_{\omega}$), the type theory
 that Coq's proof term language Gallina implements.
-CIC$_{\omega}$ is based on the Calculus of Constructions (CoC), a variant of the lambda calculus with polymorphism (types that dependent on types) and dependent types (types that depend on terms)~\cite{coquand:inria-00076024}. CIC$_{\omega}$ extends CoC with
+CIC$_{\omega}$ is based on the Calculus of Constructions (CoC), a variant of the lambda calculus with polymorphism (types that depend on types) and dependent types (types that depend on terms)~\cite{coquand:inria-00076024}. CIC$_{\omega}$ extends CoC with
 inductive types~\cite{inductive}.
 Inductive types are defined solely by their constructors (like \lstinline{nil} and \lstinline{cons} for \lstinline{list}) and eliminators (like the induction principle for \lstinline{list}); this section assumes that these eliminators are primitive.
 
