@@ -4,4 +4,4 @@ Inductive list (T : Type) : Type :=(@\vspace{-0.04cm}@)
 
 Inductive vector (T : Type) : (@\codediff{nat}@) $\rightarrow$ Type :=(@\vspace{-0.04cm}@)
 | nil : vector T (@\codediff{O}@)(@\vspace{-0.04cm}@)
-| cons : T $\rightarrow$ $\forall$ (@\codediff{(n : nat)}@), vector T (@\codediff{n}@) $\rightarrow$ vector T (@\codediff{(S n)}@).(@\vspace{-0.04cm}@)
+| cons : T $\hspace{-0.06cm}\rightarrow$ $\hspace{-0.06cm}\forall\hspace{-0.06cm}$ (@\codediff{(n : nat)}@), $\hspace{-0.06cm}$vector$\hspace{-0.06cm}$ T$\hspace{-0.06cm}$ (@\codediff{n}@) $\hspace{-0.06cm}\rightarrow\hspace{-0.06cm}$ vector $\hspace{-0.06cm}$T $\hspace{-0.06cm}$(@\codediff{(S n)}@).(@\vspace{-0.04cm}@)
